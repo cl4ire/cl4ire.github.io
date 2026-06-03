@@ -40,7 +40,7 @@ fetch('couches/randonnees.geojson')
 	});
 
 // Ajout de la couche prix des carburants
-fetch("https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?limit=100")
+fetch("https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?code_departement='72'")
     .then(response => response.json())
     .then(data => {
 		const coucheCarburants = L.layerGroup();
