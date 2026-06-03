@@ -11,62 +11,89 @@
         <div id="map"></div>
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
         <script>
-            //Initialisation de la carte Leaflet
-            const map = L.map('map').setView([47.791528,0.412223], 12);
-            
-            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap'
-            }).addTo(map);
-            
-            //Ajout de la couche randonnees.geojson
-            fetch('couches/randonnees.geojson')
-                .then(response => response.json())
-                .then(data => {          
-					//Personnalisation de la couche randonnees.geojson
-					const randonnees = L.geoJSON(data, {
-						style: {
-							color: "#008000",
-							weight: 3
-						},
-						onEachFeature: function(feature, layer) {
-							layer.bindPopup(
-								`<b>${feature.properties.id}</b><br>
-								 Distance : ${feature.properties.distance} km<br>
-								 Durée : ${feature.properties.dureeEstim} h`
-							);
-						}
-					});
-					randonnees.addTo(map);
-				});
+//Initialisation de la carte Leaflet
+const map = L.map('map').setView([47.791528,0.412223], 12);
+
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+attribution: '&copy; OpenStreetMap'
+}).addTo(map);
+
+//Ajout de la couche randonnees.geojson
+fetch('couches/randonnees.geojson')
+	.then(response => response.json())
+	.then(data => {          
+		//Personnalisation de la couche randonnees.geojson
+		const randonnees = L.geoJSON(data, {
+			style: {
+				color: "#008000",
+				weight: 3
+			},
+			onEachFeature: function(feature, layer) {
+				layer.bindPopup(
+					`<b>${feature.properties.id}</b><br>
+					 Distance : ${feature.properties.distance} km<br>
+					 Durée : ${feature.properties.dureeEstim} h`
+				);
+			}
+		});
+		randonnees.addTo(map);
+	});
+
+//Ajout de la couche prix des carburants
+const coucheCarburants = L.layerGroup().addTo(map);
+function chargerCarburants() {
+	// Vide les anciens marqueurs
+	coucheCarburants.clearLayers();
+	// Emprise actuelle de la carte
+	const bounds = map.getBounds();
+	const minLat = bounds.getSouth();
+	const maxLat = bounds.getNorth();
+	const minLon = bounds.getWest();
+	const maxLon = bounds.getEast();
+	//Récupération des données
+	fetch("https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?limit=100")
+		.then(response => response.json())
+		.then(data => {
+			let nbStations = 0;
+			data.results.forEach(station => {
+				if (!station.geom) return;
+				// Filtre sur l'emprise visible
+				if (
+					station.geom.lat < minLat ||
+					station.geom.lat > maxLat ||
+					station.geom.lon < minLon ||
+					station.geom.lon > maxLon
+				) {
+					return;
+				}
+				nbStations++;
+				let popup = `
+					<b>${station.ville}</b><br>
+					${station.adresse}<br><br>
+				`;
+				if (station.gazole_prix)
+					popup += `⛽ Gazole : ${station.gazole_prix} €/L<br>`;
+				if (station.e10_prix)
+					popup += `⛽ E10 : ${station.e10_prix} €/L<br>`;
+				if (station.sp95_prix)
+					popup += `⛽ SP95 : ${station.sp95_prix} €/L<br>`;
+				if (station.sp98_prix)
+					popup += `⛽ SP98 : ${station.sp98_prix} €/L<br>`;
+				L.marker([
+					station.geom.lat,
+					station.geom.lon
+				])
+				.bindPopup(popup)
+				.addTo(coucheCarburants);
+			});
+		}
+	)
+}
+// Chargement initial
+chargerCarburants();
 			
-			//Ajout de la couche prix des carburants
-			fetch("https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?limit=100")
-				.then(response => response.json())
-				.then(data => {
-					const coucheCarburants = L.layerGroup();
-					data.results.forEach(station => {
-					  if (!station.geom) return;
-					  let popup = `
-						<b>${station.ville}</b><br>
-						${station.adresse}<br><br>
-					  `;
-					  if (station.gazole_prix)
-						popup += `Gazole : ${station.gazole_prix} €/L<br>`;
-					  if (station.e10_prix)
-						popup += `E10 : ${station.e10_prix} €/L<br>`;
-					  if (station.sp95_prix)
-						popup += `SP95 : ${station.sp95_prix} €/L<br>`;
-					  if (station.sp98_prix)
-						popup += `SP98 : ${station.sp98_prix} €/L<br>`;
-					  const marker = L.marker([
-						station.geom.lat,
-						station.geom.lon
-					  ]);
-					  marker.bindPopup(popup);
-					  coucheCarburants.addLayer(marker);
-					});
-					coucheCarburants.addTo(map);
-				});
+// Rechargement après déplacement ou zoom
+map.on('moveend', chargerCarburants);
         </script>
     </body>
 </html>
