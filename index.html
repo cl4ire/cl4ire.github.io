@@ -2,7 +2,6 @@
 <html>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <link rel="stylesheet" href="css/style.css"/>
-	<!-- <script src="couches/randonnees.geojson" type="text/javascript"></script> -->
         
     <head>
         <title>Mon portail cartographique</title>
@@ -11,7 +10,6 @@
         <h1>Bienvenue sur mon portail cartographique</h1>
         <div id="map"></div>
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-		
         <script>
             //Initialisation de la carte Leaflet
             const map = L.map('map').setView([47.791528,0.412223], 12);
@@ -22,15 +20,25 @@
             
             //Ajout de la couche randonnees.geojson
             fetch('couches/randonnees.geojson')
-			.then(response => response.json())
-			.then(data => {
-			console.log(data);
-
-			const couche = L.geoJSON(data);
-			couche.addTo(map);
-			console.log(couche.getBounds());
+                .then(response => response.json())
+                .then(data => {
+                L.geoJSON(data).addTo(map);
+                });
+			
+			//Personnalisation de ka couche randonnees.geojson
+			const randonnees = L.geoJSON(data, {
+			style: {
+				color: "#008000",
+				weight: 3
+			},
+			onEachFeature: function(feature, layer) {
+				layer.bindPopup(
+					`<b>${feature.properties.id}</b><br>
+					 Distance : ${feature.properties.distance} km<br>
+					 Durée : ${feature.properties.dureeEstim} h`
+				);
+			}
 			});
-
         </script>
     </body>
 </html>
