@@ -22,8 +22,7 @@
             fetch('couches/randonnees.geojson')
                 .then(response => response.json())
                 .then(data => {
-                             
-				//Personnalisation de la couche randonnees.geojson
+        		//Personnalisation de la couche randonnees.geojson
 				const randonnees = L.geoJSON(data, {
 					style: {
 						color: "#008000",
