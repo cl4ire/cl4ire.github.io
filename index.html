@@ -60,16 +60,13 @@ function chargerCarburants() {
 	fetch(url)
 		.then(response => response.json())
 		.then(data => {
+			console.log("URL :", url);
+			console.log("Stations reçues :", data.results.length);
+			console.log(data.results);
 			let nbStations = 0;
 			data.results.forEach(station => {
 				if (!station.geom) return;
-				// Filtre sur l'emprise visible
-				if (
-					station.geom.lat < minLat ||
-					station.geom.lat > maxLat ||
-					station.geom.lon < minLon ||
-					station.geom.lon > maxLon
-				) {
+				{
 					return;
 				}
 				nbStations++;
