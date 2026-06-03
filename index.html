@@ -21,24 +21,30 @@
             //Ajout de la couche randonnees.geojson
             fetch('couches/randonnees.geojson')
                 .then(response => response.json())
-                .then(data => {
-                             
-				//Personnalisation de la couche randonnees.geojson
-				const randonnees = L.geoJSON(data, {
-					style: {
-						color: "#008000",
-						weight: 3
-					},
-					onEachFeature: function(feature, layer) {
-						layer.bindPopup(
-							`<b>${feature.properties.id}</b><br>
-							 Distance : ${feature.properties.distance} km<br>
-							 Durée : ${feature.properties.dureeEstim} h`
-						);
-					}
+                .then(data => {          
+					//Personnalisation de la couche randonnees.geojson
+					const randonnees = L.geoJSON(data, {
+						style: {
+							color: "#008000",
+							weight: 3
+						},
+						onEachFeature: function(feature, layer) {
+							layer.bindPopup(
+								`<b>${feature.properties.id}</b><br>
+								 Distance : ${feature.properties.distance} km<br>
+								 Durée : ${feature.properties.dureeEstim} h`
+							);
+						}
+					});
+					randonnees.addTo(map);
 				});
-				randonnees.addTo(map);
-			});
+			
+			//Ajout de la couche prix des carburants
+			fetch("https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?limit=1")
+				.then(response => response.json())
+				.then(data => {
+					console.log(data);
+				});
         </script>
     </body>
 </html>
