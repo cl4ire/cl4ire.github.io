@@ -23,21 +23,21 @@
                 .then(response => response.json())
                 .then(data => {
                 L.geoJSON(data).addTo(map);
-                });
-			
-			//Personnalisation de ka couche randonnees.geojson
-			const randonnees = L.geoJSON(data, {
-			style: {
-				color: "#008000",
-				weight: 3
-			},
-			onEachFeature: function(feature, layer) {
-				layer.bindPopup(
-					`<b>${feature.properties.id}</b><br>
-					 Distance : ${feature.properties.distance} km<br>
-					 Durée : ${feature.properties.dureeEstim} h`
-				);
-			}
+               
+				//Personnalisation de ka couche randonnees.geojson
+				const randonnees = L.geoJSON(data, {
+				style: {
+					color: "#008000",
+					weight: 3
+				},
+				onEachFeature: function(feature, layer) {
+					layer.bindPopup(
+						`<b>${feature.properties.id}</b><br>
+						 Distance : ${feature.properties.distance} km<br>
+						 Durée : ${feature.properties.dureeEstim} h`
+					);
+				}
+				});
 			});
         </script>
     </body>
