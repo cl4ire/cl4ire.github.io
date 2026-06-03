@@ -40,10 +40,33 @@
 				});
 			
 			//Ajout de la couche prix des carburants
-			fetch("https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?limit=1")
+			fetch("https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?where=code_departement='72'")
 				.then(response => response.json())
 				.then(data => {
-					console.log(data);
+					const coucheCarburants = L.layerGroup();
+					data.results.forEach(station => {
+					  if (!station.geom) return;
+					  let popup = `
+						<b>${station.ville}</b><br>
+						${station.adresse}<br><br>
+					  `;
+					  if (station.gazole_prix)
+						popup += `Gazole : ${station.gazole_prix} €/L<br>`;
+					  if (station.e10_prix)
+						popup += `E10 : ${station.e10_prix} €/L<br>`;
+					  if (station.sp95_prix)
+						popup += `SP95 : ${station.sp95_prix} €/L<br>`;
+					  if (station.sp98_prix)
+						popup += `SP98 : ${station.sp98_prix} €/L<br>`;
+					  const marker = L.marker([
+						station.geom.lat,
+						station.geom.lon
+					  ]);
+					  marker.bindPopup(popup);
+					  coucheCarburants.addLayer(marker);
+					});
+					coucheCarburants.addTo(map);
+					});
 				});
         </script>
     </body>
