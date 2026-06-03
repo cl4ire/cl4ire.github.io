@@ -43,6 +43,8 @@ fetch('couches/randonnees.geojson')
 fetch("https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?limit=100")
     .then(response => response.json())
     .then(data => {
+		const coucheCarburants = L.layerGroup();
+		
 		data.results.forEach(station => {
 			let popup = `
 				<b>${station.ville}</b><br>
@@ -61,8 +63,9 @@ fetch("https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-
 				station.geom.lon
 			])
 			.bindPopup(popup)
-			.addTo(map);
+			.addTo(coucheCarburants);
 		});
+		coucheCarburants.addTo(map);
 	});
         </script>
     </body>
