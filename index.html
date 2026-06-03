@@ -40,13 +40,13 @@ fetch('couches/randonnees.geojson')
 	});
 	
 //Ajout de la couche dvf.geojson
-fetch('couches/dvf_jupilles.geojson')
+fetch('couches/dvf.geojson')
 	.then(response => response.json())
 	.then(data => {          
 		//Personnalisation de la couche dvf.geojson
 		const dvf = L.geoJSON(data, {
 			style: {
-				color: #000000
+				color: "#000000"
 			},
 			onEachFeature: function(feature, layer) {
 				layer.bindPopup(
