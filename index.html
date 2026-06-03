@@ -52,7 +52,7 @@ function chargerCarburants() {
 	const maxLon = bounds.getEast();
 	
 	const url = `https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?geofilter.bbox=${minLon},${minLat},${maxLon},${maxLat}`;
-
+	console.log(url)
 	//Récupération des données
 	fetch(url)
 		.then(response => response.json())
