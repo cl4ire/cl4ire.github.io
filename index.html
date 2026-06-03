@@ -39,64 +39,31 @@ fetch('couches/randonnees.geojson')
 		randonnees.addTo(map);
 	});
 
-//Ajout de la couche prix des carburants
-const coucheCarburants = L.layerGroup().addTo(map);
-function chargerCarburants() {
-	// Vide les anciens marqueurs
-	coucheCarburants.clearLayers();
-	// Emprise actuelle de la carte
-	const bounds = map.getBounds();
-	const minLat = bounds.getSouth();
-	const maxLat = bounds.getNorth();
-	const minLon = bounds.getWest();
-	const maxLon = bounds.getEast();
-	
-	const url = `https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?geofilter.bbox=${minLon},${minLat},${maxLon},${maxLat}`;
-	console.log(url)
-	console.log(bounds);
-	console.log(minLon, minLat, maxLon, maxLat);
-	
-	//Récupération des données
-	fetch(url)
-		.then(response => response.json())
-		.then(data => {
-			console.log("URL :", url);
-			console.log("Stations reçues :", data.results.length);
-			console.log(data.results);
-			let nbStations = 0;
-			data.results.forEach(station => {
-				if (!station.geom) return;
-				{
-					return;
-				}
-				nbStations++;
-				let popup = `
-					<b>${station.ville}</b><br>
-					${station.adresse}<br><br>
-				`;
-				if (station.gazole_prix)
-					popup += `⛽ Gazole : ${station.gazole_prix} €/L<br>`;
-				if (station.e10_prix)
-					popup += `⛽ E10 : ${station.e10_prix} €/L<br>`;
-				if (station.sp95_prix)
-					popup += `⛽ SP95 : ${station.sp95_prix} €/L<br>`;
-				if (station.sp98_prix)
-					popup += `⛽ SP98 : ${station.sp98_prix} €/L<br>`;
-				L.marker([
-					station.geom.lat,
-					station.geom.lon
-				])
-				.bindPopup(popup)
-				.addTo(coucheCarburants);
-			});
-		}
-	)
-}
-// Chargement initial
-chargerCarburants();
-			
-// Rechargement après déplacement ou zoom
-map.on('moveend', chargerCarburants);
+// Ajout de la couche prix des carburants
+fetch("https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?limit=100")
+    .then(response => response.json())
+    .then(data => {
+		data.results.forEach(station => {
+			let popup = `
+				<b>${station.ville}</b><br>
+				${station.adresse}<br><br>
+			`;
+			if (station.gazole_prix)
+				popup += `⛽ Gazole : ${station.gazole_prix} €/L<br>`;
+			if (station.e10_prix)
+				popup += `⛽ E10 : ${station.e10_prix} €/L<br>`;
+			if (station.sp95_prix)
+				popup += `⛽ SP95 : ${station.sp95_prix} €/L<br>`;
+			if (station.sp98_prix)
+				popup += `⛽ SP98 : ${station.sp98_prix} €/L<br>`;
+			L.marker([
+				station.geom.lat,
+				station.geom.lon
+			])
+			.bindPopup(popup)
+			.addTo(coucheCarburants);
+		});
+	});
         </script>
     </body>
 </html>
