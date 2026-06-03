@@ -21,12 +21,16 @@
             }).addTo(map);
             
             //Ajout de la couche randonnees.geojson
-            //L.geoJSON(randonnees).addTo(map);
-			fetch('couches/randonnees.geojson')
+            fetch('couches/randonnees.geojson')
 			.then(response => response.json())
 			.then(data => {
-			L.geoJSON(data).addTo(map);
-  });
+			console.log(data);
+
+			const couche = L.geoJSON(data);
+			couche.addTo(map);
+			console.log(couche.getBounds());
+			});
+
         </script>
     </body>
 </html>
