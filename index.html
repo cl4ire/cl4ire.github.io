@@ -46,7 +46,7 @@ fetch('couches/dvf_jupilles.geojson')
 		//Personnalisation de la couche dvf.geojson
 		const dvf = L.geoJSON(data, {
 			style: {
-				color: red
+				color: #000000
 			},
 			onEachFeature: function(feature, layer) {
 				layer.bindPopup(
