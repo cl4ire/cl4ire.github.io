@@ -38,27 +38,29 @@
 
 ---
 
-# Structure des données
-
-```text
-couches/
-│
-├── tourisme/
-│   ├── randonnees.geojson
-│   ├── patrimoine.geojson
-│   └── hebergements.geojson
-│
-├── famille/
-│   ├── assistantes_maternelles.geojson
-│   └── creches.geojson
-│
-├── securite/
-│   └── defibrillateurs.geojson
-│
-├── habitat/
-│   └── dvf.geojson
-│
-└── services/
-    ├── mairies.geojson
-    ├── decheteries.geojson
-    └── eau.geojson
+# Évolutions futures
+## Cadastre
+- Recherche par section cadastrale
+- Recherche par numéro de parcelle
+- Zoom automatique sur la parcelle
+- Mise en surbrillance de la parcelle
+- Fond cadastral
+## Fonctionnalités
+- Contrôle des couches (L.control.layers)
+- Icônes personnalisées
+- Clustering des points
+- Recherche multicritère
+- Filtres par commune
+- Export PDF des fiches
+- Statistiques territoriales
+## Données complémentaires
+- Équipements sportifs
+- Associations
+- Transport scolaire
+- Arrêts de bus
+- Bornes électriques
+- Marchés locaux
+- Commerces
+- Producteurs locaux
+- Sentiers VTT
+- Points de vue
