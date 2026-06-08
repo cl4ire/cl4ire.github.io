@@ -19,7 +19,7 @@ attribution: '&copy; OpenStreetMap'
 }).addTo(map);
 
 //Ajout de la couche randonnees.geojson
-fetch('couches/randonnees.geojson')
+fetch('couches/tourisme/randonnees.geojson')
 	.then(response => response.json())
 	.then(data => {          
 		//Personnalisation de la couche randonnees.geojson
@@ -31,30 +31,166 @@ fetch('couches/randonnees.geojson')
 			onEachFeature: function(feature, layer) {
 				layer.bindPopup(
 					`<b>${feature.properties.id}</b><br>
-					 Distance : ${feature.properties.distance} km<br>
-					 Durée : ${feature.properties.dureeEstim} h`
+					Distance : ${feature.properties.distance} km<br>
+					Durée : ${feature.properties.dureeEstim} h`
 				);
 			}
 		});
 		randonnees.addTo(map);
 	});
-	
+
+//Personnalisation icône bal.geojson
+const balIcon = L.icon({
+	iconUrl: 'img/mailbox.png',
+	iconSize: [16, 16],
+	iconAnchor: [16, 16],
+	popupAnchor: [0, 0]
+});
+//Ajout de la couche bal.geojson
+fetch('couches/services/bal.geojson')
+	.then(response => response.json())
+	.then(data => {          
+		//Personnalisation de la couche bal.geojson
+		const bal = L.geoJSON(data, {
+			pointToLayer: function(feature, latlng) {
+				return L.marker(latlng, {
+					icon: balIcon
+				});
+			},
+			onEachFeature: function(feature, layer) {
+				layer.bindPopup(
+					`Heure de levée - Semaine : ${feature.properties.HDL_SEMAINE_EXTRA?feature.properties.HDL_SEMAINE_EXTRA.substring(1,6):'Non renseigné'}<br>
+					Heure de levée - Samedi : ${feature.properties.HDL_SAMEDI_EXTRA?feature.properties.HDL_SAMEDI_EXTRA.substring(1,6):'Non renseigné'}`
+				);
+			}
+		});
+		bal.addTo(map);
+	});
+
+//Personnalisation icône dae.geojson
+const daeIcon = L.icon({
+	iconUrl: 'img/dae.png',
+	iconSize: [16, 16],
+	iconAnchor: [16, 16],
+	popupAnchor: [0, 0]
+});
+//Ajout de la couche dae.geojson
+fetch('couches/securite/dae.geojson')
+	.then(response => response.json())
+	.then(data => {          
+		//Personnalisation de la couche dae.geojson
+		const dae = L.geoJSON(data, {
+			pointToLayer: function(feature, latlng) {
+				return L.marker(latlng, {
+					icon: daeIcon
+				});
+			},
+			//onEachFeature: function(feature, layer) {
+			//	layer.bindPopup(
+			//		`Heure de levée - Semaine : ${feature.properties.HDL_SEMAINE_EXTRA?feature.properties.HDL_SEMAINE_EXTRA.substring(1,6):'Non renseigné'}<br>
+			//		Heure de levée - Samedi : ${feature.properties.HDL_SAMEDI_EXTRA?feature.properties.HDL_SAMEDI_EXTRA.substring(1,6):'Non renseigné'}`
+			//	);
+			//}
+		});
+		dae.addTo(map);
+	});
+
+//Personnalisation icône mairie.geojson
+const mairieIcon = L.icon({
+	iconUrl: 'img/mairie.png',
+	iconSize: [16, 16],
+	iconAnchor: [16, 16],
+	popupAnchor: [0, 0]
+});
+//Ajout de la couche mairies.geojson
+fetch('couches/services/mairies.geojson')
+	.then(response => response.json())
+	.then(data => {          
+		//Personnalisation de la couche mairie.geojson
+		const mairie = L.geoJSON(data, {
+			pointToLayer: function(feature, latlng) {
+				return L.marker(latlng, {
+					icon: mairieIcon
+				});
+			},
+			//onEachFeature: function(feature, layer) {
+			//	layer.bindPopup(
+			//		`Heure de levée - Semaine : ${feature.properties.HDL_SEMAINE_EXTRA?feature.properties.HDL_SEMAINE_EXTRA.substring(1,6):'Non renseigné'}<br>
+			//		Heure de levée - Samedi : ${feature.properties.HDL_SAMEDI_EXTRA?feature.properties.HDL_SAMEDI_EXTRA.substring(1,6):'Non renseigné'}`
+			//	);
+			//}
+		});
+		mairie.addTo(map);
+	});
+
 //Ajout de la couche mutations_jupilles.geojson
-fetch('couches/mutations_jupilles.geojson')
+fetch('couches/habitat/mutations_jupilles.geojson')
 	.then(response => response.json())
 	.then(data => {          
 		//Personnalisation de la couche mutations_jupilles.geojson
 		const mutations = L.geoJSON(data, {
 			style: {
-				color: "#000000",
-				fillOpacity:.5
+				fillColor: "#3498db",
+				fillOpacity:.5,
+				weight:.2,
+				opacity:1,
+				color:"#000000"
 			},
 			onEachFeature: function(feature, layer) {
+				let popupOuverture = false;
 				layer.bindPopup(
-					`<b>${feature.properties.id}</b><br>
-					 Prix au m² : ${feature.properties.prix_m2} €<br>
-					 Valeur foncière : ${feature.properties.valeur_fon} €`
-				);
+					`
+					<h2>${feature.properties.nature_mut}</h2><br>
+					<img src="img/tag.png" height="16px"/> ${feature.properties.valeur_fon?feature.properties.valeur_fon.toLocaleString('fr-FR') + ' €':'Non renseigné'}<br>
+					<img src="img/calendar.png" height="16px"/> ${feature.properties.date_mutat?new Date(feature.properties.date_mutat).toLocaleDateString('fr-FR'):'Non renseigné'}<br>
+					<img src="img/pin.png" height="16px"/> ${[feature.properties.adresse_nu,feature.properties.adresse_su, feature.properties.adresse_no].filter(Boolean).join(' ')}<br>
+					<br>
+					<img src="img/house.png" height="16px"/> ${feature.properties.surface_re?feature.properties.surface_re.toLocaleString('fr-FR') + ' m²':'Non renseigné'}<br><br>
+					Surface sol<br>
+					<br>
+					${feature.properties.prix_m2?feature.properties.prix_m2.toLocaleString('fr-FR') + ' €/m²':'Non renseigné'}
+					`
+				),
+				layer.on('mouseover', function() {
+					if (popupOuverture) return;
+					layer.setStyle({
+						fillColor: "#2980b9",
+						fillOpacity:1,
+						weight:.2,
+						opacity:1,
+						color:"#000000"
+					});
+				}),
+				layer.on('mouseout', function() {
+					if (popupOuverture) return;
+					layer.setStyle({
+						fillColor: "#3498db",
+						fillOpacity:.5,
+						weight:.2,
+						opacity:1,
+						color:"#000000"
+					});
+				}),
+				layer.on('popupopen', function() {
+					popupOuverture = true;
+					layer.setStyle({
+						fillColor: "#2980b9",
+						fillOpacity:1,
+						weight:.2,
+						opacity:1,
+						color:"#000000"
+					});
+				}),
+				layer.on('popupclose', function() {
+					popupOuverture = false;
+					layer.setStyle({
+						fillColor: "#3498db",
+						fillOpacity:.5,
+						weight:.2,
+						opacity:1,
+						color:"#000000"
+					});
+				})
 			}
 		});
 		mutations.addTo(map);
@@ -66,8 +202,8 @@ var carburantIcone = L.icon({
 	iconSize:[24,24]
 });
 fetch("https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?limit=100&where=code_departement=72")
-    .then(response => response.json())
-    .then(data => {
+	.then(response => response.json())
+	.then(data => {
 		const coucheCarburants = L.layerGroup();
 		
 		data.results.forEach(station => {
