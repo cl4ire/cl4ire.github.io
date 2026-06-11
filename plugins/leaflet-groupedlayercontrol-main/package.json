@@ -1,0 +1,60 @@
+{
+  "name": "leaflet-groupedlayercontrol",
+  "version": "2.0.0-alpha.1",
+  "description": "A Leaflet layer control with support for grouping overlays together",
+  "type": "module",
+  "main": "dist/leaflet.groupedlayercontrol.js",
+  "module": "src/leaflet.groupedlayercontrol.js",
+  "style": "dist/leaflet.groupedlayercontrol.min.css",
+  "exports": {
+    ".": {
+      "import": "./src/leaflet.groupedlayercontrol.js",
+      "require": "./dist/leaflet.groupedlayercontrol.cjs"
+    },
+    "./dist/*.css": "./dist/*.css"
+  },
+  "files": [
+    "src",
+    "dist",
+    "README.md",
+    "LICENSE.txt"
+  ],
+  "directories": {
+    "example": "example"
+  },
+  "scripts": {
+    "format": "prettier --write \"src/**/*.{js,css}\" \"example/**/*.html\" \"scripts/**/*.js\"",
+    "format:check": "prettier --check \"src/**/*.{js,css}\" \"example/**/*.html\" \"scripts/**/*.js\"",
+    "build": "npm run build:js && npm run build:css",
+    "build:js": "node scripts/build.js",
+    "build:css": "lightningcss --minify --bundle src/leaflet.groupedlayercontrol.css -o dist/leaflet.groupedlayercontrol.min.css",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:ismyrnow/leaflet-groupedlayercontrol.git"
+  },
+  "keywords": [
+    "leaflet",
+    "overlay",
+    "groups",
+    "grouped",
+    "control",
+    "plugin"
+  ],
+  "author": "Ishmael Smyrnow",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ismyrnow/leaflet-groupedlayercontrol/issues"
+  },
+  "homepage": "https://github.com/ismyrnow/leaflet-groupedlayercontrol",
+  "peerDependencies": {
+    "leaflet": "^2.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0",
+    "leaflet": "^2.0.0-alpha.1",
+    "lightningcss-cli": "^1.28.2",
+    "prettier": "^3.8.1"
+  }
+}
