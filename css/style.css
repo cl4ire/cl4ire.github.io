@@ -1,44 +1,2272 @@
-<style>
-  body {
+/* =========================================================
+   GÉOBERCÉ — STYLE PRINCIPAL
+   ========================================================= */
+
+
+/* =========================================================
+   1. BASE
+   ========================================================= */
+html,
+body {
     margin: 0;
-  }
-  
-  #map {
-    height: 100vh;
     width: 100%;
-  }
-#search-container{
-    position:absolute;
-    top:80px;
-    left:60px;
-    z-index:1000;
-    width:350px;
+    height: 100%;
+    overflow: hidden;
+    font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+    color: #263238;
 }
 
-#search{
-    width:100%;
-    padding:10px;
-    border:none;
-    border-radius:4px;
-    box-shadow:0 2px 6px rgba(0,0,0,.3);
-    font-size:14px;
+* {
+    box-sizing: border-box;
 }
 
-#suggestions{
-    background:white;
-    border-radius:0 0 4px 4px;
-    box-shadow:0 2px 6px rgba(0,0,0,.3);
-    max-height:300px;
-    overflow-y:auto;
+/* =========================================================
+   2. BARRE SUPÉRIEURE
+   ========================================================= */
+#topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    padding: 0 22px;
+    background: rgba(255, 255, 255, 0.97);
+    border-bottom: 1px solid #edf0ee;
 }
 
-.suggestion{
-    padding:8px;
-    cursor:pointer;
+/* =========================================================
+   LOGO
+   ========================================================= */
+#brand {
+    width: 260px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-.suggestion:hover{
-    background:#f0f0f0;
+#brand-icon {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 13px;
+    background: #edf5ef;
+    font-size: 21px;
 }
 
-  </style>
+#brand-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+}
+
+#brand-subtitle {
+    margin-top: 2px;
+    color: #7b8589;
+    font-size: 11px;
+}
+
+/* =========================================================
+   3. RECHERCHE
+   ========================================================= */
+#search-container {
+    position: relative;
+    width: 445px;
+    margin: 0 auto;
+}
+
+#search {
+    width: 100%;
+    height: 44px;
+    padding: 0 18px 0 43px;
+    border: 1px solid #e2e7e5;
+    border-radius: 10px;
+    outline: none;
+    background: #fafbfa;
+    font-size: 13px;
+    color: #263238;
+}
+
+#search:focus {
+    border-color: #b9cbc1;
+    background: white;
+}
+
+#search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8a9497;
+    z-index: 2;
+}
+
+/* =========================================================
+   SUGGESTIONS ADRESSES
+   ========================================================= */
+#suggestions {
+    position: absolute;
+    top: 49px;
+    left: 0;
+    right: 0;
+    z-index: 3000;
+    background: white;
+    border-radius: 0 0 10px 10px;
+    box-shadow:
+        0 8px 25px rgba(30, 50, 40, 0.15);
+    overflow: hidden;
+}
+
+.suggestion {
+    padding: 11px 14px;
+    cursor: pointer;
+    font-size: 12px;
+    color: #465257;
+    border-bottom: 1px solid #f0f2f1;
+}
+
+.suggestion:hover {
+    background: #f3f7f4;
+}
+
+/* =========================================================
+   4. ACTIONS TOPBAR
+   ========================================================= */
+#topbar-actions {
+    width: 260px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 18px;
+}
+
+#topbar-actions button {
+    border: none;
+    background: transparent;
+    color: #566267;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+#menu-button {
+    font-size: 20px !important;
+}
+
+/* =========================================================
+   5. APPLICATION
+   ========================================================= */
+#app {
+    position: fixed;
+    top: 80px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+/* =========================================================
+   6. CARTE
+   ========================================================= */
+#map {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* =========================================================
+   7. PANNEAU COUCHES
+   ========================================================= */
+#layers-panel {
+    position: absolute;
+    box-sizing: border-box;
+    top: 14px;
+    left: 14px;
+    bottom: 14px;
+    width: 285px;
+    z-index: 1200;
+
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+
+    background: rgba(255, 255, 255, 0.97);
+    border-radius: 14px;
+    box-shadow:
+        0 8px 30px rgba(30, 50, 40, 0.13);
+}
+
+
+/* =========================================================
+   HEADER COUCHES
+   ========================================================= */
+.panel-header {
+    height: 60px;
+    min-height: 60px;
+    flex: 0 0 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 17px;
+    border-bottom: 1px solid #edf0ef;
+}
+
+.panel-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.panel-icon {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    background: #edf5ef;
+    color: #4e8063;
+}
+
+.panel-close {
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: transparent;
+    color: #879094;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.panel-close:hover {
+    background: #f1f4f2;
+    border-radius: 8px;
+}
+
+/* =========================================================
+   8. RECHERCHE DES COUCHES
+   ========================================================= */
+#layers-search {
+    box-sizing: border-box;
+    max-width: 100%;
+    flex: 0 0 36px;
+    margin: 12px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 11px;
+    border: 1px solid #e4e9e7;
+    border-radius: 9px;
+    background: #fafbfa;
+    color: #9aa2a4;
+}
+
+#layers-search input {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 12px;
+    color: #3c474b;
+}
+
+/* =========================================================
+   9. ARBRE
+   ========================================================= */
+#layers-tree {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding: 0 9px 18px;
+
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+#layers-tree::-webkit-scrollbar {
+    width: 5px;
+}
+
+#layers-tree::-webkit-scrollbar-thumb {
+    background: #dce3df;
+    border-radius: 5px;
+}
+
+#layers-tree::-webkit-scrollbar-thumb:hover {
+    background: #c8d2cd;
+}
+
+/* =========================================================
+   GROUPES
+   ========================================================= */
+.layer-group {
+    margin-bottom: 5px;
+    flex: 0 0 auto;
+}
+
+.layer-group-header {
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 8px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.layer-group-header:hover {
+    background: #f5f8f6;
+}
+
+.layer-group-name {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: #354146;
+}
+
+.layer-group-icon {
+    width: 31px;
+    height: 31px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    background: #f0f4f2;
+    font-size: 15px;
+}
+
+/* =========================================================
+   ACTIONS GROUPE
+   ========================================================= */
+.layer-group-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.group-expand {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #7e898d;
+    cursor: pointer;
+    font-size: 15px;
+    transition:
+        transform 0.2s ease;
+}
+
+/* =========================================================
+   SOUS-LISTE
+   ========================================================= */
+.layer-sublist {
+    padding: 5px 8px;
+    max-height: 1000px;
+    overflow: hidden;
+    transition:
+        max-height 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.layer-group.collapsed
+.layer-sublist {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    opacity: 0;
+}
+
+.layer-group.collapsed
+.group-expand {
+    transform: rotate(-90deg);
+}
+
+/* =========================================================
+   SOUS-COUCHE
+   ========================================================= */
+.layer-subitem {
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 5px 7px;
+    border-radius: 7px;
+    cursor: pointer;
+    color: #687477;
+    font-size: 12px;
+}
+
+.layer-subitem:hover {
+    background: #f4f7f5;
+    color: #364247;
+}
+
+.layer-subitem input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.layer-checkbox {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    border: 1px solid #cbd5d1;
+    border-radius: 5px;
+    background: white;
+    position: relative;
+}
+
+.layer-subitem
+input:checked
++
+.layer-checkbox {
+    background: #4e9a77;
+    border-color: #4e9a77;
+}
+
+.layer-subitem
+input:checked
++
+.layer-checkbox::after {
+    content: "✓";
+    position: absolute;
+    left: 2px;
+    top: -1px;
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   10. FICHE D'INFORMATION
+   ========================================================= */
+#info-panel {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    bottom: 14px;
+    width: 430px;
+    z-index: 1300;
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 16px;
+    box-shadow:
+        0 8px 35px rgba(30, 50, 40, 0.17);
+    overflow-y: auto;
+    transform:
+        translateX(calc(100% + 30px));
+    transition:
+        transform 0.25s ease;
+}
+#info-panel.open {
+    transform:
+        translateX(0);
+}
+
+#info-panel::-webkit-scrollbar {
+    width: 5px;
+}
+
+#info-panel::-webkit-scrollbar-thumb {
+    background: #dce3df;
+    border-radius: 5px;
+}
+
+.info-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 10;
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.12);
+    font-size: 21px;
+    color: #4e585c;
+    cursor: pointer;
+}
+
+.info-close:hover {
+    background: #f2f4f3;
+}
+
+
+/* =========================================================
+   11. CONTENU FICHE
+   ========================================================= */
+.info-header {
+    padding: 28px 24px 20px;
+}
+
+.info-type {
+    margin-bottom: 6px;
+    color: #4d895e;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-title {
+    font-size: 23px;
+    font-weight: 700;
+    line-height: 1.15;
+    color: #293438;
+}
+
+.info-subtitle {
+    margin-top: 6px;
+    color: #687477;
+    font-size: 13px;
+}
+
+
+.info-image {
+    display: block;
+    width: 100%;
+    height: 245px;
+    object-fit: cover;
+}
+
+.info-body {
+    padding: 0px 24px 30px;
+}
+
+
+.info-section {
+
+    margin-bottom: 25px;
+
+}
+
+
+.info-section-title {
+
+    margin-bottom: 10px;
+
+    color: #354146;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+}
+
+
+.info-row {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: flex-start;
+
+    gap: 20px;
+
+    padding: 9px 0;
+
+    border-bottom: 1px solid #edf0ef;
+
+    font-size: 13px;
+
+}
+
+
+.info-label {
+
+    color: #778185;
+
+}
+
+
+.info-value {
+
+    color: #354146;
+
+    font-weight: 500;
+
+    text-align: right;
+
+}
+
+
+.info-description {
+
+    color: #5e696d;
+
+    font-size: 13px;
+
+    line-height: 1.6;
+
+}
+
+
+.info-button {
+
+    width: 100%;
+
+    height: 43px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background: #3f8050;
+
+    color: white;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+}
+
+
+.info-button:hover {
+
+    background: #347044;
+
+}
+
+
+/* =========================================================
+   12. ICÔNES DES POINTS
+   ========================================================= */
+
+.geo-marker {
+
+    background: transparent;
+
+    border: none;
+
+}
+
+
+.geo-marker-icon {
+
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    box-sizing: border-box;
+
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, 0.96);
+
+    border: 2px solid white;
+
+    box-shadow:
+        0 2px 7px rgba(0, 0, 0, 0.22);
+
+    font-size: 16px;
+
+}
+
+
+.geo-marker-icon span {
+
+    line-height: 1;
+
+}
+
+
+.geo-marker-mairie {
+    color: #536b78;
+}
+
+.geo-marker-bal {
+    color: #8a6a3d;
+}
+
+.geo-marker-dae {
+    color: #c0392b;
+}
+
+.geo-marker-carburant {
+    color: #d27a24;
+}
+
+.geo-marker-petite-enfance {
+    color: #b45f8a;
+}
+
+.geo-marker-education {
+    color: #4c72a4;
+}
+
+.geo-marker-transport {
+    color: #3f8064;
+}
+
+
+/* =========================================================
+   13. TABLEAUX DES MUTATIONS
+   ========================================================= */
+
+.geo-popup-table-wrapper {
+
+    margin-top: 8px;
+
+    margin-bottom: 10px;
+
+    overflow-x: auto;
+
+    border: 1px solid #edf0f0;
+
+    border-radius: 8px;
+
+}
+
+
+.geo-popup-table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+    font-size: 11px;
+
+}
+
+
+.geo-popup-table th {
+
+    padding: 7px 8px;
+
+    background: #f6f8f8;
+
+    color: #707c81;
+
+    font-size: 10px;
+
+    font-weight: 650;
+
+    text-align: left;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.3px;
+
+}
+
+
+.geo-popup-table td {
+
+    padding: 7px 8px;
+
+    border-top: 1px solid #edf0f0;
+
+    color: #536167;
+
+    line-height: 1.35;
+
+}
+
+
+.geo-popup-table td:last-child {
+
+    text-align: right;
+
+    white-space: nowrap;
+
+}
+
+
+/* =========================================================
+   14. RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1000px) {
+
+    #brand {
+
+        width: auto;
+
+    }
+
+
+    #brand-subtitle {
+
+        display: none;
+
+    }
+
+
+    #search-container {
+
+        width: 350px;
+
+    }
+
+
+    #topbar-actions {
+
+        width: auto;
+
+    }
+
+
+    #about-button {
+
+        display: none;
+
+    }
+
+}
+
+
+@media (max-width: 750px) {
+
+    #brand {
+
+        width: 45px;
+
+    }
+
+
+    #brand > div:last-child {
+
+        display: none;
+
+    }
+
+
+    #search-container {
+
+        width: auto;
+
+        flex: 1;
+
+        margin: 0 10px;
+
+    }
+
+
+    #layers-panel {
+
+        left: 8px;
+        top: 8px;
+        bottom: 8px;
+
+        width: 285px;
+
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+
+    }
+
+
+    #info-panel {
+
+        left: 8px;
+        right: 8px;
+
+        width: auto;
+
+        top: 8px;
+        bottom: 8px;
+
+    }
+
+}
+
+/* =========================================================
+   POPUPS LEAFLET — GÉOBERCÉ
+   ========================================================= */
+
+.leaflet-popup-content-wrapper {
+
+    padding: 0;
+
+    border-radius: 14px;
+
+    overflow: hidden;
+
+    box-shadow:
+        0 8px 30px rgba(30, 50, 40, 0.16);
+
+}
+
+
+.leaflet-popup-content {
+
+    margin: 0;
+
+    width: 320px !important;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+
+}
+
+
+.leaflet-popup-tip {
+
+    box-shadow:
+        2px 2px 5px rgba(30, 50, 40, 0.08);
+
+}
+
+
+/* =========================================================
+   CONTENU DU POPUP
+   ========================================================= */
+
+.geo-popup {
+
+    color: #354146;
+
+}
+
+
+/* =========================================================
+   EN-TÊTE
+   ========================================================= */
+
+.geo-popup-header {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 16px 18px;
+
+    background: #f4f7f5;
+
+    border-bottom: 1px solid #e7ece9;
+
+}
+
+
+.geo-popup-icon {
+
+    width: 38px;
+    height: 38px;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10px;
+
+    background: #e2eee6;
+
+    font-size: 19px;
+
+}
+
+
+.geo-popup-title {
+
+    color: #293438;
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+    line-height: 1.25;
+
+}
+
+
+.geo-popup-subtitle {
+
+    margin-top: 3px;
+
+    color: #7a8588;
+
+    font-size: 11px;
+
+}
+
+
+/* =========================================================
+   CORPS
+   ========================================================= */
+
+.geo-popup-body {
+
+    padding: 15px 18px 18px;
+
+}
+
+
+/* =========================================================
+   INFORMATIONS
+   ========================================================= */
+
+.geo-popup-info {
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 10px;
+
+    padding: 7px 0;
+
+}
+
+
+.geo-popup-info-icon {
+
+    width: 24px;
+
+    flex-shrink: 0;
+
+    color: #668274;
+
+    font-size: 15px;
+
+    text-align: center;
+
+}
+
+
+.geo-popup-label {
+
+    margin-bottom: 2px;
+
+    color: #899296;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.3px;
+
+}
+
+
+.geo-popup-value {
+
+    color: #3d494e;
+
+    font-size: 13px;
+
+    line-height: 1.4;
+
+}
+
+
+/* =========================================================
+   SECTIONS
+   ========================================================= */
+
+.geo-popup-section {
+
+    margin-top: 13px;
+
+    padding-top: 13px;
+
+    border-top: 1px solid #edf0ef;
+
+}
+
+
+.geo-popup-section-title {
+
+    margin-bottom: 7px;
+
+    color: #354146;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.4px;
+
+}
+
+
+/* =========================================================
+   LIENS
+   ========================================================= */
+
+.geo-popup a {
+
+    color: #3f8050;
+
+    text-decoration: none;
+
+    font-weight: 500;
+
+}
+
+
+.geo-popup a:hover {
+
+    text-decoration: underline;
+
+}
+
+
+/* =========================================================
+   BOUTONS
+   ========================================================= */
+
+.geo-popup-action {
+
+    width: 100%;
+
+    min-height: 38px;
+
+    margin-top: 12px;
+
+    padding: 8px 12px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background: #3f8050;
+
+    color: white;
+
+    font-family: inherit;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+}
+
+
+.geo-popup-action:hover {
+
+    background: #347044;
+
+}
+
+
+/* =========================================================
+   TABLEAUX — MUTATIONS
+   ========================================================= */
+
+.geo-popup-table-wrapper {
+
+    margin-top: 8px;
+
+    margin-bottom: 10px;
+
+    overflow-x: auto;
+
+    border: 1px solid #edf0f0;
+
+    border-radius: 8px;
+
+}
+
+
+.geo-popup-table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+    font-size: 11px;
+
+}
+
+
+.geo-popup-table th {
+
+    padding: 7px 8px;
+
+    background: #f6f8f8;
+
+    color: #707c81;
+
+    font-size: 10px;
+
+    font-weight: 650;
+
+    text-align: left;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.3px;
+
+}
+
+
+.geo-popup-table td {
+
+    padding: 7px 8px;
+
+    border-top: 1px solid #edf0f0;
+
+    color: #536167;
+
+    line-height: 1.35;
+
+}
+
+
+.geo-popup-table td:last-child {
+
+    text-align: right;
+
+    white-space: nowrap;
+
+}
+
+
+/* =========================================================
+   ESPACEMENT FINAL DES POPUPS
+   ========================================================= */
+
+.geo-popup-body > :last-child {
+
+    margin-bottom: 4px;
+
+}
+
+/* =========================================================
+   PRIX DES CARBURANTS
+   ========================================================= */
+
+.geo-popup-prices {
+    padding-top: 2px;
+}
+
+
+.geo-popup-price {
+    padding: 7px 0;
+
+    border-bottom: 1px solid #edf0f0;
+}
+
+
+.geo-popup-price:last-child {
+    border-bottom: none;
+}
+
+
+.geo-popup-price-main {
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+}
+
+
+.geo-popup-price-icon {
+    font-size: 14px;
+
+    width: 20px;
+}
+
+
+.geo-popup-price-name {
+    flex: 1;
+
+    font-size: 12px;
+
+    color: #536167;
+}
+
+
+.geo-popup-price-value {
+    font-size: 12px;
+
+    font-weight: 650;
+
+    color: #344247;
+}
+
+
+.geo-popup-price-date {
+    margin-left: 27px;
+
+    margin-top: 2px;
+
+    font-size: 10px;
+
+    color: #9aa4a8;
+}
+
+/* =========================================================
+   CARBURANT INDISPONIBLE
+   ========================================================= */
+
+.geo-popup-price-unavailable {
+    margin-left: auto;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    color: #c66b6b;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   DATE DE MISE À JOUR
+   ========================================================= */
+
+.fuel-update {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin-top: 14px;
+
+    padding-top: 11px;
+
+    border-top: 1px solid #edf0ef;
+
+    color: #8a9598;
+
+    font-size: 10px;
+
+    line-height: 1.4;
+
+}
+
+
+.fuel-update-icon {
+
+    font-size: 13px;
+
+}
+
+
+.fuel-update strong {
+
+    color: #697578;
+
+    font-weight: 600;
+
+}
+
+/* =========================================================
+   FICHE DAE
+   ========================================================= */
+
+.dae-photo {
+    width: 100%;
+    height: 170px;
+    margin-bottom: 18px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f1f4f3;
+}
+
+.dae-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+
+/* Badges */
+
+.dae-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 12px 0 20px;
+}
+
+.dae-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.dae-badge-success {
+    color: #28734d;
+    background: #e9f6ef;
+}
+
+.dae-badge-access {
+    color: #496b7a;
+    background: #edf4f7;
+}
+
+.dae-badge-neutral {
+    color: #687276;
+    background: #f0f2f2;
+}
+
+
+/* Bouton itinéraire */
+
+.dae-action {
+    margin-top: 18px;
+}
+
+.dae-itineraire {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    width: 100%;
+    box-sizing: border-box;
+
+    padding: 10px 12px;
+
+    border-radius: 9px;
+
+    background: #edf5f0;
+    color: #3f8566;
+
+    text-decoration: none;
+
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.dae-itineraire:hover {
+    background: #e1eee7;
+    text-decoration: none;
+}
+
+/* =========================================================
+   ENCADRÉ ARRÊT CARDIAQUE
+   ========================================================= */
+
+.dae-emergency {
+    margin-top: 20px;
+    padding: 14px;
+
+    border-radius: 12px;
+
+    background: #fff5f5;
+    border: 1px solid #f3dada;
+}
+
+
+.dae-emergency-title {
+    margin-bottom: 12px;
+
+    color: #b64040;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+.dae-emergency-content {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+
+.dae-emergency-step {
+    display: flex;
+    align-items: flex-start;
+
+    gap: 9px;
+
+    color: #4d5557;
+
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+
+.dae-emergency-step > span:first-child {
+    flex: 0 0 18px;
+
+    font-size: 14px;
+}
+
+/* =========================================================
+   FICHE BOÎTE AUX LETTRES
+   ========================================================= */
+
+.bal-info {
+    margin-top: 16px;
+    padding: 12px;
+
+    border-radius: 10px;
+
+    background: #f5f7f7;
+    border: 1px solid #e5e9e8;
+}
+
+
+.bal-info-title {
+    margin-bottom: 5px;
+
+    color: #52615f;
+
+    font-size: 11px;
+    font-weight: 700;
+}
+
+
+.bal-info-text {
+    color: #697573;
+
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+
+.bal-action {
+    margin-top: 18px;
+}
+
+
+.bal-itineraire {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    width: 100%;
+    box-sizing: border-box;
+
+    padding: 10px 12px;
+
+    border-radius: 9px;
+
+    background: #edf5f0;
+    color: #3f8566;
+
+    text-decoration: none;
+
+    font-size: 12px;
+    font-weight: 600;
+}
+
+
+.bal-itineraire:hover {
+    background: #e1eee7;
+    text-decoration: none;
+}
+
+/* =========================================================
+   FICHE CARBURANT
+   ========================================================= */
+
+.carburant-row {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    padding: 9px 0;
+
+    border-bottom: 1px solid #edf0f0;
+
+    font-size: 11px;
+}
+
+
+.carburant-row:last-child {
+    border-bottom: 0;
+}
+
+
+.carburant-nom {
+    color: #536167;
+
+    font-weight: 500;
+}
+
+
+.carburant-valeur {
+    font-weight: 700;
+
+    text-align: right;
+}
+
+
+.carburant-disponible {
+    color: #3f8566;
+}
+
+
+.carburant-rupture {
+    color: #c47b35;
+
+    font-size: 10px;
+}
+
+
+.carburant-indisponible {
+    color: #b75252;
+
+    font-size: 10px;
+}
+
+
+.carburant-inconnu {
+    color: #899294;
+
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   AUTOMATE
+   ========================================================= */
+
+.carburant-automate {
+    margin-top: 10px;
+
+    padding: 8px 10px;
+
+    border-radius: 8px;
+
+    background: #edf5f0;
+
+    color: #3f8566;
+
+    font-size: 10px;
+
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   ALERTE RUPTURE
+   ========================================================= */
+
+.carburant-alert {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 6px;
+
+    margin-top: 16px;
+
+    padding: 11px 12px;
+
+    border-radius: 10px;
+
+    background: #fff7ed;
+
+    border: 1px solid #f3dfc7;
+
+    color: #765d43;
+
+    font-size: 10px;
+
+    line-height: 1.4;
+}
+
+
+.carburant-alert-title {
+    color: #a66a2b;
+
+    font-size: 11px;
+
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   ITINÉRAIRE
+   ========================================================= */
+
+.carburant-action {
+    margin-top: 18px;
+}
+
+
+.carburant-itineraire {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+    padding: 10px 12px;
+
+    border-radius: 9px;
+
+    background: #edf5f0;
+
+    color: #3f8566;
+
+    text-decoration: none;
+
+    font-size: 12px;
+
+    font-weight: 600;
+}
+
+
+.carburant-itineraire:hover {
+    background: #e1eee7;
+
+    text-decoration: none;
+}
+/* =========================================================
+   MISE À JOUR CARBURANTS
+   ========================================================= */
+
+.carburant-update {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    margin-top: 0px;
+    margin-bottom : 16px;
+    padding: 10px 12px;
+
+    border-radius: 9px;
+
+    background: #f5f7f7;
+
+    color: #7a8589;
+    font-size: 10px;
+}
+
+
+.carburant-update strong {
+    color: #536167;
+
+    font-size: 11px;
+
+    font-weight: 600;
+}
+/* =========================================================
+   HORAIRES STATION-SERVICE
+   ========================================================= */
+
+.carburant-horaires {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    gap: 0 24px;
+
+    margin-top: 8px;
+
+    padding: 12px;
+
+    border: 1px solid #e5ebe7;
+    border-radius: 10px;
+
+    background: #fff;
+}
+
+
+.carburant-jour {
+    display: grid;
+    grid-template-columns: 82px 1fr;
+
+    align-items: start;
+
+    padding: 9px 0;
+
+    border-bottom: 1px dashed #e1e6e3;
+
+    font-size: 11px;
+}
+
+
+.carburant-jour:nth-last-child(-n + 2) {
+    border-bottom: none;
+}
+
+
+.carburant-jour-nom {
+    color: #28734d;
+
+    font-weight: 700;
+}
+
+
+.carburant-jour-horaires {
+    color: #536167;
+
+    line-height: 1.6;
+}
+
+
+.carburant-ferme {
+    display: inline-block;
+
+    padding: 4px 8px;
+
+    border-radius: 6px;
+
+    background: #f1f3f3;
+
+    color: #687276;
+
+    font-size: 10px;
+
+    font-weight: 600;
+}
+
+
+/* Automate */
+
+.carburant-automate {
+    margin-top: 10px;
+    padding: 8px 10px;
+
+    border: 1px solid #dcecdf;
+    border-radius: 8px;
+
+    background: #f2f9f4;
+
+    color: #28734d;
+
+    font-size: 10px;
+    font-weight: 600;
+}
+/* =========================================================
+   FICHE ARRÊT ALEOP
+   ========================================================= */
+
+.aleop-badge {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 5px;
+
+    margin-top: 10px;
+
+    padding: 6px 9px;
+
+    border-radius: 20px;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    width: fit-content;
+}
+
+
+.aleop-badge-success {
+    color: #28734d;
+
+    background: #e9f6ef;
+}
+
+
+.aleop-badge-warning {
+    color: #a86b32;
+
+    background: #fff4e7;
+}
+
+
+.aleop-badge-neutral {
+    color: #687276;
+
+    background: #f0f2f2;
+}
+
+
+/* =========================================================
+   ENCADRÉ INFORMATION
+   ========================================================= */
+
+.aleop-info {
+    margin-top: 16px;
+
+    padding: 11px 12px;
+
+    border-radius: 10px;
+
+    background: #f3f7f5;
+
+    border: 1px solid #e1eae5;
+}
+
+
+.aleop-info-title {
+    margin-bottom: 5px;
+
+    color: #3f7059;
+
+    font-size: 11px;
+
+    font-weight: 700;
+}
+
+
+.aleop-info-text {
+    color: #697573;
+
+    font-size: 10px;
+
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   ITINÉRAIRE
+   ========================================================= */
+
+.aleop-action {
+    margin-top: 18px;
+}
+
+
+.aleop-itineraire {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+    padding: 10px 12px;
+
+    border-radius: 9px;
+
+    background: #edf5f0;
+
+    color: #3f8566;
+
+    text-decoration: none;
+
+    font-size: 12px;
+
+    font-weight: 600;
+}
+
+
+.aleop-itineraire:hover {
+    background: #e1eee7;
+
+    text-decoration: none;
+}
+/* =========================================================
+   LIEN SITE ALEOP
+   ========================================================= */
+
+.aleop-info-link {
+    display: inline-flex;
+
+    align-items: center;
+
+    margin-top: 10px;
+
+    color: #28734d;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    text-decoration: none;
+}
+
+
+.aleop-info-link:hover {
+    text-decoration: underline;
+}
+
+/* =========================================================
+   COULEUR DE LA LIGNE ALEOP
+   ========================================================= */
+
+.aleop-line-color {
+    width: 100%;
+    height: 5px;
+
+    margin-top: 12px;
+
+    border-radius: 5px;
+}
+
+/* =========================================================
+   VIGIEAU — BLOCS DE RESTRICTIONS
+   ========================================================= */
+
+.vigieau-eau {
+    margin-bottom: 12px;
+
+    padding: 0;
+
+    border: 1px solid #e1eae5;
+
+    border-left: 4px solid #aeb8b4;
+
+    border-radius: 9px;
+
+    background: #f8faf9;
+
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   COULEUR SELON LE NIVEAU
+   ========================================================= */
+
+.vigieau-eau.niveau-vigilance {
+    border-left-color: #27ae60;
+}
+
+
+.vigieau-eau.niveau-alerte {
+    border-left-color: #f1c40f;
+}
+
+
+.vigieau-eau.niveau-alerte_renforcee {
+    border-left-color: #e67e22;
+}
+
+
+.vigieau-eau.niveau-crise {
+    border-left-color: #e74c3c;
+}
+
+
+/* =========================================================
+   EN-TÊTE DU TYPE D'EAU
+   ========================================================= */
+
+.vigieau-eau-title {
+    display: flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    padding: 10px 11px;
+
+    background: #f8faf9;
+}
+
+
+.vigieau-eau-title > span {
+    font-size: 17px;
+}
+
+
+.vigieau-eau-title strong {
+    display: block;
+
+    color: #46565a;
+
+    font-size: 11px;
+}
+
+
+.vigieau-eau-niveau {
+    display: inline-block;
+
+    margin-top: 3px;
+
+    font-size: 9px;
+
+    font-weight: 700;
+}
+
+
+/* Couleurs du texte du niveau */
+
+.vigieau-eau-niveau.niveau-vigilance {
+    color: #28734d;
+}
+
+
+.vigieau-eau-niveau.niveau-alerte {
+    color: #a56a00;
+}
+
+
+.vigieau-eau-niveau.niveau-alerte_renforcee {
+    color: #b85d16;
+}
+
+
+.vigieau-eau-niveau.niveau-crise {
+    color: #b33a30;
+}
+
+
+/* =========================================================
+   USAGES DÉROULANTS
+   ========================================================= */
+
+.vigieau-usages {
+    padding: 0 10px 6px;
+}
+
+
+.vigieau-usage {
+    border-top: 1px dashed #dce4df;
+}
+
+
+.vigieau-usage-button {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    width: 100%;
+
+    padding: 9px 2px;
+
+    border: none;
+
+    background: transparent;
+
+    color: #46565a;
+
+    font-family: inherit;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    text-align: left;
+
+    cursor: pointer;
+}
+
+
+.vigieau-usage-button:hover {
+    color: #28734d;
+}
+
+
+.vigieau-usage-chevron {
+    margin-left: 10px;
+
+    color: #7c8885;
+
+    font-size: 11px;
+
+    transition:
+        transform 0.2s ease;
+}
+
+
+/* =========================================================
+   EXPLICATION CACHÉE
+   ========================================================= */
+
+.vigieau-usage-description {
+    display: none;
+
+    padding: 0 2px 10px;
+
+    color: #697573;
+
+    font-size: 10px;
+
+    line-height: 1.5;
+}
+
+
+/* Ouvert */
+
+.vigieau-usage-description.open {
+    display: block;
+}
+
+
+.vigieau-usage-button:has(
+    + .vigieau-usage-description.open
+) .vigieau-usage-chevron {
+    transform: rotate(180deg);
+}
+
+/* =========================================================
+   CONTRÔLE DE ZOOM — UN SEUL CONTRÔLE PERSONNALISÉ
+   ========================================================= */
+
+/*
+ * map.js désactive le contrôle Leaflet par défaut avec
+ * zoomControl: false et ajoute le contrôle en haut à droite.
+ * Ces règles évitent également qu'un ancien contrôle soit
+ * visuellement superposé au panneau.
+ */
+
+.leaflet-control-zoom {
+    z-index: 900 !important;
+}
+
+.leaflet-top.leaflet-left .leaflet-control-zoom {
+    display: none;
+}
+
+.leaflet-top.leaflet-right .leaflet-control-zoom {
+    display: block;
+}
