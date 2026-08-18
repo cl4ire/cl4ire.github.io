@@ -624,12 +624,6 @@ async function ouvrirFicheVigieau(
                 ${nom}
             </div>
 
-
-            <div class="info-subtitle">
-                Sécheresse
-            </div>
-
-
             <div
                 class="
                     vigieau-level
@@ -784,11 +778,6 @@ async function ouvrirFicheVigieau(
 
             <div class="info-title">
                 ${nom}
-            </div>
-
-
-            <div class="info-subtitle">
-                Sécheresse
             </div>
 
 

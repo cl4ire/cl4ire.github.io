@@ -2270,3 +2270,399 @@ input:checked
 .leaflet-top.leaflet-right .leaflet-control-zoom {
     display: block;
 }
+
+
+
+/* =========================================================
+   SECTIONS
+   ========================================================= */
+
+.mairie-section {
+    margin-bottom: 18px;
+}
+
+
+.mairie-section:last-child {
+    margin-bottom: 0;
+}
+
+
+.mairie-section-title {
+    margin-bottom: 8px;
+
+    color: #354146;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.4px;
+}
+
+
+/* =========================================================
+   CONTACT
+   ========================================================= */
+
+.mairie-contact {
+    border-top: 1px solid #edf0ef;
+}
+
+
+.mairie-contact-ligne {
+    display: grid;
+
+    grid-template-columns: 22px 1fr auto;
+
+    align-items: center;
+
+    gap: 7px;
+
+    min-height: 34px;
+
+    border-bottom: 1px solid #edf0ef;
+
+    font-size: 12px;
+}
+
+
+.mairie-contact-icon {
+    text-align: center;
+
+    font-size: 14px;
+}
+
+
+.mairie-contact-label {
+    color: #7a8588;
+}
+
+
+.mairie-contact-value,
+.mairie-contact-action {
+    color: #3f8050;
+
+    text-align: right;
+
+    font-weight: 500;
+
+    text-decoration: none;
+
+    overflow-wrap: anywhere;
+}
+
+
+.mairie-contact-value:hover,
+.mairie-contact-action:hover {
+    text-decoration: underline;
+}
+
+
+/* =========================================================
+   HORAIRES
+   ========================================================= */
+
+.mairie-horaires {
+    border-top: 1px solid #edf0ef;
+}
+
+
+.mairie-horaire-ligne {
+    display: grid;
+
+    grid-template-columns: 85px 1fr;
+
+    gap: 8px;
+
+    padding: 6px 0;
+
+    border-bottom: 1px solid #edf0ef;
+
+    color: #59666b;
+
+    font-size: 12px;
+
+    line-height: 1.35;
+}
+
+
+.mairie-horaire-jour {
+    color: #354146;
+
+    font-weight: 600;
+}
+
+
+.mairie-horaire-heures {
+    text-align: right;
+}
+
+
+.mairie-no-data {
+    padding: 8px 0;
+
+    color: #8a9498;
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   CONSEIL MUNICIPAL — DÉROULANT
+   ========================================================= */
+
+.mairie-elus-toggle {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    width: 100%;
+
+    padding: 11px 0;
+
+    border: 0;
+
+    border-top: 1px solid #edf0ef;
+
+    background: transparent;
+
+    color: #354146;
+
+    font-family: inherit;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    text-align: left;
+
+    cursor: pointer;
+}
+
+
+.mairie-elus-toggle-icon {
+    margin-right: 5px;
+}
+
+
+.mairie-elus-chevron {
+    color: #7b878a;
+
+    transition:
+        transform 0.2s ease;
+}
+
+
+.mairie-section-elus.open
+.mairie-elus-chevron {
+    transform:
+        rotate(180deg);
+}
+
+
+.mairie-elus-content {
+    display: none;
+
+    padding-top: 2px;
+}
+
+
+.mairie-section-elus.open
+.mairie-elus-content {
+    display: block;
+}
+
+
+/* =========================================================
+   ÉLUS
+   ========================================================= */
+
+.mairie-elu {
+    padding: 7px 0;
+
+    border-bottom: 1px solid #edf0ef;
+}
+
+
+.mairie-elu:last-child {
+    border-bottom: none;
+}
+
+
+.mairie-elu-nom {
+    color: #354146;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    line-height: 1.35;
+}
+
+
+.mairie-elu-fonction {
+    margin-top: 2px;
+
+    color: #7b878a;
+
+    font-size: 10px;
+
+    line-height: 1.35;
+}
+
+
+.mairie-fonction-maire {
+    padding-left: 8px;
+
+    border-left: 3px solid #4d895e;
+}
+
+
+.mairie-fonction-adjoint {
+    padding-left: 8px;
+
+    border-left: 3px solid #d3a04b;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .mairie-horaire-ligne {
+        grid-template-columns: 78px 1fr;
+    }
+
+    .mairie-contact-ligne {
+        grid-template-columns: 22px 1fr auto;
+    }
+
+}
+
+/* =========================================================
+   FICHES — FAMILLE
+   ========================================================= */
+
+.famille-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 12px;
+}
+
+
+.famille-badge {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+
+    padding: 6px 10px;
+
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+
+.famille-badge-assistant {
+    background: #f7eaf1;
+    color: #9a4f76;
+    margin-top:12px;
+}
+
+
+.famille-badge-creche {
+    background: #eaf4ed;
+    color: #397554;
+    margin-top:12px;
+}
+
+
+.famille-badge-relais {
+    background: #edf3f7;
+    color: #4d7182;
+    margin-top:12px;
+}
+
+
+.famille-badge-education {
+    background: #edf2fa;
+    color: #4c72a4;
+}
+
+
+.famille-badge-public {
+    background: #eaf4ed;
+    color: #397554;
+}
+
+
+.famille-badge-prive {
+    background: #f8eee7;
+    color: #9a6746;
+}
+
+
+.famille-badge-neutral {
+    background: #f0f2f2;
+    color: #687276;
+}
+
+
+/* =========================================================
+   LIENS FAMILLE
+   ========================================================= */
+
+.famille-link {
+    color: #3f8050;
+    text-decoration: none;
+}
+
+
+.famille-link:hover {
+    text-decoration: underline;
+}
+
+
+/* =========================================================
+   BOUTON / LIEN FICHE CAF
+   ========================================================= */
+
+.famille-action {
+    margin-top: 4px;
+}
+
+
+.famille-caf-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    box-sizing: border-box;
+
+    padding: 10px 12px;
+
+    border-radius: 9px;
+
+    background: #edf5f0;
+
+    color: #3f8050;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    text-decoration: none;
+}
+
+
+.famille-caf-link:hover {
+    background: #e1eee7;
+    text-decoration: none;
+}

@@ -147,12 +147,7 @@ onEachFeature: function (feature, layer) {
                         Boîte aux lettres
                     </div>
 
-
-                    <div class="info-subtitle">
-                        La Poste
-                    </div>
-
-                </div>
+               </div>
 
 
                 <div class="info-body">
@@ -301,231 +296,748 @@ onEachFeature: function (feature, layer) {
    COUCHE — MAIRIES
    ========================================================= */
 
-fetch('couches/services/mairies.geojson')
+function escapeHtmlMairie(value) {
 
-    .then(response => {
+    return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 
-        if (!response.ok) {
+}
 
-            throw new Error(
-                `Erreur HTTP : ${response.status}`
+
+/* =========================================================
+   HORAIRES
+   ========================================================= */
+
+function formaterHorairesMairie(horaires) {
+
+    if (!horaires) {
+
+        return `
+            <div class="mairie-no-data">
+                Horaires non renseignés
+            </div>
+        `;
+
+    }
+
+
+    const lignes =
+        String(horaires)
+            .split(/\r?\n/)
+            .map(
+                ligne =>
+                    ligne.trim()
+            )
+            .filter(
+                ligne =>
+                    ligne
             );
 
-        }
 
-        return response.json();
+    if (!lignes.length) {
 
-    })
+        return `
+            <div class="mairie-no-data">
+                Horaires non renseignés
+            </div>
+        `;
 
-    .then(data => {
+    }
 
-        L.geoJSON(data, {
 
-            pointToLayer: function (feature, latlng) {
+    return `
 
-                return L.marker(latlng, {
-                   icon: iconsSIG.mairie
-                });
+        <div class="mairie-horaires">
 
-            },
+            ${lignes.map(
+                ligne => {
+
+                    let jour = "";
+                    let heures = "";
+
+
+                    /* =====================================
+                       CAS 1
+                       "Du Lundi au Mercredi : ..."
+                       ===================================== */
+
+                    let match =
+                        ligne.match(
+                            /^Du\s+(.+?)\s+au\s+(.+?)\s*:\s*(.+)$/i
+                        );
+
+
+                    if (match) {
+
+                        jour =
+                            `Du ${match[1]} au ${match[2]}`;
+
+                        heures =
+                            match[3];
+
+                    }
+
+
+                    /* =====================================
+                       CAS 2
+                       "Le Jeudi : ..."
+                       ===================================== */
+
+                    else {
+
+                        match =
+                            ligne.match(
+                                /^Le\s+(.+?)\s*:\s*(.+)$/i
+                            );
+
+
+                        if (match) {
+
+                            jour =
+                                match[1];
+
+                            heures =
+                                match[2];
+
+                        }
+
+                    }
+
+
+                    /* =====================================
+                       CAS 3
+                       "Jeudi : ..."
+                       ===================================== */
+
+                    if (!match) {
+
+                        match =
+                            ligne.match(
+                                /^(.+?)\s*:\s*(.+)$/
+                            );
+
+
+                        if (match) {
+
+                            jour =
+                                match[1];
+
+                            heures =
+                                match[2];
+
+                        }
+
+                    }
+
+
+                    /* =====================================
+                       AUCUN FORMAT RECONNU
+                       ===================================== */
+
+                    if (!jour || !heures) {
+
+                        return `
+
+                            <div
+                                class="
+                                    mairie-horaire-ligne
+                                    mairie-horaire-libre
+                                "
+                            >
+
+                                ${escapeHtmlMairie(
+                                    ligne
+                                )}
+
+                            </div>
+
+                        `;
+
+                    }
+
+
+                    /* =====================================
+                       NETTOYAGE DES HEURES
+                       ===================================== */
+
+                    heures =
+                        heures
+                            .replace(
+                                /^de\s+/i,
+                                ""
+                            );
+
+
+                    /*
+                     * Harmonisation :
+                     *
+                     * "08h00 à 12h00"
+                     * devient
+                     * "08h00 – 12h00"
+                     */
+
+                    heures =
+                        heures.replace(
+                            /\s+à\s+/gi,
+                            " – "
+                        );
+
+
+                    /*
+                     * "de 13h30 à 17h30"
+                     * après le premier remplacement
+                     * devient correctement :
+                     *
+                     * "13h30 – 17h30"
+                     */
+
+                    heures =
+                        heures.replace(
+                            /\s+de\s+/gi,
+                            "  ·  "
+                        );
+
+
+                    /*
+                     * Nettoyage éventuel de doubles espaces.
+                     */
+
+                    heures =
+                        heures.replace(
+                            /\s{2,}/g,
+                            " "
+                        )
+                        .trim();
+
+
+                    return `
+
+                        <div
+                            class="
+                                mairie-horaire-ligne
+                            "
+                        >
+
+                            <span
+                                class="
+                                    mairie-horaire-jour
+                                "
+                            >
+
+                                ${escapeHtmlMairie(
+                                    jour
+                                )}
+
+                            </span>
+
+
+                            <span
+                                class="
+                                    mairie-horaire-heures
+                                "
+                            >
+
+                                ${escapeHtmlMairie(
+                                    heures
+                                )}
+
+                            </span>
+
+                        </div>
+
+                    `;
+
+                }
+            ).join("")}
+
+        </div>
+
+    `;
+
+}
+
+/* =========================================================
+   CONSEIL MUNICIPAL
+   ========================================================= */
+
+function formaterElusMairie(elus) {
+
+    if (!elus) {
+
+        return `
+
+            <div class="mairie-no-data">
+                Conseil municipal non renseigné
+            </div>
+
+        `;
+
+    }
+
+
+    const lignes =
+        String(elus)
+            .split(/\r?\n/)
+            .map(
+                ligne =>
+                    ligne.trim()
+            )
+            .filter(
+                ligne =>
+                    ligne
+            );
+
+
+    if (!lignes.length) {
+
+        return `
+
+            <div class="mairie-no-data">
+                Conseil municipal non renseigné
+            </div>
+
+        `;
+
+    }
+
+
+    return `
+
+        <div class="mairie-elus">
+
+            ${lignes.map(
+                ligne => {
+
+                    /*
+                     * Les données sont du type :
+                     *
+                     * GRAU Vincent (Maire)
+                     * MILLET Lynda (1er adjoint au Maire)
+                     *
+                     */
+
+                    const match =
+                        ligne.match(
+                            /^(.*?)\s*\((.*?)\)\s*$/
+                        );
+
+
+                    if (!match) {
+
+                        return `
+
+                            <div
+                                class="
+                                    mairie-elu
+                                "
+                            >
+
+                                <div
+                                    class="
+                                        mairie-elu-nom
+                                    "
+                                >
+                                    ${escapeHtmlMairie(
+                                        ligne
+                                    )}
+                                </div>
+
+                            </div>
+
+                        `;
+
+                    }
+
+
+                    const nom =
+                        match[1]
+                            .trim();
+
+
+                    const fonction =
+                        match[2]
+                            .trim();
+
+
+                    const fonctionMin =
+                        fonction.toLowerCase();
+
+
+                    let classe =
+                        "mairie-fonction-conseiller";
+
+
+                    if (
+                        fonctionMin.includes(
+                            "maire"
+                        ) &&
+                        !fonctionMin.includes(
+                            "adjoint"
+                        )
+                    ) {
+
+                        classe =
+                            "mairie-fonction-maire";
+
+                    }
+
+                    else if (
+                        fonctionMin.includes(
+                            "adjoint"
+                        )
+                    ) {
+
+                        classe =
+                            "mairie-fonction-adjoint";
+
+                    }
+
+
+                    return `
+
+                        <div
+                            class="
+                                mairie-elu
+                                ${classe}
+                            "
+                        >
+
+                            <div
+                                class="
+                                    mairie-elu-nom
+                                "
+                            >
+                                ${escapeHtmlMairie(
+                                    nom
+                                )}
+                            </div>
+
+
+                            <div
+                                class="
+                                    mairie-elu-fonction
+                                "
+                            >
+                                ${escapeHtmlMairie(
+                                    fonction
+                                )}
+                            </div>
+
+                        </div>
+
+                    `;
+
+                }
+            ).join("")}
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   CHARGEMENT DES MAIRIES
+   ========================================================= */
+
+fetch(
+    'couches/services/mairies.geojson'
+)
+
+.then(response => {
+
+    if (!response.ok) {
+
+        throw new Error(
+            `Erreur HTTP : ${response.status}`
+        );
+
+    }
+
+    return response.json();
+
+})
+
+
+.then(data => {
+
+    L.geoJSON(
+        data,
+        {
+
+            pointToLayer:
+                function(
+                    feature,
+                    latlng
+                ) {
+
+                    return L.marker(
+                        latlng,
+                        {
+                            icon: iconsSIG.mairie
+                        }
+                    );
+
+                },
 
 
             onEachFeature: function (feature, layer) {
 
-                const nom =
-                    feature.properties.name ||
-                    'Mairie';
+    layer.on(
+        "click",
+        function () {
+
+            const p =
+                feature.properties || {};
 
 
-                const site =
-                    feature.properties.contact_website
-                        ? `
-                            <a
-                                href="${feature.properties.contact_website}"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                class="geo-popup-link"
-                            >
-                                Visiter le site
-                            </a>
-                          `
-                        : 'Non renseigné';
+            const nom =
+                p.name ;
 
 
-                const email =
-                    feature.properties.contact_email
-                        ? `
-                            <a
-                                href="mailto:${feature.properties.contact_email}"
-                                class="geo-popup-link"
-                            >
-                                ${feature.properties.contact_email}
-                            </a>
-                          `
-                        : 'Non renseigné';
+            const site =
+                p.contact_website;
 
 
-                const telephone =
-                    feature.properties.contact_phone
-                        ? `
-                            <a
-                                href="tel:${feature.properties.contact_phone}"
-                                class="geo-popup-link"
-                            >
-                                ${feature.properties.contact_phone}
-                            </a>
-                          `
-                        : 'Non renseigné';
+            const email =
+                p.contact_email;
 
 
-                const horaires =
-                    feature.properties.opening_hours
-                        ? feature.properties.opening_hours
-                            .replace(/\n/g, '<br>')
-                        : 'Non renseigné';
+            const telephone =
+                p.contact_phone;
 
 
-                const elus =
-                    feature.properties.elus
-                        ? feature.properties.elus
-                            .replace(/\r?\n/g, '<br>')
-                        : 'Non renseigné';
+            const horaires =
+                formaterHorairesMairie(
+                    p.opening_hours
+                );
 
 
-                layer.on("click", function () {
+            const elus =
+                formaterElusMairie(
+                    p.elus
+                );
 
-                    ouvrirFiche(`
+                const amenity =
+                p.amenity;
 
-                        <div class="info-header">
+            ouvrirFiche(`
 
-                            <div class="info-type">
-                                SERVICES
-                            </div>
+                <div class="info-header">
 
-                            <div class="info-title">
-                                ${nom}
-                            </div>
+                    <div class="info-type">
+                        SERVICES
+                    </div>
 
-                            <div class="info-subtitle">
-                                Mairie
-                            </div>
 
+                    <div class="info-title">
+                        ${escapeHtmlMairie(nom)}
+                    </div>
+
+
+                    <div class="info-subtitle">
+                        ${amenity}
+                    </div>
+
+                </div>
+
+
+                <div class="info-body">
+
+
+                    <!-- =================================
+                         CONTACT
+                         ================================= -->
+
+                    <div class="info-section">
+
+                        <div class="info-section-title">
+                            Contact
                         </div>
 
 
-                        <div class="info-body">
+                        <div class="mairie-contact">
+
+                            ${
+                                site
+                                    ? `
+
+                                        <div class="mairie-contact-ligne">
+
+                                            <span class="mairie-contact-icon">
+                                                🌐
+                                            </span>
+
+                                            <span class="mairie-contact-label">
+                                                Site internet
+                                            </span>
+
+                                            <a
+                                                href="${escapeHtmlMairie(site)}"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="mairie-contact-action"
+                                            >
+                                                Visiter le site
+                                            </a>
+
+                                        </div>
+
+                                      `
+                                    : ""
+                            }
 
 
-                            <!-- =========================================
-                                CONTACT
-                                ========================================= -->
+                            ${
+                                email
+                                    ? `
 
-                            <div class="info-section">
+                                        <div class="mairie-contact-ligne">
 
-                                <div class="info-section-title">
-                                    Contact
-                                </div>
+                                            <span class="mairie-contact-icon">
+                                                ✉️
+                                            </span>
 
+                                            <span class="mairie-contact-label">
+                                                Email
+                                            </span>
 
-                                <div class="info-row">
+                                            <a
+                                                href="mailto:${escapeHtmlMairie(email)}"
+                                                class="mairie-contact-value"
+                                            >
+                                                ${escapeHtmlMairie(email)}
+                                            </a>
 
-                                    <span class="info-label">
-                                        🌐 Site internet
-                                    </span>
+                                        </div>
 
-                                    <span class="info-value">
-                                        ${site}
-                                    </span>
-
-                                </div>
-
-
-                                <div class="info-row">
-
-                                    <span class="info-label">
-                                        ✉️ Email
-                                    </span>
-
-                                    <span class="info-value">
-                                        ${email}
-                                    </span>
-
-                                </div>
+                                      `
+                                    : ""
+                            }
 
 
-                                <div class="info-row">
+                            ${
+                                telephone
+                                    ? `
 
-                                    <span class="info-label">
-                                        📞 Téléphone
-                                    </span>
+                                        <div class="mairie-contact-ligne">
 
-                                    <span class="info-value">
-                                        ${telephone}
-                                    </span>
+                                            <span class="mairie-contact-icon">
+                                                ☎️
+                                            </span>
 
-                                </div>
+                                            <span class="mairie-contact-label">
+                                                Téléphone
+                                            </span>
 
-                            </div>
+                                            <a
+                                                href="tel:${escapeHtmlMairie(telephone)}"
+                                                class="mairie-contact-value"
+                                            >
+                                                ${escapeHtmlMairie(telephone)}
+                                            </a>
 
+                                        </div>
 
-                            <!-- =========================================
-                                HORAIRES
-                                ========================================= -->
-
-                            <div class="info-section">
-
-                                <div class="info-section-title">
-                                    Horaires d'ouverture
-                                </div>
-
-                                <div class="info-description">
-                                    ${horaires}
-                                </div>
-
-                            </div>
-
-
-                            <!-- =========================================
-                                CONSEIL MUNICIPAL
-                                ========================================= -->
-
-                            <div class="info-section">
-
-                                <div class="info-section-title">
-                                    Conseil municipal
-                                </div>
-
-                                <div class="info-description">
-                                    ${elus}
-                                </div>
-
-                            </div>
-
+                                      `
+                                    : ""
+                            }
 
                         </div>
 
-                    `);
-
-                });
-
-            }
-
-        }).addTo(mairies);
+                    </div>
 
 
-        /*
-         * Les mairies sont affichées par défaut.
-         */
+                    <!-- =================================
+                         HORAIRES
+                         ================================= -->
 
-        mairies.addTo(map);
+                    <div class="info-section">
 
-    })
+                        <div class="info-section-title">
+                            Horaires d'ouverture
+                        </div>
 
-    .catch(error => {
 
-        console.error(
-            'Erreur lors du chargement des mairies :',
-            error
-        );
+                        ${horaires}
 
-    });
+                    </div>
+
+
+                    <!-- =================================
+                         CONSEIL MUNICIPAL
+                         ================================= -->
+
+                    <div class="info-section mairie-section-elus">
+
+                        <button
+                            type="button"
+                            class="mairie-elus-toggle"
+                            onclick="
+                                this
+                                    .closest('.mairie-section-elus')
+                                    .classList
+                                    .toggle('open')
+                            "
+                        >
+
+                            <span>
+                                👥 Conseil municipal
+                            </span>
+
+
+                            <span class="mairie-elus-chevron">
+                                ▾
+                            </span>
+
+                        </button>
+
+
+                        <div class="mairie-elus-content">
+
+                            ${elus}
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            `);
+
+        }
+    );
+
+}}
+
+    ).addTo(
+        mairies
+    );
+
+
+    /*
+     * Les mairies restent affichées
+     * par défaut comme actuellement.
+     */
+
+    mairies.addTo(
+        map
+    );
+
+})
+
+
+.catch(error => {
+
+    console.error(
+        "Erreur lors du chargement des mairies :",
+        error
+    );
+
+});
