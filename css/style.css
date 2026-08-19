@@ -2666,3 +2666,625 @@ input:checked
     background: #e1eee7;
     text-decoration: none;
 }
+
+/* =========================================================
+   FICHE — MUTATIONS IMMOBILIÈRES
+   ========================================================= */
+
+.mutation-badge {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    gap: 5px;
+
+    margin-top: 10px;
+    padding: 6px 10px;
+
+    border-radius: 20px;
+
+    background: #f3ebe4;
+    color: #806149;
+
+    font-size: 11px;
+    font-weight: 600;
+}
+
+
+/* Prix */
+
+.mutation-prix {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+
+    margin-top: 10px;
+    padding: 12px;
+
+    border-radius: 10px;
+
+    background: #f7f3ef;
+}
+
+
+.mutation-prix-label {
+    color: #7b7773;
+    font-size: 11px;
+}
+
+
+.mutation-prix-value {
+    color: #795a3f;
+    font-size: 16px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+
+/* Accordéon parcelle */
+
+.mutation-section-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    width: 100%;
+
+    padding: 0;
+
+    border: none;
+    background: transparent;
+
+    color: #354146;
+
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+
+    cursor: pointer;
+}
+
+
+.mutation-chevron {
+    font-size: 15px;
+    color: #899497;
+
+    transition:
+        transform 0.2s ease;
+}
+
+
+.mutation-parcelle-section.open
+.mutation-chevron {
+    transform: rotate(180deg);
+}
+
+
+.mutation-parcelle-content {
+    display: none;
+
+    margin-top: 10px;
+}
+
+
+.mutation-parcelle-section.open
+.mutation-parcelle-content {
+    display: block;
+}
+
+
+/* Cultures */
+
+.mutation-cultures {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+
+    margin-top: 10px;
+}
+
+
+.mutation-culture {
+    padding: 5px 8px;
+
+    border-radius: 6px;
+
+    background: #f0f3f1;
+
+    color: #687572;
+
+    font-size: 10px;
+}
+
+
+/* Source */
+
+.mutation-source {
+    margin:0 18px;
+    padding-top: 10px;
+    position:absolute;
+    border-top: 1px solid #edf0ef;
+
+    color: #9aa3a5;
+
+    font-size: 9px;
+    line-height: 1.4;
+}
+
+/* Décalage des contrôles quand la fiche est ouverte */
+.map-panel-open .leaflet-top {
+    right: 420px;
+    transition: right 0.3s ease;
+}
+
+.map-panel-open .leaflet-bottom {
+    right: 420px;
+    transition: right 0.3s ease;
+}
+
+/* =========================================================
+   HISTORIQUE MUTATIONS IMMOBILIÈRES
+   ========================================================= */
+
+.mutation-historique {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+
+.mutation-historique-item {
+    border: 1px solid #e7e9e8;
+    border-radius: 9px;
+    overflow: hidden;
+    background: #fafbfa;
+}
+
+
+.mutation-historique-item.recent {
+    border-color: #d9dfdc;
+}
+
+
+.mutation-historique-toggle {
+    display: grid;
+
+    grid-template-columns:
+        42px
+        minmax(0, 1fr)
+        auto
+        20px;
+
+    align-items: center;
+
+    width: 100%;
+
+    padding: 10px;
+
+    border: none;
+    background: transparent;
+
+    cursor: pointer;
+
+    text-align: left;
+    font-family: inherit;
+
+    column-gap: 8px;
+}
+
+.mutation-historique-annee {
+    font-size: 12px;
+    font-weight: 700;
+    color: #596763;
+}
+
+
+.mutation-historique-nature {
+    font-size: 11px;
+    color: #777f7c;
+}
+
+
+.mutation-historique-prix {
+    font-size: 12px;
+    color: #795a3f;
+    white-space: nowrap;
+}
+
+
+.mutation-historique-details {
+    display: none;
+
+    padding:
+        0
+        10px
+        10px
+        52px;
+
+    color: #68716f;
+
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+
+.mutation-historique-item.open
+.mutation-historique-details {
+    display: block;
+}
+
+
+.mutation-historique-item .mutation-chevron {
+    width: 20px;
+    height: 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #8a9692;
+
+    font-size: 13px;
+    line-height: 1;
+
+    transform: rotate(0deg);
+
+    transition:
+        transform 0.2s ease,
+        color 0.2s ease;
+}
+
+.mutation-historique-item.open .mutation-chevron {
+    transform: rotate(180deg);
+    color: #5f756b;
+}
+
+
+.mutation-details-line {
+    margin-bottom: 4px;
+}
+
+
+.mutation-details-date {
+    color: #9aa19f;
+}
+
+
+.mutation-no-history {
+    padding: 10px;
+
+    border-radius: 8px;
+
+    background: #f5f6f5;
+
+    color: #8a918f;
+
+    font-size: 10px;
+}
+
+/* =========================================================
+   MUTATIONS — NOUVELLE FICHE DÉTAILLÉE
+   ========================================================= */
+
+.mutation-address {
+    margin-top: 8px;
+    color: #687477;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+
+.mutation-elements {
+    margin-top: 12px;
+}
+
+
+.mutation-elements-section {
+    margin-top: 14px;
+}
+
+
+.mutation-elements-section:first-child {
+    margin-top: 0;
+}
+
+
+.mutation-elements-title {
+    margin-bottom: 7px;
+    color: #52605d;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.35px;
+}
+
+
+.mutation-elements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+
+.mutation-element {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+
+    padding: 8px 9px;
+
+    border-radius: 8px;
+
+    background: #f5f7f6;
+}
+
+
+.mutation-element-icon {
+    flex: 0 0 22px;
+    font-size: 15px;
+    line-height: 1.3;
+}
+
+
+.mutation-element-content {
+    min-width: 0;
+}
+
+
+.mutation-element-name {
+    color: #455155;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+
+.mutation-element-meta {
+    margin-top: 2px;
+    color: #7b8588;
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+
+.mutation-elements-empty {
+    padding: 8px 0;
+    color: #929a9a;
+    font-size: 10px;
+}
+
+
+/* Adresse dans le détail d'une vente */
+
+.mutation-details-address {
+    margin-top: 4px;
+    color: #68716f;
+    font-size: 10px;
+    line-height: 1.45;
+}
+
+
+/* Date */
+
+.mutation-details-date {
+    color: #8c9593;
+    font-size: 10px;
+}
+
+
+/* Un peu plus d'espace pour le contenu détaillé */
+
+.mutation-historique-details {
+    padding-bottom: 12px;
+}
+
+
+/* Sur mobile */
+
+@media (max-width: 600px) {
+
+    .mutation-historique-toggle {
+        grid-template-columns:
+            42px
+            1fr
+            auto
+            16px;
+    }
+
+}
+
+/* =========================================================
+   DPE — FICHE
+   ========================================================= */
+
+.dpe-header-badges {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+
+.dpe-header-classe {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+
+.dpe-header-label {
+    color: #7b8585;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+
+.dpe-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 32px;
+    height: 30px;
+
+    padding: 0 9px;
+
+    border-radius: 6px;
+
+    color: white;
+
+    font-size: 15px;
+    font-weight: 800;
+
+    box-shadow: 0 1px 2px rgba(0,0,0,.08);
+}
+
+
+.dpe-A {
+    background: #16834b;
+}
+
+.dpe-B {
+    background: #55a832;
+}
+
+.dpe-C {
+    background: #a8c934;
+}
+
+.dpe-D {
+    background: #e5c52e;
+}
+
+.dpe-E {
+    background: #ed9d29;
+}
+
+.dpe-F {
+    background: #df642d;
+}
+
+.dpe-G {
+    background: #c7352f;
+}
+
+
+/* =========================================================
+   ADRESSE
+   ========================================================= */
+
+.dpe-address {
+    padding: 10px 12px;
+
+    border-radius: 8px;
+
+    background: #f5f7f6;
+
+    color: #4f5b5d;
+
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   PERFORMANCE
+   ========================================================= */
+
+.dpe-performance {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 8px;
+}
+
+
+.dpe-performance-card {
+    padding: 11px;
+
+    border-radius: 9px;
+
+    background: #f5f7f6;
+}
+
+
+.dpe-performance-label {
+    margin-bottom: 5px;
+
+    color: #7b8585;
+
+    font-size: 10px;
+}
+
+
+.dpe-performance-value {
+    color: #3f4b4d;
+
+    font-size: 16px;
+    font-weight: 700;
+
+    line-height: 1.25;
+}
+
+
+.dpe-performance-value small {
+    display: block;
+
+    margin-top: 2px;
+
+    color: #899293;
+
+    font-size: 9px;
+    font-weight: 400;
+}
+
+
+/* =========================================================
+   SOURCE / LIEN ADEME
+   ========================================================= */
+
+.dpe-ademe-link {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    margin-top: 18px;
+    padding: 10px 12px;
+
+    border-radius: 8px;
+
+    background: #edf4f0;
+
+    color: #39745a;
+
+    font-size: 11px;
+    font-weight: 600;
+
+    text-decoration: none;
+
+    transition:
+        background .15s ease,
+        transform .15s ease;
+}
+
+
+.dpe-ademe-link:hover {
+    background: #e1eee7;
+
+    transform: translateY(-1px);
+}
+
+
+.dpe-source {
+    margin-top: 12px;
+
+    color: #9aa2a2;
+
+    font-size: 9px;
+    text-align: center;
+}

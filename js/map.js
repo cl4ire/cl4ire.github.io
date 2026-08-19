@@ -586,7 +586,13 @@ const configurationCouches = {
 
                 layer: mutations
 
-            }
+            },
+
+    {
+        id: "dpe",
+        nom: "Diagnostics de performance énergétique",
+        layer: dpe
+    }
 
         ]
 
@@ -1194,19 +1200,36 @@ const infoClose =
         "info-close"
     );
 
-
-function ouvrirFiche(
-    contenu
-) {
+function ouvrirFiche(contenu) {
 
     infoContent.innerHTML =
         contenu;
-
 
     infoPanel.classList.add(
         "open"
     );
 
+    /*
+     * On attend que la fiche soit réellement affichée
+     * pour récupérer sa largeur.
+     */
+    requestAnimationFrame(() => {
+
+        const largeur =
+            infoPanel.getBoundingClientRect().width;
+
+        document
+            .querySelectorAll(
+                ".leaflet-top.leaflet-right .leaflet-control"
+            )
+            .forEach(controle => {
+
+                controle.style.transform =
+                    `translateX(-${largeur + 15}px)`;
+
+            });
+
+    });
 
     infoPanel.scrollTop =
         0;
@@ -1220,9 +1243,21 @@ function fermerFiche() {
         "open"
     );
 
+    /*
+     * Retour exact à la position initiale.
+     */
+    document
+        .querySelectorAll(
+            ".leaflet-top.leaflet-right .leaflet-control"
+        )
+        .forEach(controle => {
+
+            controle.style.transform =
+                "";
+
+        });
+
 }
-
-
 infoClose.addEventListener(
     "click",
     fermerFiche
