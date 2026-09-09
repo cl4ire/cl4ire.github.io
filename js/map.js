@@ -7,7 +7,7 @@ const map = L.map("map", { zoomControl: false }).setView([47.791528, 0.412223], 
 
 L.control.zoom({ position: "topright" }).addTo(map);
 
-L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=cb1_33ph_1_a60cba5d2b6752f8d0e80255", {
     attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
     subdomains: "abcd",
     maxZoom: 20

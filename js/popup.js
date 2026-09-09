@@ -1,11 +1,8 @@
 /* =========================================================
-   GÉOBERCÉ — POPUPS GÉNÉRIQUES
-   Un seul formateur, utilisé par toutes les couches : il essaie
-   les champs candidats définis dans config.js, et à défaut,
-   affiche proprement les propriétés disponibles.
+   GÉOBERCÉ — POPUPS
+   Popup générique + fiche détaillée pour les stations carburant.
    ========================================================= */
 
-/* Champs techniques à ne jamais afficher tels quels dans le "reste" */
 const CHAMPS_MASQUES = new Set([
     "osm_id", "osm_type", "full_id", "gid", "id", "wikidata",
     "marker-color", "X", "Y", "Xlong", "Ylat", "gpu_doc_id",
@@ -14,57 +11,124 @@ const CHAMPS_MASQUES = new Set([
     "c_lat_coor1", "c_long_coor1", "c_xy_precis", "c_id_adr"
 ]);
 
-function humaniser(cle) {
-    return cle
-        .replace(/_/g, " ")
-        .replace(/^c /, "")
-        .replace(/\b\w/g, l => l.toUpperCase());
+function humaniser(cle) { return cle.replace(/_/g, " ").replace(/^c /, "").replace(/\b\w/g, l => l.toUpperCase()); }
+function premierChampValide(props, champs) {
+    for (const c of champs) if (props[c] !== undefined && props[c] !== null && props[c] !== "" && props[c] !== "NULL") return props[c];
+    return null;
+}
+function echapperHtml(valeur) {
+    return String(valeur ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+}
+function parserValeur(valeur) {
+    if (valeur === undefined || valeur === null || valeur === "") return null;
+    if (typeof valeur !== "string") return valeur;
+    try { return JSON.parse(valeur); } catch (_) { return valeur; }
+}
+function listeValeurs(valeur) {
+    if (Array.isArray(valeur)) return valeur.map(String).filter(Boolean);
+    if (valeur === null || valeur === undefined || valeur === "") return [];
+    return String(valeur).split(/\s*;\s*|\s*\/\/\s*/).map(v => v.trim()).filter(Boolean);
+}
+function nomCarburant(nom) { return { "Gazole": "Gazole", "SP95": "SP95", "SP98": "SP98", "E10": "SP95-E10", "E85": "E85", "GPLc": "GPL" }[nom] || nom; }
+
+function construirePrixCarburants(props) {
+    const carburants = [
+        { nom: "Gazole", champ: "gazole_prix", maj: "gazole_maj" },
+        { nom: "SP95", champ: "sp95_prix", maj: "sp95_maj" },
+        { nom: "SP98", champ: "sp98_prix", maj: "sp98_maj" },
+        { nom: "E10", champ: "e10_prix", maj: "e10_maj" },
+        { nom: "E85", champ: "e85_prix", maj: "e85_maj" },
+        { nom: "GPLc", champ: "gplc_prix", maj: "gplc_maj" }
+    ];
+    const disponibles = new Set(listeValeurs(props.carburants_disponibles));
+    const indisponibles = new Set(listeValeurs(props.carburants_indisponibles));
+    const temporaires = new Set(listeValeurs(props.carburants_rupture_temporaire));
+    const definitives = new Set(listeValeurs(props.carburants_rupture_definitive));
+
+    return carburants.filter(c => props[c.champ] !== undefined || disponibles.has(c.nom) || indisponibles.has(c.nom)).map(c => {
+        const prix = Number(props[c.champ]);
+        let statut = "Disponible", classe = "disponible";
+        if (definitives.has(c.nom)) { statut = "Rupture définitive"; classe = "rupture"; }
+        else if (temporaires.has(c.nom)) { statut = "Rupture temporaire"; classe = "rupture"; }
+        else if (indisponibles.has(c.nom) || !disponibles.has(c.nom) || !Number.isFinite(prix)) { statut = "Indisponible"; classe = "indisponible"; }
+        return { nom: nomCarburant(c.nom), prix: Number.isFinite(prix) ? prix : null, maj: props[c.maj], statut, classe };
+    });
+}
+function formaterPrix(prix) { return prix === null ? "—" : `${prix.toFixed(3).replace(".", ",")} €`; }
+function formaterMaj(date) {
+    if (!date) return "";
+    const d = new Date(date);
+    if (Number.isNaN(d.getTime())) return "";
+    return d.toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
-function premierChampValide(props, champs) {
-    for (const c of champs) {
-        if (props[c] !== undefined && props[c] !== null && props[c] !== "" && props[c] !== "NULL") {
-            return props[c];
-        }
-    }
-    return null;
+function construireServices(props) {
+    const services = listeValeurs(props.services_service || props.services);
+    if (!services.length) return "";
+    const icones = {
+        "Station de gonflage": "fa-solid fa-wind", "Lavage automatique": "fa-solid fa-spray-can-sparkles", "Lavage manuel": "fa-solid fa-soap",
+        "Bornes électriques": "fa-solid fa-charging-station", "DAB (Distributeur automatique de billets)": "fa-solid fa-money-bill-wave",
+        "Automate CB 24/24": "fa-solid fa-credit-card", "Piste poids lourds": "fa-solid fa-truck", "Location de véhicule": "fa-solid fa-car",
+        "Vente de gaz domestique (Butane, Propane)": "fa-solid fa-fire-flame-simple", "Boutique alimentaire": "fa-solid fa-basket-shopping",
+        "Toilettes publiques": "fa-solid fa-restroom", "Wifi": "fa-solid fa-wifi"
+    };
+    return `<div class="popup-carburant-services">${services.map(service => `<span class="popup-service"><i class="${icones[service] || "fa-solid fa-circle-check"}"></i>${echapperHtml(service)}</span>`).join("")}</div>`;
+}
+
+function construirePopupCarburant(props) {
+    const nom = premierChampValide(props, ["enseigne", "nom", "brand"]) || "Station-service";
+    const adresse = [props.adresse, props.cp, props.ville].filter(Boolean).join(" · ");
+    const prix = construirePrixCarburants(props);
+
+    const datesMaj = prix.map(c => c.maj).filter(Boolean).map(d => new Date(d)).filter(d => !Number.isNaN(d.getTime()));
+    const derniereMaj = datesMaj.length ? new Date(Math.max(...datesMaj.map(d => d.getTime()))) : null;
+
+    const lignesPrix = prix.map(c => `
+        <div class="popup-carburant-prix ${c.classe}">
+            <div class="popup-carburant-nom"><span class="popup-carburant-pastille"></span>${echapperHtml(c.nom)}</div>
+            <div class="popup-carburant-valeur">${formaterPrix(c.prix)}</div>
+            <div class="popup-carburant-statut">${echapperHtml(c.statut)}</div>
+        </div>
+    `).join("");
+
+    const services = construireServices(props);
+
+    return `<div class="popup-carburant">
+        <div class="popup-carburant-entete">
+            <div class="popup-carburant-icon"><i class="fa-solid fa-gas-pump"></i></div>
+            <div class="popup-carburant-titre-wrap">
+                <div class="popup-carburant-tag">Station-service</div>
+                <div class="popup-carburant-titre">${echapperHtml(nom)}</div>
+                <div class="popup-carburant-adresse">${echapperHtml(adresse)}</div>
+            </div>
+        </div>
+
+        <div class="popup-carburant-section">
+            <div class="popup-carburant-section-titre"><span>Prix des carburants</span><small>€/L</small></div>
+            <div class="popup-carburant-prix-liste">${lignesPrix || `<div class="popup-carburant-vide">Aucun prix disponible.</div>`}</div>
+            ${derniereMaj ? `<div style="margin-top:8px;text-align:right;font-size:8.5px;color:#8A8882;"><i class="fa-regular fa-clock"></i> Mis à jour le ${echapperHtml(formaterMaj(derniereMaj))}</div>` : ""}
+        </div>
+
+        ${services ? `<div class="popup-carburant-section"><div class="popup-carburant-section-titre"><span>Services</span></div>${services}</div>` : ""}
+    </div>`;
 }
 
 function construirePopup(feature, layerConf) {
     const props = feature.properties || {};
+    if (layerConf.id === "carburants") return construirePopupCarburant(props);
 
-    const titre =
-        premierChampValide(props, layerConf.titleFields || []) ||
-        layerConf.label;
-
-    const sousInfos = (layerConf.subtitleFields || [])
-        .map(c => props[c])
-        .filter(v => v !== undefined && v !== null && v !== "" && v !== "NULL");
-
+    const titre = premierChampValide(props, layerConf.titleFields || []) || layerConf.label;
+    const sousInfos = (layerConf.subtitleFields || []).map(c => props[c]).filter(v => v !== undefined && v !== null && v !== "" && v !== "NULL");
     let html = `<div class="popup-geo">`;
-    html += `<div class="popup-geo-tag" style="color:${layerConf.color}">${layerConf.label}</div>`;
-    html += `<div class="popup-geo-titre">${titre}</div>`;
-
-    if (sousInfos.length) {
-        html += `<div class="popup-geo-sous">${sousInfos.join(" · ")}</div>`;
-    }
-
-    /* Reste des propriétés utiles, pour ne rien perdre de la donnée source */
-    const reste = Object.keys(props).filter(k =>
-        !CHAMPS_MASQUES.has(k) &&
-        !(layerConf.titleFields || []).includes(k) &&
-        !(layerConf.subtitleFields || []).includes(k) &&
-        props[k] !== null && props[k] !== "" && props[k] !== "NULL"
-    ).slice(0, 6);
-
+    html += `<div class="popup-geo-tag" style="color:${layerConf.color}">${echapperHtml(layerConf.label)}</div>`;
+    html += `<div class="popup-geo-titre">${echapperHtml(titre)}</div>`;
+    if (sousInfos.length) html += `<div class="popup-geo-sous">${sousInfos.map(echapperHtml).join(" · ")}</div>`;
+    const reste = Object.keys(props).filter(k => !CHAMPS_MASQUES.has(k) && !(layerConf.titleFields || []).includes(k) && !(layerConf.subtitleFields || []).includes(k) && props[k] !== null && props[k] !== "" && props[k] !== "NULL").slice(0, 6);
     if (reste.length) {
         html += `<dl class="popup-geo-details">`;
-        reste.forEach(k => {
-            html += `<dt>${humaniser(k)}</dt><dd>${props[k]}</dd>`;
-        });
+        reste.forEach(k => { html += `<dt>${echapperHtml(humaniser(k))}</dt><dd>${echapperHtml(props[k])}</dd>`; });
         html += `</dl>`;
     }
-
     html += `</div>`;
     return html;
 }
