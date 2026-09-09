@@ -89,9 +89,11 @@ function afficherResultatsProximite(map, titre, resultats) {
 
 /* Charge une couche (si besoin) et coche sa case dans le panneau,
    pour que l'état du panneau reste cohérent avec ce qui est affiché.
-   Un filet de sécurité (timeout) évite de bloquer indéfiniment
-   l'affichage des résultats si le chargement échoue (couche en
-   flux distant injoignable, par exemple). */
+   Un échec de chargement (couche en flux distant injoignable) résout
+   immédiatement au lieu de laisser l'utilisateur attendre. Le timeout
+   n'est qu'un filet de sécurité en dernier recours (il doit rester
+   généreux : sur un réseau mobile lent, une requête peut légitimement
+   prendre plusieurs secondes avant d'aboutir). */
 function chargerEtAfficherCouche(map, layerId) {
     return new Promise(resolve => {
         const conf = LAYERS.find(l => l.id === layerId);
@@ -101,16 +103,15 @@ function chargerEtAfficherCouche(map, layerId) {
         const resoudre = () => { if (!reglee) { reglee = true; resolve(); } };
 
         chargerCouche(conf, () => {
-            if (reglee) return;
             if (!map.hasLayer(groupesLeaflet[layerId])) {
                 groupesLeaflet[layerId].addTo(map);
             }
             const checkbox = document.getElementById("layer-" + layerId);
             if (checkbox) checkbox.checked = true;
             resoudre();
-        });
+        }, resoudre);
 
-        setTimeout(resoudre, 8000);
+        setTimeout(resoudre, 20000);
     });
 }
 
@@ -126,6 +127,7 @@ function lancerRechercheProximite(map, raccourci) {
     navigator.geolocation.getCurrentPosition(
         position => {
             const origine = L.latLng(position.coords.latitude, position.coords.longitude);
+            afficherMessageResultats(raccourci.label, "Recherche des résultats les plus proches...");
 
             Promise.all(raccourci.layerIds.map(id => chargerEtAfficherCouche(map, id))).then(() => {
                 const resultats = window.indexRecherche
@@ -138,9 +140,12 @@ function lancerRechercheProximite(map, raccourci) {
                 afficherResultatsProximite(map, raccourci.label, resultats);
             });
         },
-        () => {
-            afficherMessageResultats(raccourci.label, "Localisation refusée ou indisponible : autorisez la géolocalisation puis réessayez.");
+        erreur => {
+            const message = erreur.code === erreur.PERMISSION_DENIED
+                ? "Localisation refusée : autorisez la géolocalisation dans les réglages de votre navigateur puis réessayez."
+                : "Localisation indisponible pour le moment : réessayez dans un instant.";
+            afficherMessageResultats(raccourci.label, message);
         },
-        { timeout: 10000 }
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
     );
 }

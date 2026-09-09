@@ -19,13 +19,25 @@ function creerIcone(faClass, couleur) {
     });
 }
 
+/* Certaines couches (ex : commerces) veulent une icône/couleur différente
+   par entité plutôt qu'une seule pour toute la couche : layerConf.iconePourFeature,
+   quand il existe, prend le dessus sur icon/color fixes de la couche. */
+function resoudreIconeCouleur(feature, layerConf) {
+    if (layerConf.iconePourFeature) {
+        const r = layerConf.iconePourFeature(feature);
+        if (r) return r;
+    }
+    return { icon: layerConf.icon, color: layerConf.color };
+}
+
 /* Cache pour ne pas reconstruire la même icône plusieurs fois */
 const iconeCache = {};
 
-function iconePourCouche(layerConf) {
-    const cle = layerConf.id;
+function iconePourCouche(feature, layerConf) {
+    const { icon, color } = resoudreIconeCouleur(feature, layerConf);
+    const cle = layerConf.id + "|" + icon + "|" + color;
     if (!iconeCache[cle]) {
-        iconeCache[cle] = creerIcone(layerConf.icon, layerConf.color);
+        iconeCache[cle] = creerIcone(icon, color);
     }
     return iconeCache[cle];
 }
