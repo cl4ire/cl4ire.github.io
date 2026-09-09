@@ -53,6 +53,68 @@ function couleurVigieau(feature) {
     return { color: "#fff", weight: 1, fillColor: remplissage, fillOpacity: 0.5 };
 }
 
+/* =========================================================
+   CATÉGORIES DE COMMERCES
+   Le champ "type" du fichier commerces.geojson porte des valeurs
+   OSM brutes (restaurant, bakery, hairdresser...) : on les regroupe
+   en quelques catégories visuelles (icône + couleur) pour que la
+   carte reste lisible, avec un repli générique pour tout type non
+   prévu. Sert à la fois aux marqueurs et à la légende du panneau.
+   ========================================================= */
+const TYPES_COMMERCES = [
+    {
+        id: "alimentation", label: "Alimentation", icon: "fa-solid fa-basket-shopping", color: PALETTE.feuille,
+        types: ["supermarket", "convenience", "bakery", "butcher", "deli", "seafood", "greengrocer", "chocolate", "winery", "variety_store", "newsagent"]
+    },
+    {
+        id: "restauration", label: "Restaurants & bars", icon: "fa-solid fa-utensils", color: PALETTE.terracotta,
+        types: ["restaurant", "bar", "pub", "fast_food"]
+    },
+    {
+        id: "beaute", label: "Coiffure & beauté", icon: "fa-solid fa-scissors", color: "#AD4826",
+        types: ["hairdresser", "beauty", "tattoo", "perfumery"]
+    },
+    {
+        id: "sante", label: "Santé", icon: "fa-solid fa-briefcase-medical", color: PALETTE.riviere,
+        types: ["pharmacy", "optician", "hearing_aids"]
+    },
+    {
+        id: "automobile", label: "Automobile", icon: "fa-solid fa-car", color: PALETTE.ardoise,
+        types: ["car_repair", "car_wash", "fuel", "vehicle_inspection", "driving_school", "bicycle"]
+    },
+    {
+        id: "bricolage", label: "Bricolage & jardin", icon: "fa-solid fa-screwdriver-wrench", color: PALETTE.feuille,
+        types: ["doityourself", "garden_centre", "interior_decoration"]
+    },
+    {
+        id: "mode", label: "Mode & accessoires", icon: "fa-solid fa-shirt", color: PALETTE.terracotta,
+        types: ["clothes", "shoes", "leather", "jewelry"]
+    },
+    {
+        id: "services", label: "Services", icon: "fa-solid fa-briefcase", color: PALETTE.ardoise,
+        types: ["post_office", "insurance", "estate_agent", "funeral_directors", "laundry", "cleaning", "photographer", "computer", "electronics", "association"]
+    },
+    {
+        id: "culture", label: "Culture & loisirs", icon: "fa-solid fa-palette", color: PALETTE.feuille,
+        types: ["books", "art", "cinema", "sports", "photo", "gift", "handicraft", "sewing", "antiques", "second_hand", "e-cigarette", "wholesale"]
+    }
+];
+const TYPE_COMMERCE_DEFAUT = { id: "autre", label: "Autres commerces", icon: "fa-solid fa-store", color: PALETTE.ardoise };
+
+function categorieCommerce(typeBrut) {
+    if (!typeBrut) return TYPE_COMMERCE_DEFAUT;
+    const valeurs = String(typeBrut).split(/[;,/]/).map(v => v.trim().toLowerCase());
+    return TYPES_COMMERCES.find(cat => cat.types.some(t => valeurs.includes(t))) || TYPE_COMMERCE_DEFAUT;
+}
+
+/* Point d'extension utilisé par icons.js/layers.js : renvoie l'icône et
+   la couleur à utiliser pour CE commerce précis plutôt que celles, fixes,
+   de la couche "commerces". */
+function iconeCommerce(feature) {
+    const cat = categorieCommerce((feature.properties || {}).type);
+    return { icon: cat.icon, color: cat.color };
+}
+
 /* Transforme la réponse de l'API historique Opendatasoft (records/1.0/search)
    en GeoJSON standard, pour réutiliser le même pipeline de chargement que
    les couches fichier. Utilisé par les couches "flux" (ex : carburants). */
@@ -161,6 +223,7 @@ const LAYERS = [
         id: "commerces", group: "commerces", label: "Commerces",
         file: "couches/commerces/commerces.geojson", type: "point",
         icon: "fa-solid fa-basket-shopping", color: PALETTE.feuille,
+        iconePourFeature: iconeCommerce, legend: TYPES_COMMERCES,
         lazy: false, searchable: true, cluster: true,
         titleFields: ["name", "brand", "type"],
         subtitleFields: ["type", "opening_hours", "phone"]

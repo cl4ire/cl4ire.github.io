@@ -25,12 +25,14 @@ function ajouterAuIndex(feature, latlng, layerConf) {
     const titre = premierChampValide(props, layerConf.titleFields || []);
     if (!titre) return;
 
+    const { icon, color } = resoudreIconeCouleur(feature, layerConf);
+
     window.indexRecherche.push({
         titre: String(titre),
         sousTitre: (layerConf.subtitleFields || [])
             .map(c => props[c]).filter(Boolean).join(" · "),
-        icon: layerConf.icon,
-        color: layerConf.color,
+        icon: icon,
+        color: color,
         latlng: latlng,
         layerId: layerConf.id,
         groupLabel: (GROUPS[layerConf.group] || {}).label || ""
@@ -43,7 +45,7 @@ function construireCoucheDonnees(data, layerConf) {
 
         pointToLayer: function (feature, latlng) {
             ajouterAuIndex(feature, latlng, layerConf);
-            return L.marker(latlng, { icon: iconePourCouche(layerConf) });
+            return L.marker(latlng, { icon: iconePourCouche(feature, layerConf) });
         },
 
         style: function (feature) {
@@ -97,7 +99,7 @@ function construireCoucheWMS(layerConf) {
     });
 }
 
-function chargerCouche(layerConf, onReady) {
+function chargerCouche(layerConf, onReady, onError) {
 
     if (coucheChargee[layerConf.id]) {
         if (onReady) onReady();
@@ -123,7 +125,10 @@ function chargerCouche(layerConf, onReady) {
             coucheChargee[layerConf.id] = true;
             if (onReady) onReady();
         })
-        .catch(err => console.error("Chargement", layerConf.id, ":", err));
+        .catch(err => {
+            console.error("Chargement", layerConf.id, ":", err);
+            if (onError) onError(err);
+        });
 }
 
 /* =========================================================

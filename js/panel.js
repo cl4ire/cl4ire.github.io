@@ -56,10 +56,40 @@ function construirePanneauCouches(map) {
             ligne.appendChild(checkbox);
             ligne.appendChild(texte);
             details.appendChild(ligne);
+
+            if (conf.legend) {
+                details.appendChild(construireLegende(conf.legend));
+            }
         });
 
         conteneur.appendChild(details);
     });
+}
+
+/* Petite légende repliable (icône + couleur par catégorie), affichée
+   sous une couche dont la config déclare un tableau "legend". */
+function construireLegende(categories) {
+    const details = document.createElement("details");
+    details.className = "layer-legend";
+
+    const summary = document.createElement("summary");
+    summary.textContent = "Voir les catégories";
+    details.appendChild(summary);
+
+    const liste = document.createElement("div");
+    liste.className = "layer-legend-items";
+    categories.forEach(cat => {
+        const item = document.createElement("span");
+        item.className = "layer-legend-item";
+        item.innerHTML = `
+            <span class="layer-legend-pastille" style="background:${cat.color}"><i class="${cat.icon}"></i></span>
+            <span>${cat.label}</span>
+        `;
+        liste.appendChild(item);
+    });
+    details.appendChild(liste);
+
+    return details;
 }
 
 /* Filtre texte du panneau */
