@@ -1,134 +1,117 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GéoBercé - Le SIG local</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GéoBercé — Le SIG local</title>
 
-    <!-- DEBUT STYLES -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.css">
-    <link rel="stylesheet" href="css/style.css">
-    <!-- FIN STYLES -->
+<!-- DEBUT STYLES -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Nunito:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" type="image/svg+xml" href="img/favicon.svg">
+<!-- FIN STYLES -->
 </head>
 
 <body>
-    <!-- DEBUT HEADER -->
-    <header id="topbar">
-        <div id="brand">
-            <div id="brand-icon">
-                🌳
+
+<!-- DEBUT HEADER -->
+<header id="topbar">
+    <div id="brand">
+        <svg width="34" height="34" viewBox="0 0 88 88" aria-hidden="true">
+            <circle cx="44" cy="44" r="38" fill="#0F6E56"/>
+            <text x="44" y="52" text-anchor="middle" font-family="'Baloo 2', sans-serif" font-size="28" font-weight="700" fill="#E1F5EE">GB</text>
+        </svg>
+        <div>
+            <div id="brand-title">GéoBercé</div>
+            <div id="brand-subtitle">Le SIG local</div>
+        </div>
+    </div>
+
+    <div id="search-container">
+        <span id="search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+        <input type="text" id="search" placeholder="Rechercher un lieu, une adresse, un service..." autocomplete="off">
+        <div id="suggestions"></div>
+    </div>
+
+    <div id="topbar-actions">
+        <button type="button" id="about-button">À propos</button>
+        <button type="button" id="menu-button" aria-label="Couches"><i class="fa-solid fa-layer-group"></i></button>
+    </div>
+</header>
+<!-- FIN HEADER -->
+
+<!-- DEBUT APPLICATION -->
+<main id="app">
+
+    <aside id="layers-panel" aria-label="Couches cartographiques">
+        <div class="panel-header">
+            <div class="panel-title">
+                <span class="panel-icon"><i class="fa-solid fa-layer-group"></i></span>
+                <span>Couches</span>
             </div>
-            <div>
-                <div id="brand-title">
-                    GéoBercé
-                </div>
-                <div id="brand-subtitle">
-                    Le SIG local
-                </div>
-            </div>
+            <button type="button" class="panel-close" id="layers-close" aria-label="Fermer">×</button>
         </div>
 
-        <!-- RECHERCHE -->
-        <div id="search-container">
-            <span id="search-icon">
-                🔎
-            </span>
-            <input
-                type="text"
-                id="search"
-                placeholder="Rechercher un lieu, une adresse..."
-                autocomplete="off"
-            >
-            <div id="suggestions"></div>
+        <div id="layers-search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="layers-filter" placeholder="Filtrer les couches..." autocomplete="off">
         </div>
 
-        <!-- ACTIONS -->
-        <div id="topbar-actions">
-            <button type="button" id="about-button">
-                À propos
-            </button>
+        <div id="layers-tree"><!-- Généré par panel.js --></div>
+    </aside>
 
-            <button type="button" id="menu-button" aria-label="Menu">
-                ☰
-            </button>
+    <div id="map"></div>
+
+    <!-- DEBUT ÉCRAN D'ACCUEIL -->
+    <div id="hero">
+        <div id="hero-inner">
+            <p id="hero-title">Que recherchez-vous ?</p>
+            <p id="hero-subtitle">Tapez dans la barre de recherche en haut, ou choisissez une thématique</p>
+            <div id="hero-tiles"><!-- Généré par hero.js --></div>
+            <button type="button" id="hero-explore">Voir la carte complète</button>
         </div>
-    </header>
-    <!-- FIN HEADER -->
+    </div>
+    <!-- FIN ÉCRAN D'ACCUEIL -->
 
-    <!--DEBUT APPLICATION -->
-    <main id="app">
-        <!-- DEBUT ARBRE DES COUCHES-->
-        <aside id="layers-panel" aria-label="Couches cartographiques">
-            <div class="panel-header">
-                <div class="panel-title">
-                    <span class="panel-icon">
-                        ▱
-                    </span>
-                    <span>
-                        Couches
-                    </span>
-                </div>
+</main>
+<!-- FIN APPLICATION -->
 
-                <button type="button" class="panel-close" id="layers-close" aria-label="Fermer">
-                    ×
-                </button>
-            </div>
+<!-- DEBUT MODALE À PROPOS -->
+<div id="about-modal" class="modal">
+    <div class="modal-content">
+        <button type="button" id="about-close" class="info-close" aria-label="Fermer">×</button>
+        <div id="about-logo">
+            <svg width="56" height="56" viewBox="0 0 88 88" aria-hidden="true">
+                <circle cx="44" cy="44" r="38" fill="#0F6E56"/>
+                <text x="44" y="52" text-anchor="middle" font-family="'Baloo 2', sans-serif" font-size="28" font-weight="700" fill="#E1F5EE">GB</text>
+            </svg>
+        </div>
+        <h2>GéoBercé</h2>
+        <p>Un SIG local, gratuit et ouvert, qui regroupe au même endroit les informations utiles du territoire Loir-Lucé-Bercé : services, famille, commerces, mobilité, nature et patrimoine.</p>
+        <p class="about-source">Données : communes, EPCI, OpenStreetMap, data.gouv.fr, Vigieau.</p>
+    </div>
+</div>
+<!-- FIN MODALE À PROPOS -->
 
-            <!-- RECHERCHE DES COUCHES -->
-            <div id="layers-search">
-                <span>
-                    🔎
-                </span>
-                <input
-                    type="text"
-                    id="layers-filter"
-                    placeholder="Filtrer les couches..."
-                    autocomplete="off"
-                >
-            </div>
+<!-- DEBUT SCRIPTS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
-            <!-- LISTE DES COUCHES -->
-            <div id="layers-tree">
-                <!-- Généré automatiquement par map.js -->
-            </div>
-        </aside>
-        <!-- FIN ARBRE DES COUCHES-->
+<script src="js/config.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/popup.js"></script>
+<script src="js/layers.js"></script>
+<script src="js/panel.js"></script>
+<script src="js/search.js"></script>
+<script src="js/hero.js"></script>
+<script src="js/map.js"></script>
+<!-- FIN SCRIPTS -->
 
-        <!-- CARTE -->
-        <div id="map"></div>
-
-        <!-- DEBUT FICHE D'INFORMATION -->
-        <aside id="info-panel" aria-label="Informations">
-            <button type="button" id="info-close" class="info-close" aria-label="Fermer">
-                ×
-            </button>
-            <div id="info-content">
-                <!-- La fiche sera injectée ici -->
-            </div>
-        </aside>
-        <!-- FIN FICHE D'INFORMATION -->
-    </main>
-    <!--FIN APPLICATION -->
-
-
-    <!-- DEBUT SCRIPTS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
-
-    <script src="js/icones.js"></script>
-
-    <script src="js/tourisme.js"></script>
-    <script src="js/service.js"></script>
-    <script src="js/sante.js"></script>
-    <script src="js/urbanisme.js"></script>
-    <script src="js/mobilite.js"></script>
-    <script src="js/famille.js"></script>
-    <script src="js/environnement.js"></script>
-
-    <script src="js/map.js"></script>
-    <!-- FIN SCRIPTS -->
 </body>
-
 </html>
