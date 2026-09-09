@@ -47,6 +47,9 @@ function construireCoucheDonnees(data, layerConf) {
         },
 
         style: function (feature) {
+            if (layerConf.styleFn) {
+                return layerConf.styleFn(feature);
+            }
             if (layerConf.type === "line") {
                 return { color: layerConf.color, weight: 3, opacity: 0.8 };
             }
@@ -80,9 +83,30 @@ function construireCoucheDonnees(data, layerConf) {
     return cible;
 }
 
+/* Couche image (tuiles WMS) : pas de fetch/GeoJSON, juste un flux de tuiles
+   du serveur distant. Utilisé pour les couches réglementaires diffusées
+   uniquement en flux OGC (ex : obligations de débroussaillement). */
+function construireCoucheWMS(layerConf) {
+    return L.tileLayer.wms(layerConf.wmsUrl, {
+        layers: layerConf.wmsLayer,
+        format: layerConf.wmsFormat || "image/png",
+        version: layerConf.wmsVersion || "1.3.0",
+        transparent: true,
+        opacity: layerConf.opacity || 0.65,
+        attribution: layerConf.attribution || ""
+    });
+}
+
 function chargerCouche(layerConf, onReady) {
 
     if (coucheChargee[layerConf.id]) {
+        if (onReady) onReady();
+        return;
+    }
+
+    if (layerConf.type === "wms") {
+        groupesLeaflet[layerConf.id] = construireCoucheWMS(layerConf);
+        coucheChargee[layerConf.id] = true;
         if (onReady) onReady();
         return;
     }
@@ -93,7 +117,8 @@ function chargerCouche(layerConf, onReady) {
             return r.json();
         })
         .then(data => {
-            const couche = construireCoucheDonnees(data, layerConf);
+            const geo = layerConf.transform ? layerConf.transform(data) : data;
+            const couche = construireCoucheDonnees(geo, layerConf);
             groupesLeaflet[layerConf.id] = couche;
             coucheChargee[layerConf.id] = true;
             if (onReady) onReady();

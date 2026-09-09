@@ -32,6 +32,38 @@ configuration — pour ajouter une couche, il suffit d'ajouter une entrée dans
 - **Identité graphique** : couleurs, typographie (Baloo 2) et logo intégrés
   dans tout le site.
 
+## Couches en flux (données distantes, non copiées dans le dépôt)
+
+Trois couches interrogent une source distante en direct plutôt qu'un fichier
+du dépôt, dans le groupe **Risques & prévention** (et **Mobilité** pour les
+carburants) :
+
+- **Vigieau** (`id: "vigieau"`) — zones sous arrêté sécheresse en vigueur,
+  flux GeoJSON public mis à jour quotidiennement. La couleur (vigilance →
+  jaune, alerte → orange, alerte renforcée → rouge, crise → rouge foncé) est
+  déduite par mots-clés (`couleurVigieau` dans `config.js`) plutôt que par un
+  nom de champ figé, pour rester robuste si le fournisseur change ses noms
+  d'attributs.
+- **Obligations légales de débroussaillement** (`id: "old"`) — flux WMS de
+  l'IGN Géoplateforme (`type: "wms"`, géré par `construireCoucheWMS` dans
+  `layers.js`). ⚠️ Le nom de couche WMS (`wmsLayer: "DEBROUSSAILLEMENT"`)
+  n'a pas pu être vérifié en conditions réelles (accès réseau restreint
+  pendant le développement) : si rien ne s'affiche en cochant la couche,
+  vérifiez le nom exact via le GetCapabilities
+  (`https://data.geopf.fr/wms-r/wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities`)
+  et ajustez `wmsLayer` dans `js/config.js`.
+- **Prix des carburants** (`id: "carburants"`) — flux instantané officiel
+  (mis à jour ~10 min), filtré à 25 km autour du territoire via
+  `geofilter.distance`. La réponse (format historique Opendatasoft) est
+  convertie en GeoJSON par `geojsonDepuisFluxODS` (`layers.js`) avant de
+  rentrer dans le pipeline générique de chargement.
+
+Pour ajouter une nouvelle couche en flux du même genre : GeoJSON distant
+→ il suffit de mettre une URL absolue dans `file` (avec `transform` si le
+format n'est pas déjà du GeoJSON) ; WMS → `type: "wms"` avec `wmsUrl` /
+`wmsLayer`. Toutes ces couches restent `lazy: true` puisqu'il s'agit de gros
+volumes ou de données à ne récupérer qu'à la demande.
+
 ## Ce qui reste à faire
 
 - Vérifier/ajuster les champs affichés dans les popups pour les couches où
