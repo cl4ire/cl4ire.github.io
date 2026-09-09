@@ -84,7 +84,7 @@ const LAYERS = [
     {
         id: "mairies", group: "services", label: "Mairies",
         file: "couches/services/mairies.geojson", type: "point",
-        icon: "fa-solid fa-landmark", color: PALETTE.foret,
+        icon: "fa-solid fa-landmark", color: PALETTE.riviere,
         lazy: false, searchable: true, cluster: false,
         titleFields: ["name", "commune"],
         subtitleFields: ["opening_hours", "contact_phone"]
@@ -92,7 +92,7 @@ const LAYERS = [
     {
         id: "bal", group: "services", label: "Boîtes aux lettres",
         file: "couches/services/bal.geojson", type: "point",
-        icon: "fa-solid fa-envelope", color: PALETTE.foret,
+        icon: "fa-solid fa-envelope", color: PALETTE.ardoise,
         lazy: false, searchable: true, cluster: true,
         titleFields: ["LB_VOIE_EXT", "LB_COM"],
         subtitleFields: ["LB_COM", "CO_POSTAL"]
@@ -100,7 +100,7 @@ const LAYERS = [
     {
         id: "dechets", group: "services", label: "Déchèteries / tri",
         file: "couches/services/dechets.geojson", type: "point",
-        icon: "fa-solid fa-recycle", color: PALETTE.foret,
+        icon: "fa-solid fa-recycle", color: PALETTE.feuille,
         lazy: false, searchable: true, cluster: true,
         titleFields: ["name", "type", "com_nom"],
         subtitleFields: ["com_nom", "opening_hours"]
@@ -108,7 +108,7 @@ const LAYERS = [
     {
         id: "irve", group: "services", label: "Bornes de recharge",
         file: "couches/services/irve.geojson", type: "point",
-        icon: "fa-solid fa-charging-station", color: PALETTE.foret,
+        icon: "fa-solid fa-charging-station", color: PALETTE.terracotta,
         lazy: false, searchable: true, cluster: true,
         titleFields: ["nom_station", "nom_enseigne"],
         subtitleFields: ["adresse_station", "nbre_pdc"]
@@ -116,7 +116,7 @@ const LAYERS = [
     {
         id: "marches", group: "services", label: "Marchés",
         file: "couches/services/marches.geojson", type: "point",
-        icon: "fa-solid fa-store", color: PALETTE.foret,
+        icon: "fa-solid fa-store", color: PALETTE.feuille,
         lazy: false, searchable: true, cluster: true,
         titleFields: ["name", "amenity"],
         subtitleFields: []
@@ -124,7 +124,7 @@ const LAYERS = [
     {
         id: "airesJeu", group: "services", label: "Aires de jeux",
         file: "couches/services/airesJeu.geojson", type: "point",
-        icon: "fa-solid fa-child-reaching", color: PALETTE.foret,
+        icon: "fa-solid fa-child-reaching", color: PALETTE.terracotta,
         lazy: false, searchable: true, cluster: true,
         titleFields: ["name"],
         subtitleFields: ["min_age", "max_age"]
@@ -132,7 +132,7 @@ const LAYERS = [
     {
         id: "equipementSportif", group: "services", label: "Équipements sportifs",
         file: "couches/services/equipementSportif.geojson", type: "point",
-        icon: "fa-solid fa-futbol", color: PALETTE.foret,
+        icon: "fa-solid fa-futbol", color: PALETTE.riviere,
         lazy: false, searchable: true, cluster: true,
         titleFields: ["name", "sport", "com_nom"],
         subtitleFields: ["sport", "com_nom"]
@@ -168,7 +168,7 @@ const LAYERS = [
     {
         id: "banques", group: "commerces", label: "Banques & DAB",
         file: "couches/commerces/banques.geojson", type: "point",
-        icon: "fa-solid fa-money-bill-wave", color: PALETTE.feuille,
+        icon: "fa-solid fa-money-bill-wave", color: PALETTE.ardoise,
         lazy: false, searchable: true, cluster: true,
         titleFields: ["name", "brand", "com_nom"],
         subtitleFields: ["com_nom", "has_atm"]
@@ -326,4 +326,45 @@ const THEMES = [
     { label: "Nature & rando", icon: "fa-solid fa-person-hiking", groups: ["tourisme", "patrimoine"] },
     { label: "Sécurité & santé", icon: "fa-solid fa-heart-pulse", groups: ["securite"] },
     { label: "Risques & prévention", icon: "fa-solid fa-triangle-exclamation", groups: ["risques"] }
+];
+
+/* =========================================================
+   RACCOURCIS "PRÈS DE CHEZ MOI"
+   Affichés en premier sur l'écran d'accueil : ils déclenchent
+   une géolocalisation puis affichent la liste des résultats
+   les plus proches pour une ou plusieurs couches (js/proximite.js).
+   Pas de couleur ici : elle est reprise de la couche visée
+   (LAYERS[...].color) pour rester cohérente avec le reste du site.
+   ========================================================= */
+const RACCOURCIS = [
+    {
+        label: "Stations essence près de chez moi",
+        icon: "fa-solid fa-gas-pump",
+        layerIds: ["carburants"]
+    },
+    {
+        label: "Assistante maternelle près de chez moi",
+        icon: "fa-solid fa-baby",
+        layerIds: ["petiteEnfance"]
+    },
+    {
+        label: "Écoles près de chez moi",
+        icon: "fa-solid fa-graduation-cap",
+        layerIds: ["education"]
+    },
+    {
+        label: "Commerces près de chez moi",
+        icon: "fa-solid fa-basket-shopping",
+        layerIds: ["commerces"]
+    },
+    {
+        label: "Défibrillateurs près de chez moi",
+        icon: "fa-solid fa-heart-pulse",
+        layerIds: ["dae"]
+    },
+    {
+        label: "Bornes de recharge près de chez moi",
+        icon: "fa-solid fa-charging-station",
+        layerIds: ["irve"]
+    }
 ];
