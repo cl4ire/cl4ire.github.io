@@ -10,11 +10,12 @@ function construireEcranAccueil(map) {
     conteneur.innerHTML = "";
 
     THEMES.forEach(theme => {
+        const couleur = (GROUPS[theme.groups[0]] || {}).color || PALETTE.ardoise;
         const carte = document.createElement("button");
         carte.type = "button";
         carte.className = "hero-tile";
         carte.innerHTML = `
-            <span class="hero-tile-icon"><i class="${theme.icon}"></i></span>
+            <span class="hero-tile-icon" style="background:${couleur}"><i class="${theme.icon}"></i></span>
             <span class="hero-tile-label">${theme.label}</span>
         `;
 
@@ -41,4 +42,11 @@ function fermerAccueil() {
     const hero = document.getElementById("hero");
     hero.classList.add("hero-hidden");
     setTimeout(() => { hero.style.display = "none"; }, 350);
+}
+
+/* Rouvre l'écran d'accueil (bouton "Accueil" de l'en-tête) */
+function ouvrirAccueil() {
+    const hero = document.getElementById("hero");
+    hero.style.display = "";
+    requestAnimationFrame(() => hero.classList.remove("hero-hidden"));
 }

@@ -22,6 +22,10 @@
 <!-- DEBUT HEADER -->
 <header id="topbar">
     <div id="brand">
+        <svg width="34" height="34" viewBox="0 0 88 88" aria-hidden="true">
+            <circle cx="44" cy="44" r="38" fill="#378ADD"/>
+            <text x="44" y="52" text-anchor="middle" font-family="'Baloo 2', sans-serif" font-size="28" font-weight="700" fill="#EAF2FB">GB</text>
+        </svg>
         <img src="img/geoberce.png" alt="Logo GéoBercé" id="brand-logo" height="50px">
         <div>
             <div id="brand-title">GéoBercé</div>
@@ -36,6 +40,7 @@
     </div>
 
     <div id="topbar-actions">
+        <button type="button" id="home-button" aria-label="Accueil"><i class="fa-solid fa-house"></i></button>
         <button type="button" id="about-button">À propos</button>
         <button type="button" id="menu-button" aria-label="Couches"><i class="fa-solid fa-layer-group"></i></button>
     </div>
@@ -54,12 +59,22 @@
             <button type="button" class="panel-close" id="layers-close" aria-label="Fermer">×</button>
         </div>
 
-        <div id="layers-search">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="layers-filter" placeholder="Filtrer les couches..." autocomplete="off">
+        <div id="layers-normal-view">
+            <div id="layers-search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="layers-filter" placeholder="Filtrer les couches..." autocomplete="off">
+            </div>
+
+            <div id="layers-tree"><!-- Généré par panel.js --></div>
         </div>
 
-        <div id="layers-tree"><!-- Généré par panel.js --></div>
+        <div id="results-view" hidden>
+            <button type="button" id="results-back" class="panel-back">
+                <i class="fa-solid fa-arrow-left"></i><span>Toutes les couches</span>
+            </button>
+            <div id="results-title" class="results-title"></div>
+            <div id="results-list"><!-- Généré par proximite.js --></div>
+        </div>
     </aside>
 
     <div id="map"></div>
@@ -68,8 +83,14 @@
     <div id="hero">
         <div id="hero-inner">
             <p id="hero-title">Que recherchez-vous ?</p>
-            <p id="hero-subtitle">Tapez dans la barre de recherche en haut, ou choisissez une thématique</p>
-            <div id="hero-tiles"><!-- Généré par hero.js --></div>
+            <p id="hero-subtitle">Tapez dans la barre de recherche en haut, ou choisissez un raccourci ci-dessous</p>
+            <div id="hero-raccourcis"><!-- Généré par proximite.js --></div>
+
+            <details id="hero-plus">
+                <summary>Voir plus de thématiques</summary>
+                <div id="hero-tiles"><!-- Généré par hero.js --></div>
+            </details>
+
             <button type="button" id="hero-explore">Voir la carte complète</button>
         </div>
     </div>
@@ -104,6 +125,7 @@
 <script src="js/panel.js"></script>
 <script src="js/search.js"></script>
 <script src="js/hero.js"></script>
+<script src="js/proximite.js"></script>
 <script src="js/map.js"></script>
 <!-- FIN SCRIPTS -->
 

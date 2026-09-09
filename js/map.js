@@ -20,7 +20,7 @@ L.control.locate({ position: "topright", flyTo: true, keepCurrentZoomLevel: fals
 fetch("couches/epci.geojson")
     .then(r => r.json())
     .then(data => {
-        L.geoJSON(data, { style: { color: PALETTE.foret, weight: 2, fill: false, dashArray: "4 3" } }).addTo(map);
+        L.geoJSON(data, { style: { color: PALETTE.riviere, weight: 2, fill: false, dashArray: "4 3" } }).addTo(map);
     })
     .catch(err => console.error("epci.geojson :", err));
 
@@ -37,6 +37,7 @@ initialiserCouches(map);
 construirePanneauCouches(map);
 initFiltrePanneau();
 construireEcranAccueil(map);
+construireRaccourcis(map);
 
 initRecherche(map, {
     onResultat: () => {
@@ -62,3 +63,10 @@ document.getElementById("about-button").addEventListener("click", () => {
 document.getElementById("about-close").addEventListener("click", () => {
     document.getElementById("about-modal").classList.remove("modal-open");
 });
+
+document.getElementById("home-button").addEventListener("click", () => {
+    fermerResultatsProximite();
+    ouvrirAccueil();
+});
+
+document.getElementById("results-back").addEventListener("click", fermerResultatsProximite);
