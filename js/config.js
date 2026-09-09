@@ -26,8 +26,48 @@ const GROUPS = {
     securite: { label: "Sécurité & santé", icon: "fa-solid fa-heart-pulse", color: "#AD4826" },
     tourisme: { label: "Nature & rando", icon: "fa-solid fa-person-hiking", color: PALETTE.feuille },
     patrimoine: { label: "Patrimoine", icon: "fa-solid fa-monument", color: "#7F7E7B" },
-    urbanisme: { label: "Habitat & urbanisme", icon: "fa-solid fa-house-chimney", color: PALETTE.ardoise }
+    urbanisme: { label: "Habitat & urbanisme", icon: "fa-solid fa-house-chimney", color: PALETTE.ardoise },
+    risques: { label: "Risques & prévention", icon: "fa-solid fa-triangle-exclamation", color: "#AD4826" }
 };
+
+/* =========================================================
+   STYLES DYNAMIQUES POUR COUCHES "FLUX"
+   (données dont on ne maîtrise pas totalement le nom exact
+   des attributs distants : on cherche des mots-clés plutôt
+   qu'un nom de champ figé, pour rester robuste aux évolutions
+   du fournisseur de données)
+   ========================================================= */
+function couleurVigieau(feature) {
+    const props = feature.properties || {};
+    const texte = Object.values(props)
+        .filter(v => typeof v === "string")
+        .join(" ")
+        .toLowerCase();
+
+    let remplissage = "#9AA5A0"; // niveau inconnu / pas de restriction identifiée
+    if (texte.includes("crise")) remplissage = "#7A1F1F";
+    else if (texte.includes("renforc")) remplissage = "#EB5757";
+    else if (texte.includes("alerte")) remplissage = "#F2994A";
+    else if (texte.includes("vigilance")) remplissage = "#F2C94C";
+
+    return { color: "#fff", weight: 1, fillColor: remplissage, fillOpacity: 0.5 };
+}
+
+/* Transforme la réponse de l'API historique Opendatasoft (records/1.0/search)
+   en GeoJSON standard, pour réutiliser le même pipeline de chargement que
+   les couches fichier. Utilisé par les couches "flux" (ex : carburants). */
+function geojsonDepuisFluxODS(data) {
+    return {
+        type: "FeatureCollection",
+        features: (data.records || [])
+            .filter(rec => rec.geometry)
+            .map(rec => ({
+                type: "Feature",
+                geometry: rec.geometry,
+                properties: rec.fields || {}
+            }))
+    };
+}
 
 /* =========================================================
    COUCHES
@@ -231,6 +271,46 @@ const LAYERS = [
         lazy: true, searchable: false, cluster: false,
         titleFields: ["adresse", "reference_parcelle"],
         subtitleFields: ["commune", "nb_mutations"]
+    },
+
+    /* ---------- RISQUES & PRÉVENTION (couches en flux, données distantes
+       tenues à jour par les fournisseurs et non copiées dans le dépôt) ---------- */
+    {
+        id: "vigieau", group: "risques", label: "Restrictions sécheresse (Vigieau)",
+        /* Flux GeoJSON public des zones sous arrêté sécheresse en vigueur,
+           publié par le Ministère (source du jeu de données data.gouv.fr
+           "VigiEau : Arrêtés sécheresse en vigueur"), mis à jour quotidiennement. */
+        file: "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_arretes_en_vigueur.geojson",
+        type: "polygon", color: "#F2994A",
+        styleFn: couleurVigieau,
+        lazy: true, searchable: false, cluster: false,
+        titleFields: ["nom_zone", "nomZone", "nom", "zone_nom", "libelle", "nomBassin"],
+        subtitleFields: ["niveauGravite", "niveau_gravite", "type_eau", "zoneType", "departement", "nom_dept"]
+    },
+    {
+        id: "old", group: "risques", label: "Obligations légales de débroussaillement",
+        /* Flux WMS de l'IGN (Géoplateforme) - zonage informatif OLD.
+           Nom de couche à vérifier/ajuster si besoin via le GetCapabilities :
+           https://data.geopf.fr/wms-r/wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities */
+        type: "wms",
+        wmsUrl: "https://data.geopf.fr/wms-r/wms",
+        wmsLayer: "DEBROUSSAILLEMENT",
+        opacity: 0.6,
+        attribution: "IGN",
+        color: "#AD4826",
+        lazy: true, searchable: false, cluster: false
+    },
+    {
+        id: "carburants", group: "mobilite", label: "Prix des carburants",
+        /* Flux instantané officiel (mis à jour ~10 min), filtré sur un rayon
+           de 25 km autour du territoire pour ne récupérer que les stations utiles. */
+        file: "https://data.economie.gouv.fr/api/records/1.0/search/?dataset=prix-des-carburants-en-france-flux-instantane-v2&geofilter.distance=47.791528,0.412223,25000&rows=300",
+        transform: geojsonDepuisFluxODS,
+        type: "point",
+        icon: "fa-solid fa-gas-pump", color: PALETTE.riviere,
+        lazy: true, searchable: true, cluster: true,
+        titleFields: ["adresse", "nom", "enseigne", "id"],
+        subtitleFields: ["ville", "cp", "gazole_prix", "sp95_prix", "e10_prix"]
     }
 ];
 
@@ -244,5 +324,6 @@ const THEMES = [
     { label: "Commerces", icon: "fa-solid fa-basket-shopping", groups: ["commerces"] },
     { label: "Mobilité", icon: "fa-solid fa-bus", groups: ["mobilite"] },
     { label: "Nature & rando", icon: "fa-solid fa-person-hiking", groups: ["tourisme", "patrimoine"] },
-    { label: "Sécurité & santé", icon: "fa-solid fa-heart-pulse", groups: ["securite"] }
+    { label: "Sécurité & santé", icon: "fa-solid fa-heart-pulse", groups: ["securite"] },
+    { label: "Risques & prévention", icon: "fa-solid fa-triangle-exclamation", groups: ["risques"] }
 ];
