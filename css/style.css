@@ -11,64 +11,23 @@
     --creme: #E1F5EE;
     --fond: #FAFAF8;
     --bordure: #E4E1DB;
-
     --font-titre: 'Baloo 2', sans-serif;
     --font-texte: 'Nunito', sans-serif;
 }
 
 * { box-sizing: border-box; }
-
-html, body {
-    margin: 0;
-    height: 100%;
-    font-family: var(--font-texte);
-    color: #2A2A28;
-}
-
+html, body { margin: 0; height: 100%; font-family: var(--font-texte); color: #2A2A28; }
 button { font-family: inherit; cursor: pointer; }
 
-/* ---------- EN-TÊTE ---------- */
-#topbar {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    height: 62px;
-    padding: 0 20px;
-    background: #fff;
-    border-bottom: 1px solid var(--bordure);
-    position: relative;
-    z-index: 1000;
-}
-
+#topbar { display: flex; align-items: center; gap: 20px; height: 62px; padding: 0 20px; background: #fff; border-bottom: 1px solid var(--bordure); position: relative; z-index: 1000; }
 #brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 #brand-title { font-family: var(--font-titre); font-size: 19px; font-weight: 700; color: var(--foret); line-height: 1.1; }
 #brand-subtitle { font-size: 11px; color: var(--ardoise); }
-
 #search-container { position: relative; flex: 1; max-width: 480px; }
 #search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--foret); font-size: 13px; }
-
-#search {
-    width: 100%;
-    padding: 10px 14px 10px 36px;
-    border: 1px solid var(--bordure);
-    border-radius: 999px;
-    background: var(--fond);
-    font-size: 14px;
-    font-family: inherit;
-}
+#search { width: 100%; padding: 10px 14px 10px 36px; border: 1px solid var(--bordure); border-radius: 999px; background: var(--fond); font-size: 14px; font-family: inherit; }
 #search:focus { outline: 2px solid var(--feuille); background: #fff; }
-
-#suggestions {
-    position: absolute;
-    top: calc(100% + 6px);
-    left: 0; right: 0;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.14);
-    overflow: hidden;
-    max-height: 340px;
-    overflow-y: auto;
-}
+#suggestions { position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: #fff; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.14); overflow: hidden; max-height: 340px; overflow-y: auto; }
 .suggestion { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--bordure); }
 .suggestion:last-child { border-bottom: none; }
 .suggestion:hover { background: var(--creme); cursor: pointer; }
@@ -77,111 +36,42 @@ button { font-family: inherit; cursor: pointer; }
 .suggestion-titre { font-size: 13px; font-weight: 600; }
 .suggestion-sous { font-size: 11px; color: var(--ardoise); }
 .suggestion-vide { padding: 12px 14px; font-size: 13px; color: var(--ardoise); }
-
 #topbar-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
-#about-button {
-    border: 1px solid var(--bordure);
-    background: #fff;
-    border-radius: 999px;
-    padding: 8px 16px;
-    font-size: 13px;
-    color: var(--ardoise);
-}
-#menu-button {
-    display: none;
-    border: none;
-    background: var(--foret);
-    color: #fff;
-    width: 38px; height: 38px;
-    border-radius: 10px;
-    font-size: 15px;
-}
-
-/* ---------- APPLICATION ---------- */
+#about-button { border: 1px solid var(--bordure); background: #fff; border-radius: 999px; padding: 8px 16px; font-size: 13px; color: var(--ardoise); }
+#menu-button { display: none; border: none; background: var(--foret); color: #fff; width: 38px; height: 38px; border-radius: 10px; font-size: 15px; }
 #app { display: flex; height: calc(100% - 62px); position: relative; }
-
 #map { flex: 1; }
-
-/* ---------- PANNEAU DE COUCHES ---------- */
-#layers-panel {
-    width: 280px;
-    background: #fff;
-    border-right: 1px solid var(--bordure);
-    overflow-y: auto;
-    flex-shrink: 0;
-}
-
+#layers-panel { width: 280px; background: #fff; border-right: 1px solid var(--bordure); overflow-y: auto; flex-shrink: 0; }
 .panel-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px 10px; }
 .panel-title { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--foret); }
 .panel-close { display: none; border: none; background: none; font-size: 20px; color: var(--ardoise); }
-
 #layers-search { display: flex; align-items: center; gap: 8px; margin: 0 18px 12px; padding: 8px 12px; background: var(--fond); border-radius: 999px; color: var(--ardoise); }
 #layers-search input { border: none; background: none; outline: none; font-size: 13px; width: 100%; font-family: inherit; }
-
 .layer-group { border-top: 1px solid var(--bordure); padding: 6px 18px; }
 .layer-group summary { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-weight: 700; font-size: 13.5px; cursor: pointer; list-style: none; }
 .layer-group summary::-webkit-details-marker { display: none; }
 .layer-group-icon { width: 18px; text-align: center; }
-
 .layer-item { display: flex; align-items: center; gap: 10px; padding: 7px 4px 7px 28px; font-size: 13.5px; cursor: pointer; border-radius: 8px; }
 .layer-item:hover { background: var(--fond); }
 .layer-item input { accent-color: var(--foret); width: 16px; height: 16px; }
 .layer-lazy-badge { color: var(--terracotta); font-size: 8px; margin-left: 6px; vertical-align: middle; }
-
-/* ---------- ÉCRAN D'ACCUEIL ---------- */
-#hero {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, rgba(234,246,241,0.97), rgba(250,250,248,0.97));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 500;
-    transition: opacity 0.35s ease;
-}
+#hero { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(234,246,241,0.97), rgba(250,250,248,0.97)); display: flex; align-items: center; justify-content: center; z-index: 500; transition: opacity 0.35s ease; }
 .hero-hidden { opacity: 0; pointer-events: none; }
-
 #hero-inner { max-width: 560px; width: 90%; text-align: center; }
 #hero-title { font-family: var(--font-titre); font-size: 28px; font-weight: 700; color: var(--foret); margin: 0 0 6px; }
 #hero-subtitle { font-size: 14px; color: var(--ardoise); margin: 0 0 26px; }
-
 #hero-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 12px; margin-bottom: 22px; }
-.hero-tile {
-    background: #fff;
-    border: 1px solid var(--bordure);
-    border-radius: 14px;
-    padding: 18px 10px;
-    text-align: center;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
+.hero-tile { background: #fff; border: 1px solid var(--bordure); border-radius: 14px; padding: 18px 10px; text-align: center; transition: transform 0.15s ease, box-shadow 0.15s ease; }
 .hero-tile:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(15,110,86,0.14); }
 .hero-tile-icon { display: block; font-size: 22px; color: var(--foret); margin-bottom: 8px; }
 .hero-tile-label { font-size: 13px; font-weight: 700; color: #2A2A28; }
-
 #hero-explore { background: none; border: none; text-decoration: underline; color: var(--ardoise); font-size: 13px; }
-
-/* ---------- MARQUEURS ---------- */
 .geo-marker { background: transparent; border: none; }
-.geo-marker-icon {
-    width: 30px; height: 30px;
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 50%;
-    border: 2px solid #fff;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-    color: #fff;
-    font-size: 13px;
-}
+.geo-marker-icon { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.25); color: #fff; font-size: 13px; }
+.marker-cluster-small, .marker-cluster-medium, .marker-cluster-large { background: rgba(15,110,86,0.18); }
+.marker-cluster-small div, .marker-cluster-medium div, .marker-cluster-large div { background: var(--foret); color: #fff; font-weight: 700; }
 
-.marker-cluster-small, .marker-cluster-medium, .marker-cluster-large {
-    background: rgba(15,110,86,0.18);
-}
-.marker-cluster-small div, .marker-cluster-medium div, .marker-cluster-large div {
-    background: var(--foret);
-    color: #fff;
-    font-weight: 700;
-}
-
-/* ---------- POPUPS ---------- */
+/* ---------- POPUPS GÉNÉRIQUES ---------- */
 .popup-geo { font-family: var(--font-texte); min-width: 180px; }
 .popup-geo-tag { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; margin-bottom: 2px; }
 .popup-geo-titre { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
@@ -190,7 +80,50 @@ button { font-family: inherit; cursor: pointer; }
 .popup-geo-details dt { color: var(--ardoise); float: left; clear: left; width: 45%; }
 .popup-geo-details dd { margin: 0 0 3px 45%; }
 
-/* ---------- MODALE À PROPOS ---------- */
+/* ---------- POPUP CARBURANT — fiche détaillée ---------- */
+.leaflet-popup-content-wrapper:has(.popup-carburant) { border-radius: 18px; padding: 0; overflow: hidden; }
+.leaflet-popup-content:has(.popup-carburant) { margin: 0; width: 390px !important; }
+.popup-carburant { width: 390px; max-width: 100%; background: #fff; font-family: var(--font-texte); color: #2A2A28; }
+.popup-carburant-entete { display: flex; align-items: flex-start; gap: 11px; padding: 18px 18px 15px; border-bottom: 1px solid var(--bordure); }
+.popup-carburant-icon { width: 39px; height: 39px; flex: 0 0 39px; display: flex; align-items: center; justify-content: center; border-radius: 12px; background: var(--riviere); color: #fff; font-size: 17px; }
+.popup-carburant-titre-wrap { min-width: 0; flex: 1; }
+.popup-carburant-tag { color: var(--riviere); text-transform: uppercase; letter-spacing: .06em; font-size: 9px; font-weight: 800; }
+.popup-carburant-titre { margin-top: 1px; font-family: var(--font-titre); font-size: 18px; line-height: 1.05; font-weight: 700; }
+.popup-carburant-adresse { margin-top: 4px; color: var(--ardoise); font-size: 11px; line-height: 1.25; }
+.popup-carburant-badge { display: inline-flex; align-items: center; gap: 5px; flex: 0 0 auto; border-radius: 999px; padding: 5px 8px; font-size: 9px; font-weight: 800; white-space: nowrap; }
+.popup-carburant-badge span { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.popup-carburant-badge.ouvert { color: var(--feuille); background: #E8F7F1; }
+.popup-carburant-badge.ferme { color: var(--terracotta); background: #FBEDE8; }
+.popup-carburant-badge.inconnu { color: var(--ardoise); background: #F0EFEC; }
+.popup-carburant-section { padding: 14px 18px; border-bottom: 1px solid var(--bordure); }
+.popup-carburant-section:last-child { border-bottom: 0; }
+.popup-carburant-section-titre { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; font-size: 11px; font-weight: 800; color: var(--ardoise); text-transform: uppercase; letter-spacing: .05em; }
+.popup-carburant-section-titre small { font-size: 9px; font-weight: 700; }
+.popup-carburant-prix { display: grid; grid-template-columns: 1fr auto; align-items: center; column-gap: 10px; padding: 8px 0; border-bottom: 1px solid #F0EFEC; }
+.popup-carburant-prix:last-child { border-bottom: 0; }
+.popup-carburant-nom { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; }
+.popup-carburant-pastille { width: 7px; height: 7px; border-radius: 50%; background: var(--feuille); }
+.popup-carburant-valeur { font-size: 16px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
+.popup-carburant-statut { grid-column: 1 / 2; margin: -3px 0 0 14px; font-size: 9px; color: var(--ardoise); }
+.popup-carburant-prix.indisponible .popup-carburant-pastille, .popup-carburant-prix.rupture .popup-carburant-pastille { background: var(--terracotta); }
+.popup-carburant-prix.indisponible .popup-carburant-valeur, .popup-carburant-prix.rupture .popup-carburant-valeur { color: var(--ardoise); }
+.popup-carburant-source { margin-top: 7px; font-size: 8.5px; color: #8A8882; }
+.popup-carburant-aujourdhui { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 11px; border-radius: 10px; background: var(--fond); font-size: 11px; }
+.popup-carburant-aujourdhui i { margin-right: 5px; color: var(--ardoise); }
+.popup-carburant-aujourdhui strong { font-size: 10px; }
+.popup-carburant-aujourdhui.ouvert strong { color: var(--feuille); }
+.popup-carburant-aujourdhui.ferme strong { color: var(--terracotta); }
+.popup-carburant-horaires { margin-top: 7px; font-size: 10px; }
+.popup-carburant-horaires summary { display: flex; justify-content: space-between; gap: 10px; cursor: pointer; list-style: none; color: var(--ardoise); padding: 5px 1px; }
+.popup-carburant-horaires summary::-webkit-details-marker { display: none; }
+.popup-carburant-horaires-liste { margin-top: 3px; padding-top: 5px; border-top: 1px solid var(--bordure); }
+.popup-carburant-jour { display: flex; justify-content: space-between; padding: 3px 0; color: var(--ardoise); }
+.popup-carburant-jour strong { color: #2A2A28; font-weight: 700; }
+.popup-carburant-services { display: flex; flex-wrap: wrap; gap: 6px; }
+.popup-service { display: inline-flex; align-items: center; gap: 5px; padding: 6px 8px; border: 1px solid var(--bordure); border-radius: 8px; background: var(--fond); color: #454440; font-size: 9.5px; font-weight: 700; }
+.popup-service i { color: var(--foret); font-size: 9px; }
+.popup-carburant-vide { color: var(--ardoise); font-size: 11px; padding: 5px 0; }
+
 .modal { position: fixed; inset: 0; background: rgba(15,20,18,0.45); display: none; align-items: center; justify-content: center; z-index: 2000; }
 .modal-open { display: flex; }
 .modal-content { background: #fff; border-radius: 16px; padding: 28px; max-width: 420px; width: 90%; position: relative; text-align: center; }
@@ -198,16 +131,14 @@ button { font-family: inherit; cursor: pointer; }
 .about-source { font-size: 11.5px; color: var(--ardoise); }
 .info-close { position: absolute; top: 10px; right: 14px; background: none; border: none; font-size: 20px; color: var(--ardoise); }
 
-/* ---------- RESPONSIVE ---------- */
 @media (max-width: 780px) {
     #menu-button { display: inline-flex; align-items: center; justify-content: center; }
-    #layers-panel {
-        position: absolute; inset: 0 15% 0 0;
-        transform: translateX(-100%);
-        transition: transform 0.25s ease;
-        z-index: 900;
-    }
+    #layers-panel { position: absolute; inset: 0 15% 0 0; transform: translateX(-100%); transition: transform 0.25s ease; z-index: 900; }
     .layers-panel-open { transform: translateX(0); }
     .panel-close { display: block; }
     #hero-title { font-size: 22px; }
+    .leaflet-popup-content:has(.popup-carburant) { width: min(390px, calc(100vw - 48px)) !important; }
+    .popup-carburant { width: min(390px, calc(100vw - 48px)); }
+    .popup-carburant-entete { padding: 15px; }
+    .popup-carburant-section { padding: 12px 15px; }
 }
