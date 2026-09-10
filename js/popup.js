@@ -115,9 +115,147 @@ function construirePopupCarburant(props) {
     </div>`;
 }
 
+/* =========================================================
+   POPUP COMMERCE — fiche détaillée
+   Horaires (syntaxe OSM), téléphone/email/site formatés, catégorie
+   reprise de config.js (categorieCommerce/TYPES_COMMERCES).
+   ========================================================= */
+const JOURS_OSM = { Mo: "Lundi", Tu: "Mardi", We: "Mercredi", Th: "Jeudi", Fr: "Vendredi", Sa: "Samedi", Su: "Dimanche" };
+const ORDRE_JOURS_OSM = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+
+function jourOsmAujourdhui() {
+    return ORDRE_JOURS_OSM[(new Date().getDay() + 6) % 7]; // getDay() : 0 = dimanche
+}
+
+/* Développe "Mo-Fr" ou "Mo,We,Fr" en liste de jours OSM. Ne couvre pas
+   toute la spécification opening_hours (jours fériés "PH", horaires sur
+   plusieurs semaines...), seulement les motifs les plus courants dans
+   les données OSM locales : c'est suffisant pour rendre les horaires
+   lisibles sans essayer de tout couvrir. */
+function developperJoursOsm(plage) {
+    const resultat = [];
+    plage.split(",").forEach(morceau => {
+        morceau = morceau.trim();
+        if (morceau.includes("-")) {
+            const [debut, fin] = morceau.split("-");
+            let i = ORDRE_JOURS_OSM.indexOf(debut);
+            const j = ORDRE_JOURS_OSM.indexOf(fin);
+            if (i === -1 || j === -1) return;
+            while (true) {
+                resultat.push(ORDRE_JOURS_OSM[i]);
+                if (i === j) break;
+                i = (i + 1) % 7;
+            }
+        } else if (ORDRE_JOURS_OSM.includes(morceau)) {
+            resultat.push(morceau);
+        }
+    });
+    return resultat;
+}
+
+function parserHorairesOsm(valeur) {
+    if (!valeur || typeof valeur !== "string") return null;
+    if (/^24\/7$/i.test(valeur.trim())) {
+        const tous = {};
+        ORDRE_JOURS_OSM.forEach(j => { tous[j] = ["00:00-24:00"]; });
+        return tous;
+    }
+    const horaires = {};
+    let auMoinsUn = false;
+    valeur.split(";").forEach(bloc => {
+        bloc = bloc.trim();
+        const espace = bloc.indexOf(" ");
+        if (espace === -1) return;
+        const jours = developperJoursOsm(bloc.slice(0, espace));
+        const horaireBrut = bloc.slice(espace + 1).trim();
+        if (!jours.length) return;
+        auMoinsUn = true;
+        jours.forEach(j => {
+            horaires[j] = /^off$|^closed$/i.test(horaireBrut) ? [] : horaireBrut.split(",").map(s => s.trim());
+        });
+    });
+    return auMoinsUn ? horaires : null;
+}
+
+function estOuvertMaintenant(horaires) {
+    if (!horaires) return null;
+    const plages = horaires[jourOsmAujourdhui()];
+    if (!plages || !plages.length) return false;
+    const maintenant = new Date();
+    const minutes = maintenant.getHours() * 60 + maintenant.getMinutes();
+    return plages.some(p => {
+        const m = p.match(/^(\d{2}):(\d{2})-(\d{2}):(\d{2})$/);
+        if (!m) return false;
+        const debut = Number(m[1]) * 60 + Number(m[2]);
+        const fin = (Number(m[3]) * 60 + Number(m[4])) || 24 * 60; // "24:00" -> minuit le lendemain
+        return minutes >= debut && minutes < fin;
+    });
+}
+
+function formaterTelephone(tel) {
+    if (!tel) return null;
+    const local = tel.replace(/[^\d+]/g, "").replace(/^\+33/, "0");
+    if (/^0\d{9}$/.test(local)) return local.match(/.{2}/g).join(" ");
+    return tel;
+}
+
+function domaineSite(url) {
+    try {
+        return new URL(/^https?:\/\//i.test(url) ? url : "https://" + url).hostname.replace(/^www\./, "");
+    } catch (_) {
+        return url;
+    }
+}
+
+function construirePopupCommerce(props) {
+    const cat = categorieCommerce(props.type);
+    const nom = premierChampValide(props, ["name", "brand"]) || cat.label;
+    const adresse = [props.address, props.com_nom].filter(Boolean).join(" · ");
+
+    const horaires = parserHorairesOsm(props.opening_hours);
+    const ouvert = estOuvertMaintenant(horaires);
+    const aujourdhui = jourOsmAujourdhui();
+
+    const contacts = [];
+    if (props.phone) {
+        contacts.push(`<a class="popup-commerce-contact" href="tel:${echapperHtml(props.phone.replace(/\s+/g, ""))}"><i class="fa-solid fa-phone"></i>${echapperHtml(formaterTelephone(props.phone))}</a>`);
+    }
+    if (props.email) {
+        contacts.push(`<a class="popup-commerce-contact" href="mailto:${echapperHtml(props.email)}"><i class="fa-solid fa-envelope"></i>${echapperHtml(props.email)}</a>`);
+    }
+    if (props.website) {
+        contacts.push(`<a class="popup-commerce-contact" href="${echapperHtml(props.website)}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-globe"></i>${echapperHtml(domaineSite(props.website))}</a>`);
+    }
+
+    const lignesHoraires = horaires
+        ? ORDRE_JOURS_OSM.filter(j => j in horaires).map(j => {
+            const plages = horaires[j];
+            const texte = plages.length ? plages.join(", ") : "Fermé";
+            return `<div class="popup-commerce-jour${j === aujourdhui ? " aujourdhui" : ""}"><span>${JOURS_OSM[j]}</span><strong>${echapperHtml(texte)}</strong></div>`;
+        }).join("")
+        : "";
+
+    return `<div class="popup-commerce">
+        <div class="popup-commerce-entete">
+            <div class="popup-commerce-icon" style="background:${cat.color}"><i class="${cat.icon}"></i></div>
+            <div class="popup-commerce-titre-wrap">
+                <div class="popup-commerce-tag" style="color:${cat.color}">${echapperHtml(cat.label)}</div>
+                <div class="popup-commerce-titre">${echapperHtml(nom)}</div>
+                ${adresse ? `<div class="popup-commerce-adresse">${echapperHtml(adresse)}</div>` : ""}
+            </div>
+            ${horaires ? `<span class="popup-commerce-badge ${ouvert ? "ouvert" : "ferme"}"><span></span>${ouvert ? "Ouvert" : "Fermé"}</span>` : ""}
+        </div>
+
+        ${contacts.length ? `<div class="popup-commerce-section"><div class="popup-commerce-section-titre">Contact</div><div class="popup-commerce-contacts">${contacts.join("")}</div></div>` : ""}
+
+        ${lignesHoraires ? `<div class="popup-commerce-section"><div class="popup-commerce-section-titre">Horaires</div>${lignesHoraires}</div>` : ""}
+    </div>`;
+}
+
 function construirePopup(feature, layerConf) {
     const props = feature.properties || {};
     if (layerConf.id === "carburants") return construirePopupCarburant(props);
+    if (layerConf.id === "commerces") return construirePopupCommerce(props);
 
     const titre = premierChampValide(props, layerConf.titleFields || []) || layerConf.label;
     const sousInfos = (layerConf.subtitleFields || []).map(c => props[c]).filter(v => v !== undefined && v !== null && v !== "" && v !== "NULL");

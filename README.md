@@ -93,6 +93,25 @@ format n'est pas déjà du GeoJSON) ; WMS → `type: "wms"` avec `wmsUrl` /
 `wmsLayer`. Toutes ces couches restent `lazy: true` puisqu'il s'agit de gros
 volumes ou de données à ne récupérer qu'à la demande.
 
+## Popups détaillées
+
+Deux couches ont une fiche popup dédiée dans `js/popup.js` plutôt que la
+popup générique (champs bruts affichés tels quels) : carburants et
+commerces. `construirePopup` aiguille sur `layerConf.id`.
+
+- **Commerces** (`construirePopupCommerce`) — catégorie reprise de
+  `categorieCommerce`/`TYPES_COMMERCES` (icône + couleur), badge "Ouvert"/
+  "Fermé" calculé en direct, contacts formatés (téléphone en `01 23 45 67
+  89`, email, site avec juste le nom de domaine affiché) et horaires
+  détaillés jour par jour avec le jour courant mis en évidence. Les
+  horaires OSM (`opening_hours`) sont interprétés par un petit parseur
+  maison (`parserHorairesOsm`/`developperJoursOsm`) qui couvre les motifs
+  courants (`Mo-Fr 08:00-19:00`, listes de jours, `24/7`, `off`) sans
+  chercher à couvrir toute la spécification (jours fériés, horaires sur
+  plusieurs semaines...) — largement suffisant pour les données locales.
+  Chaque section (Contact/Horaires) ne s'affiche que si la donnée existe,
+  pour rester propre sur les fiches incomplètes.
+
 ## Recherche foncière ("Explorer le foncier")
 
 Bouton "Recherche foncière" dans l'en-tête : panneau de filtres (commune,
