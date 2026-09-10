@@ -654,6 +654,7 @@ function construirePopupMutation(props, feature) {
    ========================================================= */
 function construirePopupLocker(props) {
     const cat = categorieLocker(props);
+    const pointRelais = estPointRelaisCommerce(props);
     const nom = premierChampValide(props, ["name", "brand", "ref"]) || cat.label;
     const adresse = [
         [props["addr:housenumber"], props["addr:street"]].filter(Boolean).join(" "),
@@ -671,11 +672,12 @@ function construirePopupLocker(props) {
 
     return `<div class="popup-fiche">
         <div class="popup-fiche-entete">
-            <div class="popup-fiche-icon" style="background:${cat.color}"><i class="fa-solid fa-box"></i></div>
+            <div class="popup-fiche-icon" style="background:${cat.color}"><i class="fa-solid fa-${pointRelais ? "store" : "box"}"></i></div>
             <div class="popup-fiche-titre-wrap">
                 <div class="popup-fiche-tag" style="color:${cat.color}">${echapperHtml(cat.label)}</div>
                 <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
                 ${adresse ? `<div class="popup-fiche-adresse">${echapperHtml(adresse)}</div>` : ""}
+                ${pointRelais ? `<div class="popup-fiche-puce" style="color:${cat.color}"><i class="fa-solid fa-store"></i>Point relais, dans un commerce</div>` : ""}
             </div>
             ${construireBadgeOuvert(horaires)}
         </div>
