@@ -35,15 +35,24 @@ function initRecherche(map, { onResultat } = {}) {
     }
 
     function afficherResultat(item) {
-        map.setView(item.latlng, item.estAdresse ? 18 : 17);
+        if (marqueurRecherche) { map.removeLayer(marqueurRecherche); marqueurRecherche = null; }
 
-        if (marqueurRecherche) map.removeLayer(marqueurRecherche);
-
-        marqueurRecherche = L.marker(item.latlng, {
-            icon: item.estAdresse ? undefined : creerIcone(item.icon, item.color)
-        }).addTo(map)
-          .bindPopup(`<div class="popup-geo"><div class="popup-geo-titre">${item.titre}</div>${item.sousTitre ? `<div class="popup-geo-sous">${item.sousTitre}</div>` : ""}</div>`)
-          .openPopup();
+        if (item.estAdresse) {
+            /* Pas de feature/couche à réutiliser ici (adresse géocodée à
+               la volée par l'API Adresse) : un marqueur temporaire avec
+               une popup légère, mais dans le même habillage que le
+               reste du site plutôt que l'ancien style à part. */
+            map.setView(item.latlng, 18);
+            marqueurRecherche = L.marker(item.latlng)
+                .addTo(map)
+                .bindPopup(construirePopupAdresse(item.titre, item.latlng.lat, item.latlng.lng))
+                .openPopup();
+        } else {
+            /* Résultat de l'index local (mairie, commerce...) : rouvre
+               la vraie popup, déjà stylée, du marqueur existant plutôt
+               que d'en construire une nouvelle par-dessus. */
+            ouvrirPopupIndex(map, item);
+        }
 
         suggestions.innerHTML = "";
         input.value = item.titre;

@@ -21,7 +21,11 @@ function couleurPrix(prix) {
     return "#c94338";
 }
 
-function ajouterAuIndex(feature, latlng, layerConf) {
+/* `layer` (le marqueur/polygone/ligne Leaflet réel, déjà lié à sa vraie
+   popup stylée) est gardé dans l'entrée d'index : la recherche et "près
+   de chez moi" peuvent ainsi rouvrir CETTE popup (voir ouvrirPopupIndex
+   plus bas) au lieu d'en construire une autre, plus pauvre, à la volée. */
+function ajouterAuIndex(feature, latlng, layerConf, layer) {
     if (!layerConf.searchable || !latlng) return;
     const props = feature.properties || {};
     const titre = premierChampValide(props, layerConf.titleFields || []);
@@ -37,8 +41,65 @@ function ajouterAuIndex(feature, latlng, layerConf) {
         color: color,
         latlng: latlng,
         layerId: layerConf.id,
-        groupLabel: (GROUPS[layerConf.group] || {}).label || ""
+        groupLabel: (GROUPS[layerConf.group] || {}).label || "",
+        layer: layer
     });
+}
+
+/* Retrouve, pour un marqueur donné, le L.MarkerClusterGroup qui le
+   contient réellement (souscouchesLeaflet[layerId] pour les couches
+   catégorisées comme les commerces, groupesLeaflet[layerId] sinon) :
+   nécessaire pour rouvrir la popup d'un marqueur actuellement replié
+   dans un cluster (group.zoomToShowLayer gère le zoom/déploiement,
+   contrairement à un simple marker.openPopup() qui ne fait rien tant
+   que le marqueur n'est pas individuellement sur la carte). Renvoie
+   null si la couche n'est pas clusterisée : un simple openPopup() après
+   recentrage suffit dans ce cas (voir les appelants). */
+function trouverGroupeCluster(layerId, layer) {
+    const essayer = groupe => (groupe && typeof groupe.zoomToShowLayer === "function" && groupe.hasLayer(layer)) ? groupe : null;
+
+    const direct = essayer(groupesLeaflet[layerId]);
+    if (direct) return direct;
+
+    const sousCouches = souscouchesLeaflet[layerId];
+    if (sousCouches) {
+        for (const cle of Object.keys(sousCouches)) {
+            const trouve = essayer(sousCouches[cle]);
+            if (trouve) return trouve;
+        }
+    }
+    return null;
+}
+
+/* Point d'entrée commun utilisé par la recherche et "près de chez moi"
+   pour ouvrir la vraie popup (stylée) d'une entrée de l'index plutôt que
+   d'en construire une ad hoc à la volée : centre/zoome la carte sur le
+   point, en passant par zoomToShowLayer si la couche est clusterisée
+   pour que le marqueur soit effectivement visible avant d'ouvrir sa
+   popup. Les cases à cocher du panneau ne sont PAS cochées par défaut
+   (voir panel.js) : la donnée est déjà chargée pour alimenter l'index
+   de recherche dès le démarrage, mais sa couche Leaflet peut très bien
+   ne jamais avoir été ajoutée à la carte — sans quoi openPopup() ne
+   ferait rien (le marqueur n'a pas de carte). On s'assure donc ici que
+   la couche est bien affichée (et sa case cochée, pour rester cohérent
+   avec l'état du panneau) avant de tenter d'ouvrir quoi que ce soit. */
+function ouvrirPopupIndex(map, item) {
+    if (!item.layer) { map.setView(item.latlng, 17); return; }
+
+    const groupePrincipal = groupesLeaflet[item.layerId];
+    if (groupePrincipal && !map.hasLayer(groupePrincipal)) {
+        map.addLayer(groupePrincipal);
+        const checkbox = document.getElementById("layer-" + item.layerId);
+        if (checkbox) checkbox.checked = true;
+    }
+
+    const groupeCluster = trouverGroupeCluster(item.layerId, item.layer);
+    if (groupeCluster) {
+        groupeCluster.zoomToShowLayer(item.layer, () => item.layer.openPopup());
+    } else {
+        map.setView(item.latlng, 17);
+        item.layer.openPopup();
+    }
 }
 
 function construireCoucheDonnees(data, layerConf) {
@@ -46,8 +107,9 @@ function construireCoucheDonnees(data, layerConf) {
     let cible = L.geoJSON(null, {
 
         pointToLayer: function (feature, latlng) {
-            ajouterAuIndex(feature, latlng, layerConf);
-            return L.marker(latlng, { icon: iconePourCouche(feature, layerConf) });
+            const marker = L.marker(latlng, { icon: iconePourCouche(feature, layerConf) });
+            ajouterAuIndex(feature, latlng, layerConf, marker);
+            return marker;
         },
 
         style: function (feature) {
@@ -78,7 +140,7 @@ function construireCoucheDonnees(data, layerConf) {
                 layer.on("popupopen", () => ouvrirPopupParcelle(feature, layer));
             }
             if (layerConf.type !== "point") {
-                ajouterAuIndex(feature, layer.getBounds ? layer.getBounds().getCenter() : null, layerConf);
+                ajouterAuIndex(feature, layer.getBounds ? layer.getBounds().getCenter() : null, layerConf, layer);
             }
         }
 

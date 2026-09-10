@@ -546,7 +546,7 @@ function ouvrirPopupParcelle(feature, layer) {
     chargerDonneesFoncieres().then(() => {
         const infos = infosParcelle(feature);
         const popup = layer.getPopup();
-        if (popup) popup.setContent(construirePopupCadastre(feature.properties, infos));
+        if (popup) popup.setContent(injecterItineraire(construirePopupCadastre(feature.properties, infos), feature));
     });
 }
 
@@ -644,29 +644,189 @@ function construirePopupMutation(props, feature) {
     </div>`;
 }
 
-function construirePopup(feature, layerConf) {
+/* =========================================================
+   POPUP DÉCHÈTERIE / TRI — trois fiches différentes selon le champ
+   "type" (voir iconeDechet dans config.js pour la même distinction côté
+   marqueur) : déchèterie, composteur partagé, point d'apport volontaire.
+   ========================================================= */
+function construirePopupDechet(props) {
+    if (props.type === "centre") return construirePopupDecheterie(props);
+    if (props.type === "compost") return construirePopupCompost(props);
+    return construirePopupApportVolontaire(props);
+}
+
+function construirePopupDecheterie(props) {
+    const operateur = operateurDechet(props.operator);
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.foret}"><i class="fa-solid fa-warehouse"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.foret}">Déchèterie</div>
+                <div class="popup-fiche-titre">${echapperHtml(props.name || "Déchèterie")}</div>
+                ${props.com_nom ? `<div class="popup-fiche-adresse">${echapperHtml(props.com_nom)}</div>` : ""}
+                ${operateur ? `<div class="popup-fiche-puce" style="color:${PALETTE.foret}"><i class="fa-solid fa-building"></i>Gérée par ${echapperHtml(operateur)}</div>` : ""}
+            </div>
+        </div>
+    </div>`;
+}
+
+function construirePopupCompost(props) {
+    const acces = (props.opening_hours || "").trim();
+    const public_ = /^public/i.test(acces);
+    const operateur = operateurDechet(props.operator);
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.feuille}"><i class="fa-solid fa-seedling"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.feuille}">Composteur partagé</div>
+                <div class="popup-fiche-titre">${echapperHtml(props.name || "Composteur partagé")}</div>
+                ${props.com_nom ? `<div class="popup-fiche-adresse">${echapperHtml(props.com_nom)}</div>` : ""}
+                ${operateur ? `<div class="popup-fiche-puce" style="color:${PALETTE.feuille}"><i class="fa-solid fa-building"></i>Géré par ${echapperHtml(operateur)}</div>` : ""}
+            </div>
+            ${acces ? `<span class="popup-fiche-badge ${public_ ? "ouvert" : "ferme"}"><span></span>${public_ ? "Public" : "Accès réservé"}</span>` : ""}
+        </div>
+        ${(acces && acces.toLowerCase() !== "public") ? `<div class="popup-fiche-section"><div class="popup-fiche-precision">${echapperHtml(acces)}</div></div>` : ""}
+    </div>`;
+}
+
+function construirePopupApportVolontaire(props) {
+    const flux = fluxPresents(props);
+    const couleur = flux[0] ? flux[0].color : PALETTE.ardoise;
+    const operateur = operateurDechet(props.operator);
+    const chips = flux.map(f => `<span class="popup-fiche-flux" style="color:${f.color}"><span></span>${echapperHtml(f.label)}</span>`).join("");
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${couleur}"><i class="fa-solid fa-recycle"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${couleur}">Point d'apport volontaire</div>
+                <div class="popup-fiche-titre">${echapperHtml(props.name || "Point d'apport volontaire")}</div>
+                ${props.com_nom ? `<div class="popup-fiche-adresse">${echapperHtml(props.com_nom)}</div>` : ""}
+                ${operateur ? `<div class="popup-fiche-puce" style="color:${couleur}"><i class="fa-solid fa-building"></i>Géré par ${echapperHtml(operateur)}</div>` : ""}
+            </div>
+        </div>
+        ${chips ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre"><i class="fa-solid fa-recycle"></i>Tri sélectif</div><div class="popup-fiche-flux-liste">${chips}</div></div>` : ""}
+    </div>`;
+}
+
+/* =========================================================
+   ITINÉRAIRE (Google Maps / Waze) — ajouté en pied de TOUTES les popups
+   du site (voir construirePopup/ouvrirPopupParcelle), un seul point
+   d'ajout plutôt qu'une implémentation par fiche.
+   ========================================================= */
+
+/* Point représentatif d'une feature pour un lien "itinéraire" : ses
+   coordonnées si c'est un point, le centre de l'anneau extérieur pour
+   un polygone, le point médian pour une ligne (ex. lignes ALÉOP,
+   randonnées — pas de "destination" évidente pour une ligne, le milieu
+   reste le choix le plus raisonnable sans info supplémentaire). */
+function coordonneesPourItineraire(feature) {
+    const geom = feature && feature.geometry;
+    if (!geom) return null;
+    const centroideAnneau = anneau => {
+        let sx = 0, sy = 0;
+        anneau.forEach(([x, y]) => { sx += x; sy += y; });
+        return [sx / anneau.length, sy / anneau.length];
+    };
+    if (geom.type === "Point") return geom.coordinates;
+    if (geom.type === "Polygon") return centroideAnneau(geom.coordinates[0]);
+    if (geom.type === "MultiPolygon") return centroideAnneau(geom.coordinates[0][0]);
+    if (geom.type === "LineString") return geom.coordinates[Math.floor(geom.coordinates.length / 2)];
+    if (geom.type === "MultiLineString") { const l = geom.coordinates[0]; return l[Math.floor(l.length / 2)]; }
+    return null;
+}
+
+function construireItineraire(lat, lon) {
+    if (typeof lat !== "number" || typeof lon !== "number") return "";
+    const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`;
+    const waze = `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`;
+    return `<div class="popup-fiche-itineraire">
+        <a href="${gmaps}" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-google"></i>Google Maps</a>
+        <a href="${waze}" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-waze"></i>Waze</a>
+    </div>`;
+}
+
+/* Insère le bloc itinéraire juste avant la balise fermante finale d'une
+   fiche : toutes les popups du site (.popup-fiche comme .popup-carburant)
+   se terminent par un seul </div> qui ferme le conteneur racine, donc un
+   seul point d'insertion suffit plutôt que de dupliquer l'appel dans
+   chacune des construirePopupXxx. */
+function injecterItineraire(html, feature) {
+    const coord = coordonneesPourItineraire(feature);
+    if (!coord) return html;
+    const bloc = construireItineraire(coord[1], coord[0]);
+    if (!bloc) return html;
+    return html.replace(/<\/div>\s*$/, bloc + "</div>");
+}
+
+/* =========================================================
+   POPUP GÉNÉRIQUE — pour toute couche sans fiche dédiée ci-dessus
+   (aires de jeux, écoles, arrêts de bus, zonage PLUi...) : même
+   habillage visuel (.popup-fiche) que les fiches sur mesure, à partir
+   des seuls titleFields/subtitleFields déclarés dans config.js, plutôt
+   qu'un style à part (l'ancien .popup-geo) qui détonnait par rapport au
+   reste du site.
+   ========================================================= */
+/* Adresse géocodée par l'API Adresse (recherche unifiée, js/search.js) :
+   pas de feature/couche du site à réutiliser, juste un point avec un
+   libellé — reste dans l'habillage .popup-fiche pour rester cohérent
+   avec le reste du site plutôt que d'avoir un style à part. */
+function construirePopupAdresse(titre, lat, lon) {
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.ardoise}"><i class="fa-solid fa-location-dot"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.ardoise}">Adresse</div>
+                <div class="popup-fiche-titre">${echapperHtml(titre)}</div>
+            </div>
+        </div>
+        ${construireItineraire(lat, lon)}
+    </div>`;
+}
+
+function construirePopupGenerique(feature, layerConf) {
     const props = feature.properties || {};
-    if (layerConf.id === "carburants") return construirePopupCarburant(props);
-    if (layerConf.id === "commerces") return construirePopupCommerce(props);
-    if (layerConf.id === "banques") return construirePopupBanque(props);
-    if (layerConf.id === "mairies") return construirePopupMairie(props);
-    if (layerConf.id === "bal") return construirePopupBal(props);
-    if (layerConf.id === "cadastre") return construirePopupCadastreBase(props);
-    if (layerConf.id === "dpe") return construirePopupDpe(props);
-    if (layerConf.id === "mutations") return construirePopupMutation(props, feature);
+    const { icon, color } = resoudreIconeCouleur(feature, layerConf);
+    const iconeAffichee = icon || (layerConf.type === "line" ? "fa-solid fa-route" : "fa-solid fa-draw-polygon");
+    const couleurAffichee = color || PALETTE.ardoise;
 
     const titre = premierChampValide(props, layerConf.titleFields || []) || layerConf.label;
-    const sousInfos = (layerConf.subtitleFields || []).map(c => props[c]).filter(v => v !== undefined && v !== null && v !== "" && v !== "NULL");
-    let html = `<div class="popup-geo">`;
-    html += `<div class="popup-geo-tag" style="color:${layerConf.color}">${echapperHtml(layerConf.label)}</div>`;
-    html += `<div class="popup-geo-titre">${echapperHtml(titre)}</div>`;
-    if (sousInfos.length) html += `<div class="popup-geo-sous">${sousInfos.map(echapperHtml).join(" · ")}</div>`;
-    const reste = Object.keys(props).filter(k => !CHAMPS_MASQUES.has(k) && !(layerConf.titleFields || []).includes(k) && !(layerConf.subtitleFields || []).includes(k) && props[k] !== null && props[k] !== "" && props[k] !== "NULL").slice(0, 6);
-    if (reste.length) {
-        html += `<dl class="popup-geo-details">`;
-        reste.forEach(k => { html += `<dt>${echapperHtml(humaniser(k))}</dt><dd>${echapperHtml(props[k])}</dd>`; });
-        html += `</dl>`;
-    }
-    html += `</div>`;
-    return html;
+    const sousInfos = (layerConf.subtitleFields || [])
+        .map(c => props[c])
+        .filter(v => v !== undefined && v !== null && v !== "" && v !== "NULL");
+
+    const reste = Object.keys(props)
+        .filter(k => !CHAMPS_MASQUES.has(k) && !(layerConf.titleFields || []).includes(k) && !(layerConf.subtitleFields || []).includes(k) && props[k] !== null && props[k] !== "" && props[k] !== "NULL")
+        .slice(0, 6);
+    const details = reste.length ? `<div class="popup-fiche-section">
+        ${reste.map(k => `<div class="popup-fiche-jour"><span>${echapperHtml(humaniser(k))}</span><strong>${echapperHtml(props[k])}</strong></div>`).join("")}
+    </div>` : "";
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${couleurAffichee}"><i class="${iconeAffichee}"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${couleurAffichee}">${echapperHtml(layerConf.label)}</div>
+                <div class="popup-fiche-titre">${echapperHtml(titre)}</div>
+                ${sousInfos.length ? `<div class="popup-fiche-adresse">${sousInfos.map(echapperHtml).join(" · ")}</div>` : ""}
+            </div>
+        </div>
+        ${details}
+    </div>`;
+}
+
+function construirePopup(feature, layerConf) {
+    const props = feature.properties || {};
+    let html;
+    if (layerConf.id === "carburants") html = construirePopupCarburant(props);
+    else if (layerConf.id === "commerces") html = construirePopupCommerce(props);
+    else if (layerConf.id === "banques") html = construirePopupBanque(props);
+    else if (layerConf.id === "mairies") html = construirePopupMairie(props);
+    else if (layerConf.id === "bal") html = construirePopupBal(props);
+    else if (layerConf.id === "cadastre") html = construirePopupCadastreBase(props);
+    else if (layerConf.id === "dpe") html = construirePopupDpe(props);
+    else if (layerConf.id === "mutations") html = construirePopupMutation(props, feature);
+    else if (layerConf.id === "dechets") html = construirePopupDechet(props);
+    else html = construirePopupGenerique(feature, layerConf);
+    return injecterItineraire(html, feature);
 }

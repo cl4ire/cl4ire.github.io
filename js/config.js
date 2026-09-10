@@ -195,6 +195,58 @@ function stylePrixMutation(feature) {
 }
 
 /* =========================================================
+   DÉCHÈTERIES / TRI
+   Une seule couche mélange trois choses bien différentes (champ
+   "type") : déchèterie ("centre"), composteur partagé ("compost"), et
+   point d'apport volontaire / colonnes de tri ("container"). Ces
+   derniers portent, en plus, jusqu'à 4 indicateurs de flux triés
+   séparés (verre/papier/plastique/ordures ménagères) : mêmes couleurs
+   que les bacs de tri en France (vert/bleu/jaune/noir), affichées en
+   marqueur "camembert" (une part égale par flux présent, pas de
+   pondération par volume - donnée absente) plutôt qu'une seule couleur
+   qui ne dirait rien du contenu réel du point.
+   ========================================================= */
+const FLUX_TRI = [
+    { id: "glass", label: "Verre", color: PALETTE.feuille },
+    { id: "paper", label: "Papier", color: PALETTE.riviere },
+    { id: "plastic_packaging", label: "Emballages plastique", color: "#F2C94C" },
+    { id: "waste", label: "Ordures ménagères", color: "#2A2A28" }
+];
+
+/* Champs "yes"/null dans ce flux, avec au moins une coquille observée
+   dans la donnée réelle ("ye" au lieu de "yes") : on reste tolérant
+   plutôt que de comparer une égalité stricte à "yes". */
+function fluxActif(valeur) {
+    return typeof valeur === "string" && /^y/i.test(valeur.trim());
+}
+
+function fluxPresents(props) {
+    return FLUX_TRI.filter(f => fluxActif(props[f.id]));
+}
+
+/* "Syndicat Mxte du Val de Loir" : coquille observée sur une des 47
+   entrées de la donnée réelle (pour "Syndicat Mixte du Val de Loir") —
+   corrigée à l'affichage plutôt que de la laisser telle quelle dans la
+   popup. */
+function operateurDechet(operator) {
+    return operator ? operator.replace(/\bMxte\b/i, "Mixte") : null;
+}
+
+/* Point d'extension utilisé par icons.js : déchèterie et composteur
+   gardent une icône/couleur fixe (ce ne sont pas des points de tri
+   sélectif comme tels), un point d'apport volontaire devient un
+   marqueur "camembert" coloré selon les flux qu'il accepte réellement. */
+function iconeDechet(feature) {
+    const props = feature.properties || {};
+    if (props.type === "centre") return { icon: "fa-solid fa-warehouse", color: PALETTE.foret };
+    if (props.type === "compost") return { icon: "fa-solid fa-seedling", color: PALETTE.feuille };
+
+    const flux = fluxPresents(props);
+    if (!flux.length) return { icon: "fa-solid fa-recycle", color: PALETTE.ardoise };
+    return { icon: "fa-solid fa-recycle", color: flux[0].color, segments: flux.map(f => f.color) };
+}
+
+/* =========================================================
    CADASTRE (parcellaire complet)
    Un seul flux pour toute la comcom Loir-Lucé-Bercé (bundler Etalab,
    par EPCI via son n° SIREN plutôt que commune par commune). Base pour
@@ -294,6 +346,7 @@ const LAYERS = [
         id: "dechets", group: "services", label: "Déchèteries / tri",
         file: "couches/services/dechets.geojson", type: "point",
         icon: "fa-solid fa-recycle", color: PALETTE.feuille,
+        iconePourFeature: iconeDechet,
         lazy: false, searchable: true, cluster: true,
         titleFields: ["name", "type", "com_nom"],
         subtitleFields: ["com_nom", "opening_hours"]

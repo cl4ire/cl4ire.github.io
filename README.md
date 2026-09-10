@@ -95,17 +95,34 @@ volumes ou de données à ne récupérer qu'à la demande.
 
 ## Popups détaillées
 
-Plusieurs couches ont une fiche popup dédiée dans `js/popup.js` plutôt que
-la popup générique (champs bruts affichés tels quels) : carburants,
-commerces, banques & DAB, mairies et boîtes aux lettres. `construirePopup`
-aiguille sur `layerConf.id`. Les quatre dernières partagent la même base
-visuelle (classes CSS `.popup-fiche-*`) et les mêmes briques JS
-(`construireContacts`, `construireLignesHoraires`, `construireBadgeOuvert`)
-pour rester cohérentes entre elles sans dupliquer le balisage — seules
-l'icône, la couleur et les champs source changent d'une couche à l'autre.
-Couleurs volontairement variées (pas que du bleu) : ardoise pour les
-agences bancaires, terracotta pour les DAB, feuille pour les boîtes aux
-lettres, bleu rivière conservé pour les mairies (identité "institution").
+Toutes les couches du site affichent maintenant une fiche popup dans le
+même habillage visuel (classes CSS `.popup-fiche-*`, remplaçant l'ancien
+style générique `.popup-geo`, supprimé) : soit une fiche sur mesure pour
+les couches qui le justifient (carburants, commerces, banques & DAB,
+mairies, boîtes aux lettres, parcelles cadastrales, DPE, mutations DVF,
+déchèteries/tri — voir plus bas pour chacune), soit une fiche générique
+auto-construite (`construirePopupGenerique` dans `js/popup.js`) à partir
+des seuls `titleFields`/`subtitleFields` déclarés dans `config.js` pour
+toutes les autres (aires de jeux, écoles, arrêts de bus, zonage PLUi...).
+`construirePopup` aiguille sur `layerConf.id` et retombe sur la fiche
+générique par défaut : plus aucune couche n'a de popup "brute". Les
+fiches sur mesure partagent les mêmes briques JS (`construireContacts`,
+`construireLignesHoraires`, `construireBadgeOuvert`...) pour rester
+cohérentes sans dupliquer le balisage — seules l'icône, la couleur et les
+champs source changent d'une couche à l'autre. Couleurs volontairement
+variées (pas que du bleu) : ardoise pour les agences bancaires,
+terracotta pour les DAB, feuille pour les boîtes aux lettres, bleu
+rivière conservé pour les mairies (identité "institution").
+
+Toutes les fiches (sur mesure comme générique) se terminent par un bloc
+"Itinéraire" (Google Maps / Waze), ajouté en un seul point du code
+(`injecterItineraire`, appelé par `construirePopup` et par
+`ouvrirPopupParcelle` pour la fiche parcelle qui se construit à part)
+plutôt que dupliqué dans chaque fiche : `coordonneesPourItineraire`
+calcule un point représentatif de la feature (ses coordonnées pour un
+point, le centre de l'anneau extérieur pour un polygone, le point médian
+pour une ligne) et `construireItineraire` en fait deux liens de
+navigation externe.
 
 - **Commerces** (`construirePopupCommerce`) — catégorie reprise de
   `categorieCommerce`/`TYPES_COMMERCES` (icône + couleur), badge "Ouvert"/
@@ -148,6 +165,40 @@ d'encodage (UTF-8 doublement encodé : `"CrÃ©dit Mutuel"` au lieu de
 `"Crédit Mutuel"`) qui aurait rendu la nouvelle fiche moche sur les noms
 accentués — corrigé en réencodant le fichier (le seul touché : les autres
 couches testées n'ont pas ce problème).
+
+## Rouvrir la vraie popup depuis "près de chez moi" et la recherche
+
+Cliquer sur un résultat de "près de chez moi" (`js/proximite.js`) ou sur
+une suggestion locale de la barre de recherche (`js/search.js`)
+construisait avant une popup à part, minimaliste, plutôt que de rouvrir
+la vraie fiche déjà stylée du marqueur correspondant — d'où un rendu très
+différent (et bien plus pauvre) selon qu'on cliquait sur la carte ou
+depuis une de ces deux listes. Chaque entrée de l'index de recherche
+(`window.indexRecherche`, alimenté par `ajouterAuIndex` dans
+`js/layers.js`) garde maintenant une référence directe vers son objet
+Leaflet réel (`layer`, déjà lié à sa popup via `construirePopup` au
+chargement de la couche), et `ouvrirPopupIndex` (`js/layers.js`) rouvre
+CETTE popup plutôt que d'en reconstruire une :
+
+- Les cases à cocher du panneau ne sont **pas** cochées par défaut : la
+  donnée est déjà chargée pour alimenter l'index dès le démarrage du
+  site (couches `lazy: false`), mais sa couche Leaflet peut très bien
+  n'avoir jamais été ajoutée à la carte — auquel cas `marker.openPopup()`
+  ne fait rien (le marqueur n'a pas de carte). `ouvrirPopupIndex` s'assure
+  donc d'abord que la couche est affichée (et sa case cochée, pour que
+  le panneau reste cohérent) avant de tenter quoi que ce soit.
+- Si le marqueur est actuellement replié dans un cluster,
+  `marker.openPopup()` ne suffit pas non plus : `trouverGroupeCluster`
+  retrouve le `L.MarkerClusterGroup` qui le contient réellement (y
+  compris pour les couches catégorisées comme les commerces, où
+  `souscouchesLeaflet` porte un cluster par catégorie plutôt qu'un
+  seul), pour utiliser `zoomToShowLayer` à la place — la méthode que
+  Leaflet.markercluster prévoit justement pour ce cas.
+- Pour un résultat qui n'est PAS dans l'index (une adresse géocodée par
+  l'API Adresse, dans la barre de recherche) : pas de feature/couche du
+  site à réutiliser, donc un marqueur temporaire avec une popup dédiée
+  mais légère (`construirePopupAdresse`), dans le même habillage que le
+  reste du site plutôt que l'ancien style à part.
 
 ## Recherche foncière ("Explorer le foncier")
 
@@ -284,6 +335,46 @@ détaillée (avant : popup générique à champs bruts) :
   `recherche.js` — un seul endroit qui sait filtrer les lots d'une
   mutation à la bonne parcelle, plutôt que trois implémentations
   différentes du même calcul).
+
+## Déchèteries / tri
+
+La couche `dechets` mélange trois choses différentes sous un seul champ
+`type` : déchèterie (`"centre"`), composteur partagé (`"compost"`), et
+point d'apport volontaire / colonnes de tri (`"container"`) — plus,
+seulement pour ces derniers, jusqu'à 4 indicateurs de flux séparés
+(`glass`/`paper`/`plastic_packaging`/`waste`). Avant, tout ça portait la
+même icône/couleur uniforme et une popup générique à champs bruts ; les
+trois sont maintenant distingués visuellement (`iconeDechet` dans
+`config.js`) et ont chacun leur propre fiche popup
+(`construirePopupDechet`/`construirePopupDecheterie`/
+`construirePopupCompost`/`construirePopupApportVolontaire` dans
+`js/popup.js`) :
+
+- **Déchèterie** : icône entrepôt, vert foncé. Nom, commune, opérateur.
+- **Composteur partagé** : icône plante, vert. Le champ `opening_hours`
+  n'y porte pas de vraies horaires mais un statut d'accès en texte libre
+  (`"Public"` / `"Privé"` / `"Privé - Réservé aux habitants inscrits"`) —
+  affiché comme un badge Public/Accès réservé plutôt que d'essayer de le
+  faire passer pour des horaires OSM.
+- **Point d'apport volontaire** : marqueur "camembert"
+  (`creerIconeCamembert` dans `icons.js`, un simple `conic-gradient` CSS,
+  pas de canvas/SVG) — une part égale par flux trié réellement présent
+  (pas de pondération par volume, cette donnée n'existe pas), aux mêmes
+  couleurs que les bacs de tri en France : verre en vert, papier en bleu,
+  emballages plastique en jaune, ordures ménagères en noir
+  (`FLUX_TRI` dans `config.js`). La popup liste les mêmes flux en chips
+  colorées ("Tri sélectif"). `resoudreIconeCouleur`/`iconePourCouche`
+  (`icons.js`) ont été généralisées pour accepter soit une couleur
+  unique (toutes les autres couches), soit `segments` (plusieurs
+  couleurs) pour ce marqueur "camembert" — extensible à d'autres couches
+  si besoin un jour, sans dupliquer le mécanisme de cache d'icônes.
+
+Deux petites corrections de données à l'affichage (comme ailleurs sur le
+site, sans modifier les fichiers sources) : `fluxActif` tolère la
+coquille observée `"ye"` au lieu de `"yes"` sur un enregistrement réel ;
+`operateurDechet` corrige "Syndicat **Mxte** du Val de Loir" en "Syndicat
+**Mixte** du Val de Loir" (une coquille, sur les deux syndicats gérant le
+territoire — SYVALORM et Syndicat Mixte du Val de Loir).
 
 ## Ce qui reste à faire
 
