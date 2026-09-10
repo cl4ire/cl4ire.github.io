@@ -413,7 +413,10 @@ function extraireHeureLevee(valeur) {
 }
 
 function construirePopupBal(props) {
-    const numero = props.VA_NO_VOIE ? `${props.VA_NO_VOIE} ` : "";
+    /* "NULL" en toutes lettres, pas une vraie valeur nulle : convention
+       de ce flux pour un numéro de voie manquant (déjà rencontrée
+       ailleurs, voir premierChampValide/parserValeur). */
+    const numero = (props.VA_NO_VOIE && props.VA_NO_VOIE !== "NULL") ? `${props.VA_NO_VOIE} ` : "";
     const voie = capitaliserMots(props.LB_VOIE_EXT);
     const nom = (numero + voie).trim() || "Boîte aux lettres";
     const adresse = [props.CO_POSTAL, capitaliserMots(props.LB_COM)].filter(Boolean).join(" · ");
