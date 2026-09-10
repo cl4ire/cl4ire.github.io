@@ -36,15 +36,12 @@ function construireRaccourcis(map) {
 
 /* Affiche la vue "résultats" du panneau de couches (masque l'arbre normal) */
 function ouvrirVueResultats(titre) {
-    document.getElementById("layers-panel").classList.add("layers-panel-open");
-    document.getElementById("layers-normal-view").hidden = true;
-    document.getElementById("results-view").hidden = false;
+    ouvrirVuePanneau("results-view");
     document.getElementById("results-title").textContent = titre;
 }
 
 function fermerResultatsProximite() {
-    document.getElementById("results-view").hidden = true;
-    document.getElementById("layers-normal-view").hidden = false;
+    fermerVuesPanneau();
 }
 
 function afficherMessageResultats(titre, message) {

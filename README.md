@@ -83,6 +83,45 @@ format n'est pas déjà du GeoJSON) ; WMS → `type: "wms"` avec `wmsUrl` /
 `wmsLayer`. Toutes ces couches restent `lazy: true` puisqu'il s'agit de gros
 volumes ou de données à ne récupérer qu'à la demande.
 
+## Recherche foncière ("Explorer le foncier")
+
+Bouton "Recherche foncière" dans l'en-tête : panneau de filtres (commune,
+surface de parcelle, zone PLUi, aléa RGA, ventes DVF, bâti, DPE) pour
+n'afficher que les parcelles correspondantes plutôt que de cliquer une par
+une. Tout est dans `js/recherche.js`.
+
+Principe : au premier chargement du panneau, `chargerDonneesFoncieres`
+récupère les 5 couches concernées (cadastre, mutations, DPE, PLUi, RGA) en
+tâche de fond, sans les ajouter à la carte. `enrichirCadastre` calcule alors
+**une seule fois** (résultat mis en cache) pour chaque parcelle : la
+mutation DVF correspondante (référence exacte), la zone PLUi et le niveau
+RGA à cet endroit (le centre de la parcelle tombe dans quelle zone ? —
+`pointDansFeature`, un simple ray-casting, pas de dépendance externe), et le
+DPE le plus proche s'il est à l'intérieur de la parcelle. Les recherches
+géométriques sont limitées à la même commune (`grouperParChamp`) pour rester
+rapides malgré le volume (dizaines de milliers de parcelles) : sans ça,
+tester chaque parcelle contre chaque DPE/zone serait bien trop lent. Une
+fois ce calcul fait, changer un critère du formulaire ne fait que relire ce
+cache (`correspond`/`filtrerParcelles`), donc le nombre de résultats se met
+à jour en direct sans latence.
+
+"Afficher les parcelles correspondantes" construit une couche Leaflet à
+part (`coucheRechercheActuelle`, distincte de `groupesLeaflet["cadastre"]`)
+à partir du sous-ensemble filtré, l'ajoute à la carte et cadre la vue
+dessus — plafonné à 3000 résultats (`LIMITE_RESULTATS`) pour éviter
+d'afficher des dizaines de milliers de polygones si le formulaire est laissé
+trop large.
+
+**Limites volontaires**, faute de données dans le SIG aujourd'hui :
+- "Nombre de bâtiments" et "Surface bâtie" viennent de la dernière mutation
+  DVF connue (`elements_locaux`) : ça ne concerne donc que les parcelles
+  déjà vendues, pas la totalité du bâti existant. Pas de couche "bâtiments"
+  indépendante.
+- Piscine et permis de construire récents n'apparaissent pas comme
+  critères : aucune source de données n'est intégrée au site pour ça. Les
+  ajouter demanderait de trouver et intégrer un flux dédié (voir la logique
+  déjà en place pour Vigieau/OLD/carburants/cadastre comme modèle).
+
 ## Ce qui reste à faire
 
 - Vérifier/ajuster les champs affichés dans les popups pour les couches où

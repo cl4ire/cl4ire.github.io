@@ -122,6 +122,27 @@ function construireLegende(conf, map) {
     return details;
 }
 
+/* =========================================================
+   VUES DU PANNEAU DE COUCHES
+   Le panneau a plusieurs vues mutuellement exclusives (arbre des
+   couches normal, résultats "près de chez moi", recherche foncière) :
+   ces deux fonctions centralisent le passage de l'une à l'autre pour
+   que proximite.js et recherche.js restent cohérents entre eux.
+   ========================================================= */
+const VUES_PANNEAU = ["layers-normal-view", "results-view", "recherche-view"];
+
+function ouvrirVuePanneau(idVue) {
+    document.getElementById("layers-panel").classList.add("layers-panel-open");
+    VUES_PANNEAU.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.hidden = (id !== idVue);
+    });
+}
+
+function fermerVuesPanneau() {
+    ouvrirVuePanneau("layers-normal-view");
+}
+
 /* Filtre texte du panneau */
 function initFiltrePanneau() {
     const input = document.getElementById("layers-filter");
