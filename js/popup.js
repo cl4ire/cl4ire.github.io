@@ -802,8 +802,430 @@ function injecterItineraire(html, feature) {
 }
 
 /* =========================================================
-   POPUP GÉNÉRIQUE — pour toute couche sans fiche dédiée ci-dessus
-   (aires de jeux, écoles, arrêts de bus, zonage PLUi...) : même
+   FICHES SUR MESURE — le reste des couches du site, une par une plutôt
+   que de les laisser sur la fiche générique (voir plus bas) : champs
+   humanisés en français plutôt que les noms de colonnes bruts, et
+   horaires réellement interprétées (parserHorairesOsm) plutôt
+   qu'affichées telles quelles.
+   ========================================================= */
+function estVrai(v) {
+    return v === true || v === "True" || v === "true" || v === "1" || v === 1;
+}
+function tronquerTexte(texte, max) {
+    if (!texte) return "";
+    return texte.length > max ? texte.slice(0, max).trim() + "…" : texte;
+}
+function formaterDureeHeures(h) {
+    if (typeof h !== "number" || !Number.isFinite(h)) return null;
+    const totalMin = Math.round(h * 60);
+    const heures = Math.floor(totalMin / 60), minutes = totalMin % 60;
+    return heures ? `${heures} h${minutes ? " " + String(minutes).padStart(2, "0") : ""}` : `${minutes} min`;
+}
+function couleurDepuisRgb(rgb) {
+    const m = String(rgb).match(/rgb\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)\)/);
+    if (!m) return null;
+    return "#" + [m[1], m[2], m[3]].map(v => Number(v).toString(16).padStart(2, "0")).join("");
+}
+const LABELS_ACCESSIBILITE = { yes: "Accessible PMR", no: "Non accessible PMR", limited: "Accessibilité limitée" };
+const LABELS_ACCESSIBILITE_BUS = { available: "Accessible PMR", "not available": "Non accessible PMR", limited: "Accessibilité limitée", unknown: "Accessibilité inconnue" };
+
+/* Bornes de recharge (IRVE) : schéma national standardisé
+   (data.gouv.fr), horaires en syntaxe OSM comme les autres flux, et
+   plusieurs champs booléens stockés en chaînes "True"/"False". */
+const PRISES_IRVE = [
+    { champ: "prise_type_2", label: "Type 2" },
+    { champ: "prise_type_combo_ccs", label: "Combo CCS" },
+    { champ: "prise_type_chademo", label: "CHAdeMO" },
+    { champ: "prise_type_ef", label: "Domestique (EF)" },
+    { champ: "prise_type_autre", label: "Autre prise" }
+];
+function construirePopupIrve(props) {
+    const nom = premierChampValide(props, ["nom_station", "nom_enseigne"]) || "Borne de recharge";
+    const enseigne = props.nom_enseigne && props.nom_enseigne !== nom ? props.nom_enseigne : null;
+    const horaires = parserHorairesOsm(props.horaires);
+    const prises = PRISES_IRVE.filter(p => estVrai(props[p.champ])).map(p => p.label);
+
+    const recharge = (props.nbre_pdc || props.puissance_nominale || prises.length) ? `<div class="popup-fiche-section">
+        <div class="popup-fiche-section-titre"><i class="fa-solid fa-bolt"></i>Recharge</div>
+        <div class="popup-fiche-ligne">${[
+            props.nbre_pdc ? `${props.nbre_pdc} point${Number(props.nbre_pdc) > 1 ? "s" : ""} de charge` : "",
+            props.puissance_nominale ? `${props.puissance_nominale} kW` : ""
+        ].filter(Boolean).join(" · ")}</div>
+        ${prises.length ? `<div class="popup-fiche-ligne" style="margin-top:6px">${prises.map(echapperHtml).join(" · ")}</div>` : ""}
+    </div>` : "";
+
+    const acces = [
+        props.condition_acces,
+        estVrai(props.gratuit) ? "Gratuit" : (props.gratuit === "False" ? "Payant" : null),
+        estVrai(props.reservation) ? "Réservation obligatoire" : null
+    ].filter(Boolean);
+    const sectionAcces = acces.length ? `<div class="popup-fiche-section">
+        <div class="popup-fiche-section-titre"><i class="fa-solid fa-circle-check"></i>Accès</div>
+        <div class="popup-fiche-ligne">${acces.map(echapperHtml).join(" · ")}</div>
+    </div>` : "";
+
+    const contacts = construireContacts({
+        ...props,
+        phone: props.telephone_operateur || null,
+        email: (props.contact_operateur || "").includes("@") ? props.contact_operateur : null
+    });
+    const lignesHoraires = construireLignesHoraires(horaires);
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.terracotta}"><i class="fa-solid fa-charging-station"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.terracotta}">Borne de recharge</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${props.adresse_station ? `<div class="popup-fiche-adresse">${echapperHtml(props.adresse_station)}</div>` : ""}
+                ${enseigne ? `<div class="popup-fiche-puce" style="color:${PALETTE.terracotta}"><i class="fa-solid fa-building"></i>${echapperHtml(enseigne)}</div>` : ""}
+            </div>
+            ${construireBadgeOuvert(horaires)}
+        </div>
+        ${recharge}${sectionAcces}
+        ${contacts.length ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Contact</div><div class="popup-fiche-contacts">${contacts.join("")}</div></div>` : ""}
+        ${lignesHoraires ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Horaires</div>${lignesHoraires}</div>` : ""}
+    </div>`;
+}
+
+/* Aires de covoiturage. */
+function construirePopupCovoiturage(props) {
+    const nom = premierChampValide(props, ["nom_lieu", "id_local"]) || "Aire de covoiturage";
+    const adresse = [props.ad_lieu, props.com_lieu].filter(Boolean).join(" · ");
+    const places = [
+        props.nbre_pl ? `${props.nbre_pl} place${props.nbre_pl > 1 ? "s" : ""}` : "",
+        props.nbre_pmr ? `dont ${props.nbre_pmr} PMR` : ""
+    ].filter(Boolean).join(" ");
+    const infos = [
+        props.lumiere === true ? "Éclairée" : (props.lumiere === false ? "Non éclairée" : null),
+        props.proprio ? `Gérée par ${props.proprio}` : null
+    ].filter(Boolean);
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.riviere}"><i class="fa-solid fa-car"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.riviere}">Aire de covoiturage</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${adresse ? `<div class="popup-fiche-adresse">${echapperHtml(adresse)}</div>` : ""}
+            </div>
+            ${typeof props.ouvert === "boolean" ? `<span class="popup-fiche-badge ${props.ouvert ? "ouvert" : "ferme"}"><span></span>${props.ouvert ? "Ouverte" : "Fermée"}</span>` : ""}
+        </div>
+        ${places ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre"><i class="fa-solid fa-square-parking"></i>Places</div><div class="popup-fiche-ligne">${echapperHtml(places)}</div></div>` : ""}
+        ${infos.length ? `<div class="popup-fiche-section"><div class="popup-fiche-ligne">${infos.map(echapperHtml).join(" · ")}</div></div>` : ""}
+        ${props.comm ? `<div class="popup-fiche-section"><div class="popup-fiche-precision">${echapperHtml(props.comm)}</div></div>` : ""}
+    </div>`;
+}
+
+/* Marchés : très peu de champs réellement renseignés dans la donnée
+   OSM (la plupart des clés du flux sont vides pour ce territoire),
+   horaires parfois hors des motifs courants (ex. "week 01,03 Fr
+   17:00-20:00", une périodicité par semaine que parserHorairesOsm ne
+   couvre pas) : dans ce cas le texte brut est affiché plutôt que rien,
+   c'est toujours plus utile qu'une fiche vide. */
+function construirePopupMarche(props) {
+    const horaires = parserHorairesOsm(props.opening_hours);
+    const lignesHoraires = construireLignesHoraires(horaires);
+    const nom = premierChampValide(props, ["name"]) || "Marché";
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.feuille}"><i class="fa-solid fa-store"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.feuille}">Marché</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+            </div>
+            ${construireBadgeOuvert(horaires)}
+        </div>
+        ${lignesHoraires
+            ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Horaires</div>${lignesHoraires}</div>`
+            : (props.opening_hours ? `<div class="popup-fiche-section"><div class="popup-fiche-precision">${echapperHtml(props.opening_hours)}</div></div>` : "")}
+    </div>`;
+}
+
+/* Aires de jeux. */
+function construirePopupAireJeu(props) {
+    const horaires = parserHorairesOsm(props.opening_hours);
+    const nom = premierChampValide(props, ["name"]) || "Aire de jeux";
+    const infos = [
+        (props.min_age || props.max_age) ? `${props.min_age || 0} - ${props.max_age || "?"} ans` : null,
+        props.surface ? `${props.surface} m²` : null,
+        props.indoor === true ? "Intérieur" : (props.indoor === false ? "Extérieur" : null),
+        props.fee === true ? "Payant" : (props.fee === false ? "Gratuit" : null),
+        LABELS_ACCESSIBILITE[props.wheelchair] || null
+    ].filter(Boolean);
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.terracotta}"><i class="fa-solid fa-child-reaching"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.terracotta}">Aire de jeux</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${props.com_nom ? `<div class="popup-fiche-adresse">${echapperHtml(props.com_nom)}</div>` : ""}
+                ${props.operator ? `<div class="popup-fiche-puce" style="color:${PALETTE.terracotta}"><i class="fa-solid fa-building"></i>Gérée par ${echapperHtml(props.operator)}</div>` : ""}
+            </div>
+            ${construireBadgeOuvert(horaires)}
+        </div>
+        ${infos.length ? `<div class="popup-fiche-section"><div class="popup-fiche-ligne">${infos.map(echapperHtml).join(" · ")}</div></div>` : ""}
+    </div>`;
+}
+
+/* Équipements sportifs : "type" (leisure OSM) et "sport" sont des
+   valeurs anglaises en anglais brut dans la donnée — traduites via un
+   petit dictionnaire des valeurs réellement présentes sur ce
+   territoire, avec un repli qui met juste une majuscule pour les
+   valeurs non prévues plutôt que rien. */
+const LABELS_EQUIPEMENT_SPORTIF = {
+    pitch: "Terrain de sport", sports_centre: "Centre sportif", track: "Piste",
+    swimming_pool: "Piscine", horse_riding: "Centre équestre",
+    recreation_ground: "Terrain de loisirs", fitness_station: "Station de fitness"
+};
+const LABELS_SPORT = {
+    soccer: "Football", boules: "Boules / pétanque", tennis: "Tennis", multi: "Multisports",
+    swimming: "Natation", basketball: "Basketball", table_tennis: "Tennis de table",
+    athletics: "Athlétisme", equestrian: "Équitation"
+};
+function construirePopupEquipementSportif(props) {
+    const typeLabel = LABELS_EQUIPEMENT_SPORTIF[props.type] || "Équipement sportif";
+    const sportLabel = LABELS_SPORT[props.sport] || (props.sport ? capitaliserPremiere(props.sport) : null);
+    const nom = premierChampValide(props, ["name"]) || sportLabel || typeLabel;
+    const horaires = parserHorairesOsm(props.opening_hours);
+    const infos = [sportLabel && nom !== sportLabel ? sportLabel : null, LABELS_ACCESSIBILITE[props.wheelchair] || null].filter(Boolean);
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.riviere}"><i class="fa-solid fa-futbol"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.riviere}">${echapperHtml(typeLabel)}</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${props.com_nom ? `<div class="popup-fiche-adresse">${echapperHtml(props.com_nom)}</div>` : ""}
+                ${props.operator ? `<div class="popup-fiche-puce" style="color:${PALETTE.riviere}"><i class="fa-solid fa-building"></i>Géré par ${echapperHtml(props.operator)}</div>` : ""}
+            </div>
+            ${construireBadgeOuvert(horaires)}
+        </div>
+        ${infos.length ? `<div class="popup-fiche-section"><div class="popup-fiche-ligne">${infos.map(echapperHtml).join(" · ")}</div></div>` : ""}
+    </div>`;
+}
+
+/* Petite enfance (assistants maternels) : téléphone/mail portent un
+   retour à la ligne de tête dans la donnée source ("\n06 40...") — nettoyés
+   à l'affichage plutôt que de le laisser polluer le lien tel:/mailto:. */
+function construirePopupPetiteEnfance(props) {
+    const nom = props.nom || "Assistant maternel";
+    const contacts = construireContacts({
+        ...props,
+        phone: props.telephone ? props.telephone.trim() : null,
+        email: props.mail ? props.mail.trim() : null,
+        website: props.ficheCAF || null
+    });
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.terracotta}"><i class="fa-solid fa-baby"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.terracotta}">${echapperHtml(props.type || "Petite enfance")}</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${props.adresse ? `<div class="popup-fiche-adresse">${echapperHtml(props.adresse)}</div>` : ""}
+            </div>
+        </div>
+        ${contacts.length ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Contact</div><div class="popup-fiche-contacts">${contacts.join("")}</div></div>` : ""}
+    </div>`;
+}
+
+/* Écoles. */
+const LABELS_TYPE_ECOLE = { primaire: "École primaire", maternelle: "École maternelle", elementaire: "École élémentaire", college: "Collège", lycee: "Lycée" };
+function construirePopupEcole(props) {
+    const typeLabel = LABELS_TYPE_ECOLE[props.type_fr] || (props.type_fr ? capitaliserPremiere(props.type_fr) : "École");
+    const nom = premierChampValide(props, ["name"]) || typeLabel;
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.terracotta}"><i class="fa-solid fa-graduation-cap"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.terracotta}">${echapperHtml(typeLabel)}</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${props.com_nom ? `<div class="popup-fiche-adresse">${echapperHtml(props.com_nom)}</div>` : ""}
+            </div>
+            ${props.statut ? `<span class="popup-fiche-badge info">${echapperHtml(capitaliserPremiere(props.statut))}</span>` : ""}
+        </div>
+    </div>`;
+}
+
+/* Défibrillateurs : "2000-01-01" en date de dernière maintenance est
+   une valeur-sentinelle du jeu de données (huit enregistrements
+   l'ont, exactement la même date ronde) plutôt qu'une vraie date
+   connue — traitée comme absente à l'affichage. */
+function construirePopupDae(props) {
+    const nom = props.c_nom && props.c_nom !== "DAE" ? props.c_nom : "Défibrillateur";
+    const adresse = [[props.c_adr_num, props.c_adr_voie].filter(Boolean).join(" "), props.c_com_cp, props.c_com_nom].filter(Boolean).join(" · ");
+    const enService = props.c_etat_fonct === "En fonctionnement";
+    const infos = [props.c_acc ? `Accès ${props.c_acc.toLowerCase()}` : null, props.c_acc_complt || null].filter(Boolean);
+    const maintenance = (props.c_dermnt && props.c_dermnt !== "2000-01-01") ? formaterDateSeule(props.c_dermnt) : null;
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:#AD4826"><i class="fa-solid fa-heart-pulse"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:#AD4826">Défibrillateur</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${adresse ? `<div class="popup-fiche-adresse">${echapperHtml(adresse)}</div>` : ""}
+            </div>
+            ${props.c_etat_fonct ? `<span class="popup-fiche-badge ${enService ? "ouvert" : "ferme"}"><span></span>${echapperHtml(props.c_etat_fonct)}</span>` : ""}
+        </div>
+        ${infos.length ? `<div class="popup-fiche-section"><div class="popup-fiche-ligne">${infos.map(echapperHtml).join(" · ")}</div></div>` : ""}
+        ${maintenance ? `<div class="popup-fiche-section"><div class="popup-fiche-precision"><i class="fa-regular fa-clock"></i> Dernière maintenance le ${echapperHtml(maintenance)}</div></div>` : ""}
+    </div>`;
+}
+
+/* Monuments protégés : "copyright" est un pavé légal systématique (pas
+   une info sur l'édifice) volontairement jamais affiché ; la
+   description peut faire plusieurs milliers de caractères, tronquée. */
+function construirePopupMonument(props) {
+    const nom = premierChampValide(props, ["denomination_de_l_edifice", "autre_appellation_de_l_edifice"]) || "Monument protégé";
+    const protection = props.nature_de_la_protection ? capitaliserPremiere(props.nature_de_la_protection) : null;
+    const description = tronquerTexte(props.description_de_l_edifice, 320);
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:#7F7E7B"><i class="fa-solid fa-monument"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:#7F7E7B">Monument historique</div>
+                <div class="popup-fiche-titre">${echapperHtml(capitaliserPremiere(nom))}</div>
+                ${props.commune_forme_index ? `<div class="popup-fiche-adresse">${echapperHtml(props.commune_forme_index)}</div>` : ""}
+            </div>
+            ${protection ? `<span class="popup-fiche-badge info">${echapperHtml(protection)}</span>` : ""}
+        </div>
+        ${description ? `<div class="popup-fiche-section"><div class="popup-fiche-precision">${echapperHtml(description)}</div></div>` : ""}
+        ${props.reference ? `<div class="popup-fiche-section"><div class="popup-fiche-precision">Référence Mérimée : ${echapperHtml(props.reference)}</div></div>` : ""}
+    </div>`;
+}
+
+/* Randonnées. */
+function construirePopupRandonnee(props) {
+    const duree = formaterDureeHeures(props.dureeEstim);
+    const infos = [
+        typeof props.distance === "number" ? `${props.distance} km` : null,
+        duree ? `${duree} environ` : null,
+        typeof props.denivelePo === "number" ? `+${Math.round(props.denivelePo)} m` : null,
+        typeof props.deniveleNe === "number" ? `-${Math.round(Math.abs(props.deniveleNe))} m` : null
+    ].filter(Boolean);
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.feuille}"><i class="fa-solid fa-person-hiking"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.feuille}">Randonnée</div>
+                <div class="popup-fiche-titre">${props.id ? "Circuit " + echapperHtml(props.id) : "Circuit de randonnée"}</div>
+            </div>
+        </div>
+        ${infos.length ? `<div class="popup-fiche-section"><div class="popup-fiche-ligne">${infos.join(" · ")}</div></div>` : ""}
+    </div>`;
+}
+
+/* Arrêts de bus ALÉOP. */
+function construirePopupArretBus(props) {
+    const nom = premierChampValide(props, ["name"]) || "Arrêt de bus";
+    const accessibilite = LABELS_ACCESSIBILITE_BUS[props.wheelchair_boarding] || null;
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.riviere}"><i class="fa-solid fa-bus"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.riviere}">Arrêt de bus (ALÉOP)</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+            </div>
+        </div>
+        ${accessibilite ? `<div class="popup-fiche-section"><div class="popup-fiche-ligne">${echapperHtml(accessibilite)}</div></div>` : ""}
+    </div>`;
+}
+
+/* Lignes ALÉOP : couleur reprise de la ligne réelle (route_color, un
+   "rgb(r,g,b)" côté GTFS) plutôt qu'une couleur fixe, pour que la
+   popup corresponde visuellement à la ligne tracée sur la carte. */
+function construirePopupLigneBus(props) {
+    const couleur = couleurDepuisRgb(props.route_color) || PALETTE.riviere;
+    const nom = props.route_short_name ? `Ligne ${props.route_short_name}` : "Ligne ALÉOP";
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${couleur}"><i class="fa-solid fa-route"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${couleur}">Ligne ALÉOP</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${props.route_long_name ? `<div class="popup-fiche-adresse">${echapperHtml(props.route_long_name)}</div>` : ""}
+            </div>
+        </div>
+    </div>`;
+}
+
+/* Prix immobilier par commune : "commune" ne porte que le code INSEE
+   dans ce fichier, pas le nom — retrouvé via COMMUNES_TERRITOIRE
+   (config.js) plutôt que d'afficher un code à 5 chiffres. Couleur
+   reprise de couleurPrix (layers.js), la même échelle que la
+   choroplethe de cette couche sur la carte. */
+function construirePopupPrixCommune(props) {
+    const nom = COMMUNES_TERRITOIRE[props.commune] || props.commune;
+    const couleur = couleurPrix(props.prix_m2_median);
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${couleur}"><i class="fa-solid fa-house-chimney"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${couleur}">Prix immobilier</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${props.periode ? `<div class="popup-fiche-adresse">${echapperHtml(props.periode)}</div>` : ""}
+            </div>
+        </div>
+        <div class="popup-fiche-section">
+            <div class="popup-fiche-ligne">Prix médian : ${props.prix_median ? Math.round(props.prix_median).toLocaleString("fr-FR") + " €" : "—"}</div>
+            <div class="popup-fiche-ligne">Prix/m² médian : ${props.prix_m2_median ? Math.round(props.prix_m2_median).toLocaleString("fr-FR") + " €/m²" : "—"}</div>
+            ${props.prix_m2_maison_median ? `<div class="popup-fiche-ligne">Prix/m² (maisons) : ${Math.round(props.prix_m2_maison_median).toLocaleString("fr-FR")} €/m²</div>` : ""}
+            ${props.nb_ventes ? `<div class="popup-fiche-ligne">${props.nb_ventes} ventes sur la période</div>` : ""}
+        </div>
+    </div>`;
+}
+
+/* Zonage PLUi : LABELS_PLUI (recherche.js) déjà utilisé par la
+   recherche foncière et la fiche parcelle, réutilisé ici pour rester
+   cohérent partout où un code de zone PLUi est affiché. */
+function construirePopupZonePLUi(props) {
+    const label = (typeof LABELS_PLUI !== "undefined" && LABELS_PLUI[props.typezone]) || props.typezone || "Zone";
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.ardoise}"><i class="fa-solid fa-map"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.ardoise}">Zonage PLUi</div>
+                <div class="popup-fiche-titre">${echapperHtml(label)}</div>
+                ${(props.libelong && props.libelong !== label) ? `<div class="popup-fiche-adresse">${echapperHtml(props.libelong)}</div>` : ""}
+            </div>
+        </div>
+        ${props.urlfic ? `<div class="popup-fiche-section"><a class="popup-fiche-contact" href="${echapperHtml(props.urlfic)}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-file-pdf"></i>Voir le règlement</a></div>` : ""}
+    </div>`;
+}
+
+/* Aléa retrait-gonflement des argiles (RGA) : LABELS_RGA
+   (recherche.js), même réutilisation que pour le zonage PLUi. */
+function construirePopupRga(props) {
+    const label = (typeof LABELS_RGA !== "undefined" && LABELS_RGA[props.niveau]) || String(props.niveau);
+    const couleur = { 1: "#F2C94C", 2: "#F2994A", 3: "#D85A30" }[props.niveau] || "#D85A30";
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${couleur}"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${couleur}">Retrait-gonflement des argiles</div>
+                <div class="popup-fiche-titre">Aléa ${echapperHtml(label)}</div>
+            </div>
+        </div>
+        ${props.surf_m2 ? `<div class="popup-fiche-section"><div class="popup-fiche-ligne">Zone concernée : ${(props.surf_m2 / 10000).toFixed(1).replace(".", ",")} ha</div></div>` : ""}
+    </div>`;
+}
+
+/* =========================================================
+   POPUP GÉNÉRIQUE — dernier repli pour toute couche sans fiche dédiée
+   (aujourd'hui : Vigieau uniquement, dont les noms de champs exacts ne
+   sont pas garantis d'une mise à jour du fournisseur à l'autre) : même
    habillage visuel (.popup-fiche) que les fiches sur mesure, à partir
    des seuls titleFields/subtitleFields déclarés dans config.js, plutôt
    qu'un style à part (l'ancien .popup-geo) qui détonnait par rapport au
@@ -870,6 +1292,21 @@ function construirePopup(feature, layerConf) {
     else if (layerConf.id === "mutations") html = construirePopupMutation(props, feature);
     else if (layerConf.id === "dechets") html = construirePopupDechet(props);
     else if (layerConf.id === "lockers") html = construirePopupLocker(props);
+    else if (layerConf.id === "irve") html = construirePopupIrve(props);
+    else if (layerConf.id === "airecovoiturage") html = construirePopupCovoiturage(props);
+    else if (layerConf.id === "marches") html = construirePopupMarche(props);
+    else if (layerConf.id === "airesJeu") html = construirePopupAireJeu(props);
+    else if (layerConf.id === "equipementSportif") html = construirePopupEquipementSportif(props);
+    else if (layerConf.id === "petiteEnfance") html = construirePopupPetiteEnfance(props);
+    else if (layerConf.id === "education") html = construirePopupEcole(props);
+    else if (layerConf.id === "dae") html = construirePopupDae(props);
+    else if (layerConf.id === "immeublesProteges") html = construirePopupMonument(props);
+    else if (layerConf.id === "randonnees") html = construirePopupRandonnee(props);
+    else if (layerConf.id === "arretsALEOP") html = construirePopupArretBus(props);
+    else if (layerConf.id === "reseauALEOP") html = construirePopupLigneBus(props);
+    else if (layerConf.id === "prixImmobilier") html = construirePopupPrixCommune(props);
+    else if (layerConf.id === "zonagePLUi") html = construirePopupZonePLUi(props);
+    else if (layerConf.id === "rga") html = construirePopupRga(props);
     else html = construirePopupGenerique(feature, layerConf);
     return injecterItineraire(html, feature);
 }

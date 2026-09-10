@@ -95,24 +95,47 @@ volumes ou de données à ne récupérer qu'à la demande.
 
 ## Popups détaillées
 
-Toutes les couches du site affichent maintenant une fiche popup dans le
-même habillage visuel (classes CSS `.popup-fiche-*`, remplaçant l'ancien
-style générique `.popup-geo`, supprimé) : soit une fiche sur mesure pour
-les couches qui le justifient (carburants, commerces, banques & DAB,
-mairies, boîtes aux lettres, parcelles cadastrales, DPE, mutations DVF,
-déchèteries/tri — voir plus bas pour chacune), soit une fiche générique
-auto-construite (`construirePopupGenerique` dans `js/popup.js`) à partir
-des seuls `titleFields`/`subtitleFields` déclarés dans `config.js` pour
-toutes les autres (aires de jeux, écoles, arrêts de bus, zonage PLUi...).
-`construirePopup` aiguille sur `layerConf.id` et retombe sur la fiche
-générique par défaut : plus aucune couche n'a de popup "brute". Les
-fiches sur mesure partagent les mêmes briques JS (`construireContacts`,
+Toutes les couches du site affichent une fiche popup dans le même
+habillage visuel (classes CSS `.popup-fiche-*`, remplaçant l'ancien style
+générique `.popup-geo`, supprimé), et **chaque couche a sa propre fiche
+sur mesure** dans `js/popup.js` — champs humanisés en français plutôt que
+les noms de colonnes/valeurs brutes de la donnée source (souvent en
+anglais, ou des codes type `type_fr: "primaire"`), horaires réellement
+interprétées (`parserHorairesOsm`) plutôt qu'affichées telles quelles
+quand elles existent. `construirePopup` (fin de fichier) aiguille sur
+`layerConf.id` ; seule Vigieau retombe sur une fiche générique
+(`construirePopupGenerique`, à partir des `titleFields`/`subtitleFields`
+déclarés dans `config.js`), ses noms de champs exacts n'étant pas
+garantis d'une mise à jour du fournisseur à l'autre — tout le reste a une
+fiche dédiée : carburants, commerces, banques & DAB, mairies, boîtes aux
+lettres, parcelles cadastrales, DPE, mutations DVF, déchèteries/tri,
+consignes/casiers colis, bornes de recharge, aires de covoiturage,
+marchés, aires de jeux, équipements sportifs, petite enfance, écoles,
+défibrillateurs, monuments protégés, randonnées, arrêts et lignes ALÉOP,
+prix immobilier par commune, zonage PLUi, aléa retrait-gonflement des
+argiles. Toutes partagent les mêmes briques JS (`construireContacts`,
 `construireLignesHoraires`, `construireBadgeOuvert`...) pour rester
 cohérentes sans dupliquer le balisage — seules l'icône, la couleur et les
 champs source changent d'une couche à l'autre. Couleurs volontairement
 variées (pas que du bleu) : ardoise pour les agences bancaires,
 terracotta pour les DAB, feuille pour les boîtes aux lettres, bleu
 rivière conservé pour les mairies (identité "institution").
+
+Quelques traductions/normalisations notables, découvertes en construisant
+ces fiches : `type_fr`/`type` (écoles, équipements sportifs) sont des
+codes bruts (`"primaire"`, `"pitch"`, `"fitness_station"`...) traduits via
+un petit dictionnaire des valeurs réellement présentes sur ce territoire
+(`LABELS_TYPE_ECOLE`, `LABELS_EQUIPEMENT_SPORTIF`, `LABELS_SPORT`) plutôt
+qu'affichés tels quels ; les champs booléens de la couche IRVE (bornes de
+recharge, schéma national data.gouv.fr) sont stockés en chaînes
+`"True"`/`"False"` plutôt qu'en vrais booléens (`estVrai`) ; le téléphone/
+mail de la couche "petite enfance" portent un retour à la ligne de tête
+dans la donnée source, nettoyé à l'affichage ; `c_dermnt` (dernière
+maintenance d'un défibrillateur) vaut exactement `"2000-01-01"` sur 8
+enregistrements — une valeur-sentinelle plutôt qu'une vraie date connue,
+traitée comme absente. `couches/services/airesJeu.geojson` avait le même
+problème d'encodage UTF-8 doublement encodé que `banques.geojson`
+précédemment (`"MarÃ§on"` au lieu de `"Marçon"`) — corrigé pareil.
 
 Toutes les fiches (sur mesure comme générique) se terminent par un bloc
 "Itinéraire" (Google Maps / Waze), ajouté en un seul point du code
@@ -422,8 +445,6 @@ au site).
 
 ## Ce qui reste à faire
 
-- Vérifier/ajuster les champs affichés dans les popups pour les couches où
-  je n'ai pas pu deviner avec certitude les bons noms de colonnes.
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.
 - Ajouter les commerces comme thématique dédiée sur la page d'accueil si
