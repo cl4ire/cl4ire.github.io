@@ -285,6 +285,46 @@ détaillée (avant : popup générique à champs bruts) :
   mutation à la bonne parcelle, plutôt que trois implémentations
   différentes du même calcul).
 
+## Déchèteries / tri
+
+La couche `dechets` mélange trois choses différentes sous un seul champ
+`type` : déchèterie (`"centre"`), composteur partagé (`"compost"`), et
+point d'apport volontaire / colonnes de tri (`"container"`) — plus,
+seulement pour ces derniers, jusqu'à 4 indicateurs de flux séparés
+(`glass`/`paper`/`plastic_packaging`/`waste`). Avant, tout ça portait la
+même icône/couleur uniforme et une popup générique à champs bruts ; les
+trois sont maintenant distingués visuellement (`iconeDechet` dans
+`config.js`) et ont chacun leur propre fiche popup
+(`construirePopupDechet`/`construirePopupDecheterie`/
+`construirePopupCompost`/`construirePopupApportVolontaire` dans
+`js/popup.js`) :
+
+- **Déchèterie** : icône entrepôt, vert foncé. Nom, commune, opérateur.
+- **Composteur partagé** : icône plante, vert. Le champ `opening_hours`
+  n'y porte pas de vraies horaires mais un statut d'accès en texte libre
+  (`"Public"` / `"Privé"` / `"Privé - Réservé aux habitants inscrits"`) —
+  affiché comme un badge Public/Accès réservé plutôt que d'essayer de le
+  faire passer pour des horaires OSM.
+- **Point d'apport volontaire** : marqueur "camembert"
+  (`creerIconeCamembert` dans `icons.js`, un simple `conic-gradient` CSS,
+  pas de canvas/SVG) — une part égale par flux trié réellement présent
+  (pas de pondération par volume, cette donnée n'existe pas), aux mêmes
+  couleurs que les bacs de tri en France : verre en vert, papier en bleu,
+  emballages plastique en jaune, ordures ménagères en noir
+  (`FLUX_TRI` dans `config.js`). La popup liste les mêmes flux en chips
+  colorées ("Tri sélectif"). `resoudreIconeCouleur`/`iconePourCouche`
+  (`icons.js`) ont été généralisées pour accepter soit une couleur
+  unique (toutes les autres couches), soit `segments` (plusieurs
+  couleurs) pour ce marqueur "camembert" — extensible à d'autres couches
+  si besoin un jour, sans dupliquer le mécanisme de cache d'icônes.
+
+Deux petites corrections de données à l'affichage (comme ailleurs sur le
+site, sans modifier les fichiers sources) : `fluxActif` tolère la
+coquille observée `"ye"` au lieu de `"yes"` sur un enregistrement réel ;
+`operateurDechet` corrige "Syndicat **Mxte** du Val de Loir" en "Syndicat
+**Mixte** du Val de Loir" (une coquille, sur les deux syndicats gérant le
+territoire — SYVALORM et Syndicat Mixte du Val de Loir).
+
 ## Ce qui reste à faire
 
 - Vérifier/ajuster les champs affichés dans les popups pour les couches où

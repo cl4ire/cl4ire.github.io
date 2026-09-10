@@ -377,6 +377,15 @@ button { font-family: inherit; cursor: pointer; }
 .popup-fiche-vente-m2 { justify-self: end; color: var(--ardoise); font-size: 10.5px; }
 .popup-fiche-dpe-classe { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 6px; color: #fff; font-weight: 800; font-size: 12px; }
 
+/* Marqueur "camembert" (déchèteries/tri) : icône blanche avec une légère
+   ombre pour rester lisible sur les parts claires (jaune plastique). */
+.geo-marker-camembert i { text-shadow: 0 1px 3px rgba(0,0,0,0.55); }
+
+/* ---------- POPUP DÉCHÈTERIE / TRI ---------- */
+.popup-fiche-flux-liste { display: flex; flex-wrap: wrap; gap: 6px; }
+.popup-fiche-flux { display: inline-flex; align-items: center; gap: 6px; padding: 6px 9px; border: 1px solid var(--bordure); border-radius: 8px; background: var(--fond); color: #454440; font-size: 10.5px; font-weight: 700; }
+.popup-fiche-flux span { width: 9px; height: 9px; border-radius: 50%; background: currentColor; flex: 0 0 auto; }
+
 .modal { position: fixed; inset: 0; background: rgba(15,20,18,0.45); display: none; align-items: center; justify-content: center; z-index: 2000; }
 .modal-open { display: flex; }
 .modal-content { background: #fff; border-radius: 16px; padding: 28px; max-width: 420px; width: 90%; position: relative; text-align: center; }

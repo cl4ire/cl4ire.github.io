@@ -644,6 +644,71 @@ function construirePopupMutation(props, feature) {
     </div>`;
 }
 
+/* =========================================================
+   POPUP DÉCHÈTERIE / TRI — trois fiches différentes selon le champ
+   "type" (voir iconeDechet dans config.js pour la même distinction côté
+   marqueur) : déchèterie, composteur partagé, point d'apport volontaire.
+   ========================================================= */
+function construirePopupDechet(props) {
+    if (props.type === "centre") return construirePopupDecheterie(props);
+    if (props.type === "compost") return construirePopupCompost(props);
+    return construirePopupApportVolontaire(props);
+}
+
+function construirePopupDecheterie(props) {
+    const operateur = operateurDechet(props.operator);
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.foret}"><i class="fa-solid fa-warehouse"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.foret}">Déchèterie</div>
+                <div class="popup-fiche-titre">${echapperHtml(props.name || "Déchèterie")}</div>
+                ${props.com_nom ? `<div class="popup-fiche-adresse">${echapperHtml(props.com_nom)}</div>` : ""}
+                ${operateur ? `<div class="popup-fiche-puce" style="color:${PALETTE.foret}"><i class="fa-solid fa-building"></i>Gérée par ${echapperHtml(operateur)}</div>` : ""}
+            </div>
+        </div>
+    </div>`;
+}
+
+function construirePopupCompost(props) {
+    const acces = (props.opening_hours || "").trim();
+    const public_ = /^public/i.test(acces);
+    const operateur = operateurDechet(props.operator);
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.feuille}"><i class="fa-solid fa-seedling"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.feuille}">Composteur partagé</div>
+                <div class="popup-fiche-titre">${echapperHtml(props.name || "Composteur partagé")}</div>
+                ${props.com_nom ? `<div class="popup-fiche-adresse">${echapperHtml(props.com_nom)}</div>` : ""}
+                ${operateur ? `<div class="popup-fiche-puce" style="color:${PALETTE.feuille}"><i class="fa-solid fa-building"></i>Géré par ${echapperHtml(operateur)}</div>` : ""}
+            </div>
+            ${acces ? `<span class="popup-fiche-badge ${public_ ? "ouvert" : "ferme"}"><span></span>${public_ ? "Public" : "Accès réservé"}</span>` : ""}
+        </div>
+        ${(acces && acces.toLowerCase() !== "public") ? `<div class="popup-fiche-section"><div class="popup-fiche-precision">${echapperHtml(acces)}</div></div>` : ""}
+    </div>`;
+}
+
+function construirePopupApportVolontaire(props) {
+    const flux = fluxPresents(props);
+    const couleur = flux[0] ? flux[0].color : PALETTE.ardoise;
+    const operateur = operateurDechet(props.operator);
+    const chips = flux.map(f => `<span class="popup-fiche-flux" style="color:${f.color}"><span></span>${echapperHtml(f.label)}</span>`).join("");
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${couleur}"><i class="fa-solid fa-recycle"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${couleur}">Point d'apport volontaire</div>
+                <div class="popup-fiche-titre">${echapperHtml(props.name || "Point d'apport volontaire")}</div>
+                ${props.com_nom ? `<div class="popup-fiche-adresse">${echapperHtml(props.com_nom)}</div>` : ""}
+                ${operateur ? `<div class="popup-fiche-puce" style="color:${couleur}"><i class="fa-solid fa-building"></i>Géré par ${echapperHtml(operateur)}</div>` : ""}
+            </div>
+        </div>
+        ${chips ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre"><i class="fa-solid fa-recycle"></i>Tri sélectif</div><div class="popup-fiche-flux-liste">${chips}</div></div>` : ""}
+    </div>`;
+}
+
 function construirePopup(feature, layerConf) {
     const props = feature.properties || {};
     if (layerConf.id === "carburants") return construirePopupCarburant(props);
@@ -654,6 +719,7 @@ function construirePopup(feature, layerConf) {
     if (layerConf.id === "cadastre") return construirePopupCadastreBase(props);
     if (layerConf.id === "dpe") return construirePopupDpe(props);
     if (layerConf.id === "mutations") return construirePopupMutation(props, feature);
+    if (layerConf.id === "dechets") return construirePopupDechet(props);
 
     const titre = premierChampValide(props, layerConf.titleFields || []) || layerConf.label;
     const sousInfos = (layerConf.subtitleFields || []).map(c => props[c]).filter(v => v !== undefined && v !== null && v !== "" && v !== "NULL");
