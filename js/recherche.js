@@ -171,16 +171,10 @@ function infosParcelle(feature, indices) {
     const plui = zonesPLUi.find(zone => pointDansFeature(centre, zone)) || null;
     const rga = zonesRGA.find(zone => pointDansFeature(centre, zone)) || null;
 
-    const ventes = dvf ? (dvf.properties.historique_mutations || []).map(m => {
-        const locaux = (m.elements_locaux || []).filter(e => e.parcelle === p.id && e.surface_batie > 0);
-        const surfaceBatie = locaux.reduce((s, e) => s + e.surface_batie, 0) || null;
-        const valeur = typeof m.valeur === "number" ? m.valeur : null;
-        return {
-            annee: m.annee || null, valeur,
-            nbBatiments: locaux.length || null, surfaceBatie,
-            prixM2: (surfaceBatie && valeur) ? Math.round(valeur / surfaceBatie) : null
-        };
-    }) : [];
+    /* ventesDepuisMutation (config.js) : partagée avec le style et le
+       popup de la couche "mutations" elle-même, pour ne pas dupliquer
+       ce calcul (filtrage des lots à la seule parcelle concernée). */
+    const ventes = ventesDepuisMutation(dvf);
 
     const typezonePLUi = plui ? plui.properties.typezone : null;
     const nbBatiments = ventes[0] ? ventes[0].nbBatiments : null;
