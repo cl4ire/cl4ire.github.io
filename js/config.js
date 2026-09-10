@@ -633,6 +633,29 @@ const REQUETE_OVERPASS_GENDARMERIE =
     `(node["amenity"="police"](${BBOX_OVERPASS});` +
     `way["amenity"="police"](${BBOX_OVERPASS}););` +
     `out center;`;
+const REQUETE_OVERPASS_EHPAD =
+    `[out:json][timeout:25];` +
+    `(node["amenity"="social_facility"]["social_facility"="nursing_home"](${BBOX_OVERPASS});` +
+    `way["amenity"="social_facility"]["social_facility"="nursing_home"](${BBOX_OVERPASS}););` +
+    `out center;`;
+const REQUETE_OVERPASS_TOILETTES =
+    `[out:json][timeout:25];` +
+    `(node["amenity"="toilets"](${BBOX_OVERPASS});` +
+    `way["amenity"="toilets"](${BBOX_OVERPASS}););` +
+    `out center;`;
+const REQUETE_OVERPASS_FONTAINES =
+    `[out:json][timeout:25];` +
+    `(node["amenity"="drinking_water"](${BBOX_OVERPASS}););` +
+    `out center;`;
+/* Itinéraires cyclables balisés (ex. "Le Loir à Vélo") : tagués comme des
+   RELATIONS OSM (route=bicycle), pas de simples nœuds/ways - "out geom;"
+   plutôt que "out center;" pour récupérer la géométrie complète de
+   chaque way membre (nécessaire pour tracer une ligne, pas juste un
+   point), voir geojsonDepuisRoutesVelo. */
+const REQUETE_OVERPASS_VELO =
+    `[out:json][timeout:25];` +
+    `relation["route"="bicycle"](${BBOX_OVERPASS});` +
+    `out geom;`;
 const REQUETE_OVERPASS_BIBLIOTHEQUES =
     `[out:json][timeout:25];` +
     `(node["amenity"="library"](${BBOX_OVERPASS});` +
@@ -661,6 +684,117 @@ const fetchOverpassCampingCar = creerFetchOverpass(REQUETE_OVERPASS_CAMPINGCAR, 
 const fetchOverpassDentistes = creerFetchOverpass(REQUETE_OVERPASS_DENTISTES, "geoberce-cache-dentistes");
 const fetchOverpassPompiers = creerFetchOverpass(REQUETE_OVERPASS_POMPIERS, "geoberce-cache-pompiers");
 const fetchOverpassGendarmerie = creerFetchOverpass(REQUETE_OVERPASS_GENDARMERIE, "geoberce-cache-gendarmerie");
+const fetchOverpassEhpad = creerFetchOverpass(REQUETE_OVERPASS_EHPAD, "geoberce-cache-ehpad");
+const fetchOverpassToilettes = creerFetchOverpass(REQUETE_OVERPASS_TOILETTES, "geoberce-cache-toilettes");
+const fetchOverpassFontaines = creerFetchOverpass(REQUETE_OVERPASS_FONTAINES, "geoberce-cache-fontaines");
+const fetchOverpassVelo = creerFetchOverpass(REQUETE_OVERPASS_VELO, "geoberce-cache-velo");
+
+/* Relations OSM (out geom;) -> une Feature MultiLineString par relation,
+   une ligne par way membre (seuls les membres "way" avec une géométrie
+   comptent - les nœuds isolés éventuels, ex. des points de jalonnement,
+   ne forment pas de ligne et sont ignorés). */
+function geojsonDepuisRoutesVelo(data) {
+    const elements = (data && data.elements) || [];
+    const features = elements.map(rel => {
+        const lignes = (rel.members || [])
+            .filter(m => m.type === "way" && Array.isArray(m.geometry) && m.geometry.length > 1)
+            .map(m => m.geometry.map(pt => [pt.lon, pt.lat]));
+        if (!lignes.length) return null;
+        return { type: "Feature", geometry: { type: "MultiLineString", coordinates: lignes }, properties: rel.tags || {} };
+    }).filter(Boolean);
+    return { type: "FeatureCollection", features };
+}
+
+/* =========================================================
+   HISTORIQUE DES CATASTROPHES NATURELLES (CATNAT/GASPAR)
+   API Géorisques v1 (georisques.gouv.fr), endpoint CATNAT, en accès
+   libre sans jeton - confirmé joignable (ex. .../api/v1/gaspar/catnat
+   ?code_insee=30007&page_size=20), MAIS forme exacte de la réponse (nom
+   du champ contenant la liste, noms des champs par événement) non
+   vérifiable en conditions réelles (accès réseau restreint pendant le
+   développement, comme pour la couche OLD/WMS - voir README). Interrogé
+   commune par commune (code_insee), contrairement à Overpass qui
+   accepte un rectangle englobant pour tout le territoire d'un coup :
+   forme de requête différente d'une API à l'autre, pas de mutualisation
+   possible avec creerFetchOverpass. Géométrie des communes reprise de
+   couches/communes.geojson (déjà dans le dépôt) plutôt que demandée à
+   Géorisques : seuls les événements viennent du flux distant. */
+const CACHE_CATNAT_CLE = "geoberce-cache-catnat";
+const CACHE_CATNAT_DUREE_MS = 24 * 60 * 60 * 1000; // historique d'arrêtés, change rarement : cache plus long que les flux Overpass
+
+function lireCacheCatnat() {
+    try {
+        const brut = localStorage.getItem(CACHE_CATNAT_CLE);
+        if (!brut) return null;
+        const { horodatage, donnees } = JSON.parse(brut);
+        if (!horodatage || Date.now() - horodatage > CACHE_CATNAT_DUREE_MS) return null;
+        return donnees;
+    } catch (_) {
+        return null;
+    }
+}
+function ecrireCacheCatnat(donnees) {
+    try {
+        localStorage.setItem(CACHE_CATNAT_CLE, JSON.stringify({ horodatage: Date.now(), donnees }));
+    } catch (_) {
+        // silencieux : le cache est un confort, pas un besoin
+    }
+}
+/* Plusieurs enveloppes de réponse possibles selon la version/le format
+   exact de l'API (tableau brut, {data:[...]}, {results:[...]}...) :
+   lecture tolérante plutôt que de supposer une forme précise. */
+function elementsReponseCatnat(data) {
+    if (Array.isArray(data)) return data;
+    if (data && Array.isArray(data.data)) return data.data;
+    if (data && Array.isArray(data.results)) return data.results;
+    if (data && Array.isArray(data.items)) return data.items;
+    return [];
+}
+function recupererCatnat() {
+    const enCache = lireCacheCatnat();
+    if (enCache) return Promise.resolve(enCache);
+
+    const parCommune = Object.keys(COMMUNES_TERRITOIRE).map(code =>
+        fetch(`https://georisques.gouv.fr/api/v1/gaspar/catnat?code_insee=${code}&page_size=50`)
+            .then(r => r.ok ? r.json() : null)
+            .then(data => ({ insee: code, evenements: elementsReponseCatnat(data) }))
+            .catch(() => ({ insee: code, evenements: [] }))
+    );
+    return Promise.all(parCommune).then(resultats => { ecrireCacheCatnat(resultats); return resultats; });
+}
+function fetchCatnat() {
+    return Promise.all([
+        fetch("couches/communes.geojson").then(r => r.json()),
+        recupererCatnat()
+    ]).then(([communes, resultats]) => ({ communes, resultats }));
+}
+/* Une Feature par commune (le polygone existant), pas une par événement :
+   plusieurs arrêtés concernent en général la même commune (inondations à
+   répétition, sécheresse...), les regrouper sous un seul polygone évite
+   d'empiler des dizaines de marqueurs identiques. */
+function geojsonDepuisCatnat(data) {
+    const parInsee = {};
+    (data.resultats || []).forEach(r => { parInsee[r.insee] = r.evenements; });
+    const features = ((data.communes && data.communes.features) || []).map(f => ({
+        ...f,
+        properties: { ...f.properties, catnat_evenements: parInsee[f.properties.code_insee] || [] }
+    }));
+    return { type: "FeatureCollection", features };
+}
+/* Dégradé par nombre d'événements recensés, pas par montant (couleurPrix
+   ne convient pas à un compte d'événements) : gris si aucun arrêté
+   connu, puis 3 paliers du jaune au rouge - seuils choisis pour rester
+   lisibles avec les petits nombres typiques d'un historique communal. */
+function couleurCatnat(nb) {
+    if (!nb) return "#D8D6D0";
+    if (nb <= 3) return "#F2C94C";
+    if (nb <= 7) return "#F2994A";
+    return "#AD4826";
+}
+function styleCatnat(feature) {
+    const nb = (feature.properties.catnat_evenements || []).length;
+    return { color: "#fff", weight: 1, fillColor: couleurCatnat(nb), fillOpacity: 0.55 };
+}
 
 /* =========================================================
    COUCHES
@@ -764,6 +898,22 @@ const LAYERS = [
         lazy: false, searchable: true, cluster: true,
         titleFields: ["lib_fs"],
         subtitleFields: ["lib_com", "format_fs"]
+    },
+    {
+        id: "toilettes", group: "services", label: "Toilettes publiques",
+        fetchPersonnalise: fetchOverpassToilettes, transform: geojsonDepuisElementsOverpass,
+        type: "point", icon: "fa-solid fa-restroom", color: PALETTE.ardoise,
+        lazy: true, searchable: true, cluster: true,
+        titleFields: ["name"],
+        subtitleFields: ["opening_hours"]
+    },
+    {
+        id: "fontaines", group: "services", label: "Points d'eau potable",
+        fetchPersonnalise: fetchOverpassFontaines, transform: geojsonDepuisElementsOverpass,
+        type: "point", icon: "fa-solid fa-droplet", color: PALETTE.ardoise,
+        lazy: true, searchable: true, cluster: true,
+        titleFields: ["name"],
+        subtitleFields: []
     },
 
     /* ---------- FAMILLE ---------- */
@@ -881,6 +1031,14 @@ const LAYERS = [
         titleFields: ["name"],
         subtitleFields: ["operator", "phone"]
     },
+    {
+        id: "ehpad", group: "securite", label: "EHPAD & maisons de retraite",
+        fetchPersonnalise: fetchOverpassEhpad, transform: geojsonDepuisElementsOverpass,
+        type: "point", icon: "fa-solid fa-person-cane", color: "#AD4826",
+        lazy: true, searchable: true, cluster: true,
+        titleFields: ["name", "operator"],
+        subtitleFields: ["operator", "phone"]
+    },
 
     /* ---------- PATRIMOINE ---------- */
     {
@@ -900,6 +1058,17 @@ const LAYERS = [
         lazy: false, searchable: false, cluster: false,
         titleFields: ["id"],
         subtitleFields: ["distance", "dureeEstim"]
+    },
+    {
+        id: "velo", group: "tourisme", label: "Itinéraires cyclables",
+        /* Relations OSM (route=bicycle) via Overpass, ex. "Le Loir à
+           Vélo" - voir plus haut dans ce fichier pour le détail
+           (géométrie récupérée avec "out geom;", pas "out center;"). */
+        fetchPersonnalise: fetchOverpassVelo, transform: geojsonDepuisRoutesVelo,
+        type: "line", color: PALETTE.terracotta,
+        lazy: true, searchable: false, cluster: false,
+        titleFields: ["name", "ref"],
+        subtitleFields: ["network"]
     },
     {
         id: "officesTourisme", group: "tourisme", label: "Offices de tourisme",
@@ -1007,6 +1176,20 @@ const LAYERS = [
         attribution: "IGN",
         color: "#AD4826",
         lazy: true, searchable: false, cluster: false
+    },
+    {
+        id: "catnat", group: "risques", label: "Historique des catastrophes naturelles",
+        /* API Géorisques (CATNAT/GASPAR), interrogée commune par commune
+           - voir plus haut dans ce fichier pour le détail et la limite
+           principale : forme exacte de la réponse non vérifiable en
+           conditions réelles (comme la couche OLD/WMS juste au-dessus),
+           lecture volontairement tolérante côté code. Géométrie reprise
+           de couches/communes.geojson (déjà dans le dépôt). */
+        fetchPersonnalise: fetchCatnat, transform: geojsonDepuisCatnat,
+        type: "polygon", color: PALETTE.ardoise, styleFn: styleCatnat,
+        lazy: true, searchable: false, cluster: false,
+        titleFields: ["nom_offici"],
+        subtitleFields: []
     },
     {
         id: "carburants", group: "mobilite", label: "Prix des carburants",

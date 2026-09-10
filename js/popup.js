@@ -868,6 +868,62 @@ function construirePopupGendarmerie(props) {
     </div>`;
 }
 
+function construirePopupEhpad(props) {
+    const nom = premierChampValide(props, ["name", "operator"]) || "EHPAD / maison de retraite";
+    const adresse = adresseOsm(props);
+    const contacts = contactsOsm(props);
+    const capacite = props.capacity ? `${props.capacity} place${Number(props.capacity) > 1 ? "s" : ""}` : null;
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:#AD4826"><i class="fa-solid fa-person-cane"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:#AD4826">EHPAD / maison de retraite</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${adresse ? `<div class="popup-fiche-adresse">${echapperHtml(adresse)}</div>` : ""}
+            </div>
+        </div>
+        ${capacite ? `<div class="popup-fiche-section"><div class="popup-fiche-ligne">${echapperHtml(capacite)}</div></div>` : ""}
+        ${contacts.length ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Contact</div><div class="popup-fiche-contacts">${contacts.join("")}</div></div>` : ""}
+    </div>`;
+}
+
+function construirePopupToilettes(props) {
+    const horaires = parserHorairesOsm(props.opening_hours);
+    const infos = [
+        props.fee === "yes" ? "Payant" : (props.fee === "no" ? "Gratuit" : null),
+        LABELS_ACCESSIBILITE[props.wheelchair] || null
+    ].filter(Boolean);
+    const lignesHoraires = construireLignesHoraires(horaires);
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.ardoise}"><i class="fa-solid fa-restroom"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.ardoise}">Toilettes publiques</div>
+                <div class="popup-fiche-titre">${echapperHtml(props.name || "Toilettes publiques")}</div>
+            </div>
+            ${construireBadgeOuvert(horaires)}
+        </div>
+        ${infos.length ? `<div class="popup-fiche-section"><div class="popup-fiche-ligne">${infos.map(echapperHtml).join(" · ")}</div></div>` : ""}
+        ${lignesHoraires ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Horaires</div>${lignesHoraires}</div>` : ""}
+    </div>`;
+}
+
+function construirePopupFontaine(props) {
+    const potable = props.drinking_water !== "no";
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.ardoise}"><i class="fa-solid fa-droplet"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.ardoise}">Point d'eau potable</div>
+                <div class="popup-fiche-titre">${echapperHtml(props.name || "Fontaine")}</div>
+            </div>
+        </div>
+        ${!potable ? `<div class="popup-fiche-section"><div class="popup-fiche-precision">Eau non garantie potable à cet endroit.</div></div>` : ""}
+    </div>`;
+}
+
 /* =========================================================
    FRANCE SERVICES — extrait statique filtré sur le territoire (voir
    config.js), champs français directement issus du CSV national ANCT
@@ -935,6 +991,64 @@ function construirePopupFranceServices(props) {
         ${lignesHoraires ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Horaires</div>${lignesHoraires}</div>` : ""}
         ${commentaire ? `<div class="popup-fiche-section"><div class="popup-fiche-precision">${echapperHtml(commentaire)}</div></div>` : ""}
         ${props.labellisation_fs ? `<div class="popup-fiche-section"><div class="popup-fiche-precision">${echapperHtml(props.labellisation_fs)}</div></div>` : ""}
+    </div>`;
+}
+
+/* Itinéraires cyclables (relations OSM route=bicycle, voir config.js) */
+const LABELS_RESEAU_VELO = {
+    icn: "Itinéraire international", ncn: "Itinéraire national",
+    rcn: "Itinéraire régional", lcn: "Itinéraire local"
+};
+function construirePopupVelo(props) {
+    const nom = premierChampValide(props, ["name"]) || "Itinéraire cyclable";
+    const reseau = LABELS_RESEAU_VELO[props.network] || null;
+    const contacts = construireContacts({ ...props, website: props.website || props["contact:website"] });
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.terracotta}"><i class="fa-solid fa-bicycle"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.terracotta}">${echapperHtml(reseau || "Itinéraire cyclable")}</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${props.ref ? `<div class="popup-fiche-adresse">Référence ${echapperHtml(props.ref)}</div>` : ""}
+            </div>
+        </div>
+        ${contacts.length ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">En savoir plus</div><div class="popup-fiche-contacts">${contacts.join("")}</div></div>` : ""}
+    </div>`;
+}
+
+/* Historique des catastrophes naturelles (CATNAT/GASPAR, voir config.js)
+   - forme exacte des champs par événement non vérifiée en conditions
+   réelles (accès réseau restreint pendant le développement) : plusieurs
+   noms de champs candidats essayés pour chaque valeur affichée, plutôt
+   que de supposer un schéma précis et risquer une fiche vide/cassée si
+   la réponse réelle diffère de la documentation trouvée en recherche. */
+function libelleEvenementCatnat(ev) {
+    return ev.lib_risque_jo || ev.libelle_risque_jo || ev.risque || ev.type_catnat || "Catastrophe naturelle";
+}
+function dateEvenementCatnat(ev) {
+    const d = ev.dat_deb || ev.date_debut_evt || ev.date_debut || null;
+    return d ? String(d).slice(0, 10) : null;
+}
+function construirePopupCatnat(props) {
+    const nom = premierChampValide(props, ["nom_offici"]) || "Commune";
+    const evenements = props.catnat_evenements || [];
+    const lignes = evenements.map(ev => {
+        const date = dateEvenementCatnat(ev);
+        return `<div class="popup-fiche-ligne">${echapperHtml(libelleEvenementCatnat(ev))}${date ? ` <span style="color:#8A8882">· ${echapperHtml(date)}</span>` : ""}</div>`;
+    }).join("");
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.ardoise}"><i class="fa-solid fa-cloud-showers-heavy"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.ardoise}">Historique des catastrophes naturelles</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+            </div>
+        </div>
+        ${evenements.length
+            ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">${evenements.length} arrêté${evenements.length > 1 ? "s" : ""} recensé${evenements.length > 1 ? "s" : ""} (source : Géorisques)</div>${lignes}</div>`
+            : `<div class="popup-fiche-section"><div class="popup-fiche-precision">Aucun arrêté de catastrophe naturelle recensé sur cette commune (source : Géorisques).</div></div>`}
     </div>`;
 }
 
@@ -1634,6 +1748,11 @@ function construirePopup(feature, layerConf) {
     else if (layerConf.id === "pompiers") html = construirePopupPompiers(props);
     else if (layerConf.id === "gendarmerie") html = construirePopupGendarmerie(props);
     else if (layerConf.id === "franceServices") html = construirePopupFranceServices(props);
+    else if (layerConf.id === "ehpad") html = construirePopupEhpad(props);
+    else if (layerConf.id === "toilettes") html = construirePopupToilettes(props);
+    else if (layerConf.id === "fontaines") html = construirePopupFontaine(props);
+    else if (layerConf.id === "velo") html = construirePopupVelo(props);
+    else if (layerConf.id === "catnat") html = construirePopupCatnat(props);
     else if (layerConf.id === "irve") html = construirePopupIrve(props);
     else if (layerConf.id === "airecovoiturage") html = construirePopupCovoiturage(props);
     else if (layerConf.id === "marches") html = construirePopupMarche(props);

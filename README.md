@@ -706,6 +706,64 @@ intégrées comme couches, faute de source de données ouverte exploitable :
     l'exposer publiquement dans le code source à chaque visiteur.
   Décision (validée) : couche `medecins` laissée sur OpenStreetMap/Overpass.
 
+## EHPAD, toilettes publiques, points d'eau, itinéraires cyclables, historique des catastrophes naturelles
+
+Cinq couches supplémentaires, suite au brainstorming avec l'utilisatrice
+sur "quelles autres données seraient intéressantes" :
+
+- **EHPAD & maisons de retraite** (`amenity=social_facility` +
+  `social_facility=nursing_home`, groupe Sécurité & santé) et
+  **Toilettes publiques**/**Points d'eau potable** (`amenity=toilets`/
+  `drinking_water`, groupe Services & mairie) : même architecture
+  Overpass que toutes les couches précédentes (`creerFetchOverpass`),
+  rien de nouveau côté mécanique.
+- **Itinéraires cyclables** (`velo`, groupe Nature & rando, ex. "Le Loir
+  à Vélo") : premier flux Overpass sur des **relations** (`route=bicycle`)
+  plutôt que de simples nœuds/ways - `out geom;` (pas `out center;`)
+  pour récupérer la géométrie complète de chaque way membre,
+  `geojsonDepuisRoutesVelo` (`config.js`) construit une Feature
+  `MultiLineString` par relation (une ligne par way membre). Couche
+  `type: "line"`, non "searchable" comme les autres lignes du site
+  (`randonnees`/`reseauALEOP`) : l'indexation de recherche n'est pas
+  conçue pour les géométries non ponctuelles.
+- **Historique des catastrophes naturelles** (`catnat`, groupe Risques
+  & prévention) : point de départ initial "zones inondables (PPRI)",
+  écarté en cours de route — l'API Géorisques a bien des endpoints AZI/
+  MVT/cavités/zonage sismique en accès libre, mais impossible de
+  confirmer si une géométrie exploitable (polygone de zone) en sort
+  réellement, seulement des descriptions de documents/atlas selon la
+  documentation trouvée. Pivot vers l'endpoint **CATNAT** (arrêtés de
+  catastrophe naturelle, base GASPAR), confirmé accessible sans jeton et
+  interrogeable par `code_insee` (`.../api/v1/gaspar/catnat?code_insee=...`)
+  — un couple requête/paramètre nettement plus simple à interroger de
+  façon fiable que des polygones de zonage inconnus. Géométrie reprise
+  de `couches/communes.geojson` (déjà dans le dépôt, 24 polygones) : le
+  flux Géorisques ne fournit que la liste d'événements par commune,
+  `fetchCatnat`/`geojsonDepuisCatnat` (`config.js`) les rattachent aux
+  polygones existants. Une seule requête par commune (24 au total,
+  `Promise.all`), pas de rectangle englobant possible côté cette API
+  contrairement à Overpass.
+
+  ⚠️ **Comme la couche OLD/WMS plus haut, la forme exacte de la réponse
+  CATNAT n'a pas pu être vérifiée en conditions réelles** (accès réseau
+  restreint pendant le développement) : l'existence et le paramétrage de
+  l'endpoint sont confirmés, mais pas les noms exacts des champs par
+  événement ni l'enveloppe de réponse (tableau brut ? `{data:[...]}` ?
+  `{results:[...]}` ?). Le code lit plusieurs formes possibles
+  (`elementsReponseCatnat`) et plusieurs noms de champs candidats par
+  valeur affichée (`libelleEvenementCatnat`/`dateEvenementCatnat`,
+  `js/popup.js`) plutôt que d'en supposer une seule — dégrade
+  proprement vers "Aucun arrêté recensé" si la réponse ne correspond à
+  aucune des formes prévues (pas de fiche cassée), mais un vrai test en
+  conditions réelles reste à faire : si en cochant la couche toutes les
+  communes affichent "Aucun arrêté" alors que ce n'est probablement pas
+  le cas partout, inspecter la réponse réseau réelle de
+  `/api/v1/gaspar/catnat?code_insee=<un code du territoire>` et ajuster
+  `elementsReponseCatnat`/`libelleEvenementCatnat`/`dateEvenementCatnat`
+  en conséquence. Cache `localStorage` 24h (`CACHE_CATNAT_DUREE_MS`),
+  plus long que les 6h des flux Overpass : un historique d'arrêtés
+  publiés change rarement, pas besoin de retaper l'API aussi souvent.
+
 ## Ce qui reste à faire
 
 - Le fichier DVF étant volumineux même en différé, envisager de le
@@ -726,6 +784,15 @@ intégrées comme couches, faute de source de données ouverte exploitable :
   s'affiche en cochant la couche, la console liste chaque miroir essayé
   (`console.warn`) avant l'erreur finale — de quoi savoir lequel a
   répondu quoi, plutôt que de deviner.
+- **Couche `catnat` (historique des catastrophes naturelles) : À VÉRIFIER
+  EN CONDITIONS RÉELLES**, voir la section dédiée plus haut — la forme
+  exacte de la réponse de l'API Géorisques (CATNAT) n'a pas pu être
+  confirmée pendant le développement (accès réseau restreint). Cocher la
+  couche et vérifier qu'au moins une commune du territoire affiche un
+  historique non vide ; si toutes les communes affichent "Aucun arrêté
+  recensé" de façon suspecte, inspecter la réponse réseau réelle et
+  ajuster `elementsReponseCatnat`/`libelleEvenementCatnat`/
+  `dateEvenementCatnat` dans `js/config.js`/`js/popup.js`.
 
 ## Déploiement
 
