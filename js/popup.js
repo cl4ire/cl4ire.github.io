@@ -1548,6 +1548,13 @@ function construirePopupMonument(props) {
 }
 
 /* Randonnées. */
+/* nwn/rwn/lwn/iwn : préfixe "w" (walking) contrairement à ncn/rcn/lcn/icn
+   (préfixe "c", cycling) - schéma réseau OSM différent d'un mode à
+   l'autre, malgré la même échelle national/régional/local/international. */
+const LABELS_RESEAU_RANDONNEE = {
+    iwn: "Itinéraire international", nwn: "Itinéraire national",
+    rwn: "Itinéraire régional", lwn: "Itinéraire local"
+};
 function construirePopupRandonnee(props) {
     const duree = formaterDureeHeures(props.dureeEstim);
     const infos = [
@@ -1556,16 +1563,46 @@ function construirePopupRandonnee(props) {
         typeof props.denivelePo === "number" ? `+${Math.round(props.denivelePo)} m` : null,
         typeof props.deniveleNe === "number" ? `-${Math.round(Math.abs(props.deniveleNe))} m` : null
     ].filter(Boolean);
+    const nom = props.name || (props.id ? "Circuit " + props.id : "Circuit de randonnée");
+    const reseau = LABELS_RESEAU_RANDONNEE[props.network] || null;
 
     return `<div class="popup-fiche">
         <div class="popup-fiche-entete">
             <div class="popup-fiche-icon" style="background:${PALETTE.feuille}"><i class="fa-solid fa-person-hiking"></i></div>
             <div class="popup-fiche-titre-wrap">
-                <div class="popup-fiche-tag" style="color:${PALETTE.feuille}">Randonnée</div>
-                <div class="popup-fiche-titre">${props.id ? "Circuit " + echapperHtml(props.id) : "Circuit de randonnée"}</div>
+                <div class="popup-fiche-tag" style="color:${PALETTE.feuille}">${echapperHtml(reseau || "Randonnée")}</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
             </div>
         </div>
         ${infos.length ? `<div class="popup-fiche-section"><div class="popup-fiche-ligne">${infos.join(" · ")}</div></div>` : ""}
+    </div>`;
+}
+
+/* Points remarquables de la forêt de Bercé (voir config.js pour
+   categoriePointRemarquableBerce/le flux Overpass + fichier manuel). */
+function construirePopupPointRemarquableBerce(props) {
+    const cat = categoriePointRemarquableBerce(props);
+    const nom = premierChampValide(props, ["name"]) || cat.label;
+    const infos = [
+        /* Nom binomial (genre + espèce) : seule la première lettre se
+           met en majuscule (convention botanique), pas chaque mot comme
+           capitaliserMots le ferait ("Quercus Petraea" serait incorrect). */
+        props.species ? capitaliserPremiere(props.species) : null,
+        props.circumference ? `Circonférence ${props.circumference} m` : null,
+        props.height ? `Hauteur ${props.height} m` : null
+    ].filter(Boolean);
+    const description = (props.description || "").trim();
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${cat.color}"><i class="${cat.icon}"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${cat.color}">${echapperHtml(cat.label)}</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+            </div>
+        </div>
+        ${infos.length ? `<div class="popup-fiche-section"><div class="popup-fiche-ligne">${infos.map(echapperHtml).join(" · ")}</div></div>` : ""}
+        ${description ? `<div class="popup-fiche-section"><div class="popup-fiche-precision">${echapperHtml(description)}</div></div>` : ""}
     </div>`;
 }
 
@@ -1726,6 +1763,92 @@ function construirePopupGenerique(feature, layerConf) {
     </div>`;
 }
 
+/* Parkings publics, vente directe à la ferme, antennes-relais mobiles,
+   petit patrimoine rural (voir config.js pour les flux Overpass/la
+   catégorisation) - dernier lot de couches, mêmes aides déjà en place
+   (adresseOsm/contactsOsm, parserHorairesOsm...). */
+const LABELS_ACCES_PARKING = { yes: "Accès libre", public: "Accès public", customers: "Réservé clientèle", private: "Accès privé" };
+function construirePopupParking(props) {
+    const nom = premierChampValide(props, ["name"]) || "Parking";
+    const infos = [
+        LABELS_ACCES_PARKING[props.access] || null,
+        props.capacity ? `${props.capacity} places` : null,
+        props.fee === "yes" ? "Payant" : (props.fee === "no" ? "Gratuit" : null),
+        props.covered === "yes" ? "Couvert" : null
+    ].filter(Boolean);
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.ardoise}"><i class="fa-solid fa-square-parking"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.ardoise}">Parking</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+            </div>
+        </div>
+        ${infos.length ? `<div class="popup-fiche-section"><div class="popup-fiche-ligne">${infos.map(echapperHtml).join(" · ")}</div></div>` : ""}
+    </div>`;
+}
+
+function construirePopupVenteFerme(props) {
+    const nom = premierChampValide(props, ["name"]) || "Vente directe à la ferme";
+    const adresse = adresseOsm(props);
+    const horaires = parserHorairesOsm(props.opening_hours);
+    const contacts = contactsOsm(props);
+    const lignesHoraires = construireLignesHoraires(horaires);
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.feuille}"><i class="fa-solid fa-tractor"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.feuille}">Vente directe à la ferme</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${adresse ? `<div class="popup-fiche-adresse">${echapperHtml(adresse)}</div>` : ""}
+            </div>
+            ${construireBadgeOuvert(horaires)}
+        </div>
+        ${contacts.length ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Contact</div><div class="popup-fiche-contacts">${contacts.join("")}</div></div>` : ""}
+        ${lignesHoraires ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Horaires</div>${lignesHoraires}</div>` : ""}
+    </div>`;
+}
+
+function construirePopupAntenne(props) {
+    const nom = props.operator || "Antenne-relais mobile";
+    const infos = [
+        props.height ? `Hauteur ${props.height} m` : null,
+        props.ref ? `Réf. ${props.ref}` : null
+    ].filter(Boolean);
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.ardoise}"><i class="fa-solid fa-tower-cell"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.ardoise}">Antenne-relais mobile</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+            </div>
+        </div>
+        ${infos.length ? `<div class="popup-fiche-section"><div class="popup-fiche-ligne">${infos.map(echapperHtml).join(" · ")}</div></div>` : ""}
+    </div>`;
+}
+
+/* categoriePatrimoineRural : définie dans config.js (réutilisée aussi
+   par iconePatrimoineRural pour la couleur/icône du marqueur). */
+function construirePopupPatrimoineRural(props) {
+    const cat = categoriePatrimoineRural(props);
+    const nom = premierChampValide(props, ["name"]) || cat.label;
+    const description = (props.description || "").trim();
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${cat.color}"><i class="${cat.icon}"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${cat.color}">${echapperHtml(cat.label)}</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+            </div>
+        </div>
+        ${description ? `<div class="popup-fiche-section"><div class="popup-fiche-precision">${echapperHtml(description)}</div></div>` : ""}
+    </div>`;
+}
+
 function construirePopup(feature, layerConf) {
     const props = feature.properties || {};
     let html;
@@ -1753,6 +1876,11 @@ function construirePopup(feature, layerConf) {
     else if (layerConf.id === "fontaines") html = construirePopupFontaine(props);
     else if (layerConf.id === "velo") html = construirePopupVelo(props);
     else if (layerConf.id === "catnat") html = construirePopupCatnat(props);
+    else if (layerConf.id === "pointsRemarquablesBerce") html = construirePopupPointRemarquableBerce(props);
+    else if (layerConf.id === "parkings") html = construirePopupParking(props);
+    else if (layerConf.id === "venteFerme") html = construirePopupVenteFerme(props);
+    else if (layerConf.id === "antennes") html = construirePopupAntenne(props);
+    else if (layerConf.id === "patrimoineRural") html = construirePopupPatrimoineRural(props);
     else if (layerConf.id === "irve") html = construirePopupIrve(props);
     else if (layerConf.id === "airecovoiturage") html = construirePopupCovoiturage(props);
     else if (layerConf.id === "marches") html = construirePopupMarche(props);

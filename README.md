@@ -764,6 +764,100 @@ sur "quelles autres données seraient intéressantes" :
   plus long que les 6h des flux Overpass : un historique d'arrêtés
   publiés change rarement, pas besoin de retaper l'API aussi souvent.
 
+## Tous les sentiers de randonnée + points remarquables de la forêt de Bercé
+
+Deux demandes de l'utilisatrice à la suite du brainstorming précédent.
+
+**Randonnées** — la couche `randonnees` ne contenait qu'un seul tracé
+digitalisé à la main (`couches/tourisme/randonnees.geojson`, id "J1").
+Passée en flux Overpass (relations `route=hiking`, même principe que les
+itinéraires cyclables : `out geom;` pour la géométrie complète), **fusionné
+avec le tracé existant** plutôt que de le remplacer (`fetchRandonnees`,
+même schéma flux + fichier local que les casiers colis) : on ne sait pas
+si ce tracé est déjà présent dans OSM sous un autre identifiant, donc on
+le garde systématiquement plutôt que de risquer de le perdre.
+
+Pas de dénivelé/altitude disponible depuis Overpass pour calculer une
+vraie durée estimée : `distanceMultiLigneKm` calcule la distance réelle
+par géométrie (somme des distances haversine entre points consécutifs),
+et `dureeEstim = distance / 4` reprend exactement la même convention que
+le seul tracé existant avant cet ajout (J1 : 4,04 km pour 1,01 h, soit
+tout juste 4 km/h) — pas une valeur inventée, la continuité du tracé
+existant sert de référence. `titleFields` passé de `["id"]` à
+`["name", "id"]` : les tracés OSM portent en général un vrai nom
+("Sentier de la Futaie des Clos"...), contrairement à "J1".
+
+**Points remarquables de la forêt de Bercé** — nouvelle couche
+`pointsRemarquablesBerce` (groupe Nature & rando), sur le même principe
+que les casiers colis : flux Overpass (arbres nommés `natural=tree`+
+`name`, sources `natural=spring`, attractions `tourism=attraction`+
+`name`) complété par un fichier local
+(`couches/tourisme/pointsRemarquablesBerce_manuels.geojson`) pour les
+sites emblématiques documentés par l'ONF (carte touristique, application
+mobile) mais pas forcément cartographiés sur OpenStreetMap — repérés
+avec l'utilisatrice : le **Chêne Boppe** (Futaie des Clos, plus vieux
+chêne de la forêt), la **Fontaine de la Coudre** et la **Source de
+l'Hermitière**. Fichier actuellement vide (mêmes coordonnées à repérer
+que pour les casiers colis, voir la section dédiée plus haut pour la
+marche à suivre et le format attendu) : à compléter dès que les
+coordonnées de ces trois sites sont connues, ou dès qu'un signalement
+similaire est fait sur un autre point remarquable.
+
+## Parkings, vente directe à la ferme, antennes-relais, petit patrimoine rural
+
+Quatre couches supplémentaires, suite à une nouvelle liste de pistes de
+l'utilisatrice (couverture mobile, permis de construire, temps réel
+ALÉOP, patrimoine, marchés de producteurs, vente à la ferme, parkings) —
+certaines pistes n'ont **pas** donné de nouvelle couche, pour des raisons
+concrètes détaillées ci-dessous.
+
+- **Parkings publics** (`parkings`, `amenity=parking`) et **Vente directe
+  à la ferme** (`venteFerme`, `shop=farm`, groupe Commerces) : même
+  architecture Overpass que toutes les couches précédentes.
+- **Petit patrimoine rural** (`patrimoineRural`, groupe Patrimoine) :
+  extension du principe de `pointsRemarquablesBerce` à **tout le
+  territoire** plutôt qu'à la seule forêt de Bercé — croix de chemin
+  (`historic=wayside_cross`), lavoirs (`man_made=wash_house`), moulins
+  (`man_made=watermill` ou `historic=mill`, deux tags concurrents selon
+  le contributeur, les deux interrogés), fontaines anciennes/monumentales
+  (`amenity=fountain`, à ne pas confondre avec `amenity=drinking_water`
+  déjà couvert par la couche "Points d'eau potable"). `categoriePatrimoineRural`
+  (`config.js`) distingue les quatre catégories par icône/couleur, réutilisée
+  à la fois pour le marqueur (`iconePatrimoineRural`) et la popup.
+- **Antennes-relais mobiles** (`antennes`, groupe Services) : **pivot**
+  depuis l'idée initiale de couche WMS ARCEP (couverture mobile
+  théorique, comme la couche OLD/débroussaillement). Le service WMS
+  "Téléphonie mobile" de l'ARCEP existe bien, mais contrairement à OLD
+  (où un nom de couche précis avait été documenté et utilisé), aucun nom
+  de couche exploitable n'a pu être trouvé en recherche pour ce flux —
+  deviner un nom au hasard aurait eu plus de chances de donner une case
+  à cocher qui n'affiche jamais rien, sans piste de correction, qu'un
+  vrai résultat. Repli sur OpenStreetMap (`man_made=mast` +
+  `tower:type=communication` ou `communication:mobile_phone=yes`) :
+  pas une carte de couverture théorique par opérateur, mais un signal
+  concret et fiable (position réelle des pylônes/antennes), même
+  mécanique Overpass que toutes les autres couches du site.
+
+**Pistes évaluées mais écartées** (documentées ici plutôt que de laisser
+une trace uniquement dans la conversation) :
+- **SITADEL (permis de construire)** — la donnée officielle existe, mais
+  le SDES documente lui-même une géolocalisation peu fiable à l'adresse
+  précise (absence de préfixe de parcelle pour la plupart des communes).
+  Afficher des permis à des adresses potentiellement fausses serait plus
+  trompeur qu'utile sur une carte grand public. Décision (validée) :
+  rien ajouté pour l'instant ; un indicateur agrégé par commune (nombre
+  de permis délivrés par an, comme la couche prix immobilier) resterait
+  possible si un extrait CSV filtré est fourni.
+- **ALÉOP temps réel** — l'API existe bien (couverture Sarthe depuis
+  2022), mais exige une clé API personnelle obtenue sur demande auprès
+  de la région : même blocage que l'API FHIR Annuaire Santé pour les
+  médecins, pas intégrable dans un site statique public sans exposer la
+  clé à chaque visiteur. Décision (validée) : pas de suivi temps réel.
+- **Marchés de producteurs** — la couche `marches` existante couvre déjà
+  tous les marchés du territoire ; OpenStreetMap ne distingue pas un
+  marché de producteurs d'un marché classique (même tag
+  `amenity=marketplace` pour les deux), donc rien à ajouter de plus ici.
+
 ## Ce qui reste à faire
 
 - Le fichier DVF étant volumineux même en différé, envisager de le
@@ -793,6 +887,12 @@ sur "quelles autres données seraient intéressantes" :
   recensé" de façon suspecte, inspecter la réponse réseau réelle et
   ajuster `elementsReponseCatnat`/`libelleEvenementCatnat`/
   `dateEvenementCatnat` dans `js/config.js`/`js/popup.js`.
+- **Couche `pointsRemarquablesBerce` : coordonnées du Chêne Boppe, de la
+  Fontaine de la Coudre et de la Source de l'Hermitière à ajouter** dans
+  `couches/tourisme/pointsRemarquablesBerce_manuels.geojson` (voir la
+  section dédiée plus haut) dès qu'elles sont connues — fichier
+  actuellement vide, ces trois sites n'apparaîtront sur la carte qu'une
+  fois leurs coordonnées renseignées (ou trouvées sur OpenStreetMap).
 
 ## Déploiement
 
