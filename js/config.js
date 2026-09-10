@@ -419,14 +419,15 @@ const LAYERS = [
         id: "cadastre", group: "urbanisme", label: "Parcelles cadastrales",
         /* Flux unique du cadastre pour toute la comcom (bundler Etalab par
            EPCI), fusionné/complété par fusionnerCadastre. Volumineux
-           (parcellaire complet des 24 communes) : chargée à la demande et
-           affichée seulement à partir d'un certain niveau de zoom (voir
-           zoomMin dans layers.js), comme les visualisateurs de cadastre
-           habituels. */
+           (parcellaire complet des 24 communes, des dizaines de milliers de
+           parcelles) : chargée à la demande, affichée seulement à partir
+           d'un certain niveau de zoom (zoomMin), et seulement les parcelles
+           dans la vue actuelle plutôt que tout le territoire d'un coup
+           (viewportOnly, se met à jour au déplacement - voir layers.js). */
         file: URL_CADASTRE_EPCI, transform: fusionnerCadastre,
         type: "polygon", color: PALETTE.ardoise,
         styleFn: () => ({ color: PALETTE.ardoise, weight: 1, opacity: 0.6, fillOpacity: 0 }),
-        zoomMin: 15,
+        zoomMin: 15, viewportOnly: true,
         lazy: true, searchable: false, cluster: false,
         titleFields: ["reference"],
         subtitleFields: ["commune_nom", "surface_m2"]

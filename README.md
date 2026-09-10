@@ -74,11 +74,18 @@ carburants, **Habitat & urbanisme** pour le cadastre) :
   connue et testée. `layers.js` accepte aussi `file` comme tableau d'URL
   (une par élément, `transform` reçoit alors le tableau des réponses) si
   jamais un seul flux EPCI ne suffit pas pour un autre besoin. Couche
-  volumineuse (parcellaire complet de 24 communes) : en plus d'être `lazy`,
-  elle ne s'affiche qu'à partir du zoom 15 (`zoomMin`, mécanisme générique
-  dans `layers.js`/`surveillerZoom`), comme les visualisateurs de cadastre
-  habituels — sinon des dizaines de milliers de parcelles se
-  superposeraient de façon illisible et coûteuse à styliser.
+  volumineuse (parcellaire complet de 24 communes, des dizaines de
+  milliers de parcelles) : en plus d'être `lazy`, elle ne s'affiche qu'à
+  partir du zoom 15 (`zoomMin`) et seulement les parcelles de la vue
+  actuelle (`viewportOnly`), pas tout le territoire d'un coup — sinon ça
+  voudrait dire construire des dizaines de milliers d'objets Leaflet en
+  mémoire (illisible à l'écran et coûteux), pour l'essentiel jamais
+  affichés. `layers.js`/`surveillerAffichageCouches` reconstruit la couche
+  à chaque déplacement (`moveend`, avec un léger anti-rebond) à partir du
+  seul sous-ensemble dont la boîte englobante touche la vue
+  (`featuresDansVue`/`bboxFeature`) : les parcelles qui sortent de l'écran
+  sont retirées, celles qui y entrent sont ajoutées. Mécanisme générique,
+  réutilisable par toute autre couche déclarant `viewportOnly: true`.
 
 Pour ajouter une nouvelle couche en flux du même genre : GeoJSON distant
 → il suffit de mettre une URL absolue dans `file` (avec `transform` si le
@@ -93,27 +100,34 @@ surface de parcelle, zone PLUi, aléa RGA, ventes DVF, bâti, DPE) pour
 n'afficher que les parcelles correspondantes plutôt que de cliquer une par
 une. Tout est dans `js/recherche.js`.
 
-Principe : au premier chargement du panneau, `chargerDonneesFoncieres`
-récupère les 5 couches concernées (cadastre, mutations, DPE, PLUi, RGA) en
-tâche de fond, sans les ajouter à la carte. `enrichirCadastre` calcule alors
-**une seule fois** (résultat mis en cache) pour chaque parcelle : la
-mutation DVF correspondante (référence exacte), la zone PLUi et le niveau
-RGA à cet endroit (le centre de la parcelle tombe dans quelle zone ? —
-`pointDansFeature`, un simple ray-casting, pas de dépendance externe), et le
-DPE le plus proche s'il est à l'intérieur de la parcelle. Les recherches
-géométriques sont limitées à la même commune (`grouperParChamp`) pour rester
-rapides malgré le volume (dizaines de milliers de parcelles) : sans ça,
-tester chaque parcelle contre chaque DPE/zone serait bien trop lent. Une
-fois ce calcul fait, changer un critère du formulaire ne fait que relire ce
-cache (`correspond`/`filtrerParcelles`), donc le nombre de résultats se met
-à jour en direct sans latence.
+**La recherche ne porte que sur les parcelles actuellement affichées à
+l'écran**, pas sur les dizaines de milliers de parcelles du territoire
+entier : il faut donc être zoomé sur une zone (niveau 15 ou plus, comme
+pour l'affichage normal du cadastre) avant de chercher, sinon le panneau
+l'indique et le bouton reste désactivé. C'est la même logique que le
+rendu de la couche cadastre elle-même (voir plus bas) : `featuresDansVue`
+(dans `layers.js`) sert aux deux.
+
+Principe : à l'ouverture du panneau, `chargerDonneesFoncieres` récupère les
+5 couches concernées (cadastre, mutations, DPE, PLUi, RGA) en tâche de fond
+(sans les ajouter à la carte), puis `enrichirParcelles` calcule, pour
+chaque parcelle **actuellement visible** : la mutation DVF correspondante
+(référence exacte), la zone PLUi et le niveau RGA à cet endroit (le centre
+de la parcelle tombe dans quelle zone ? — `pointDansFeature`, un simple
+ray-casting, pas de dépendance externe), et le DPE le plus proche s'il est
+à l'intérieur de la parcelle. Comme l'ensemble de départ est déjà réduit à
+la vue actuelle (typiquement quelques dizaines à quelques centaines de
+parcelles, pas des dizaines de milliers), ce calcul est rapide même sans
+optimisation particulière. Une fois fait, changer un critère du formulaire
+ne fait que relire ce résultat (`correspond`/`filtrerParcelles`), donc le
+nombre de résultats se met à jour en direct sans latence.
 
 "Afficher les parcelles correspondantes" construit une couche Leaflet à
 part (`coucheRechercheActuelle`, distincte de `groupesLeaflet["cadastre"]`)
 à partir du sous-ensemble filtré, l'ajoute à la carte et cadre la vue
-dessus — plafonné à 3000 résultats (`LIMITE_RESULTATS`) pour éviter
-d'afficher des dizaines de milliers de polygones si le formulaire est laissé
-trop large.
+dessus — plafonné à 3000 résultats (`LIMITE_RESULTATS`) par sécurité, même
+si le fait de ne partir que de la vue actuelle rend ce plafond peu
+probable à atteindre en pratique.
 
 **Limites volontaires**, faute de données dans le SIG aujourd'hui :
 - "Nombre de bâtiments" et "Surface bâtie" viennent de la dernière mutation
