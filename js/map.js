@@ -71,3 +71,6 @@ document.getElementById("home-button").addEventListener("click", () => {
 });
 
 document.getElementById("results-back").addEventListener("click", fermerResultatsProximite);
+
+document.getElementById("recherche-button").addEventListener("click", () => ouvrirRecherche(map));
+document.getElementById("recherche-back").addEventListener("click", fermerVuesPanneau);

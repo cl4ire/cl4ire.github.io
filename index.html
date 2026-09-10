@@ -37,6 +37,7 @@
 
     <div id="topbar-actions">
         <button type="button" id="home-button" aria-label="Accueil"><i class="fa-solid fa-house"></i></button>
+        <button type="button" id="recherche-button"><i class="fa-solid fa-sliders"></i><span>Recherche foncière</span></button>
         <button type="button" id="about-button">À propos</button>
         <button type="button" id="menu-button" aria-label="Couches"><i class="fa-solid fa-layer-group"></i></button>
     </div>
@@ -70,6 +71,16 @@
             </button>
             <div id="results-title" class="results-title"></div>
             <div id="results-list"><!-- Généré par proximite.js --></div>
+        </div>
+
+        <div id="recherche-view" hidden>
+            <button type="button" id="recherche-back" class="panel-back">
+                <i class="fa-solid fa-arrow-left"></i><span>Toutes les couches</span>
+            </button>
+            <div class="recherche-titre">
+                <i class="fa-solid fa-magnifying-glass-location"></i> Recherche foncière
+            </div>
+            <div id="recherche-contenu"><!-- Généré par recherche.js --></div>
         </div>
     </aside>
 
@@ -122,6 +133,7 @@
 <script src="js/search.js"></script>
 <script src="js/hero.js"></script>
 <script src="js/proximite.js"></script>
+<script src="js/recherche.js"></script>
 <script src="js/map.js"></script>
 <!-- FIN SCRIPTS -->
 

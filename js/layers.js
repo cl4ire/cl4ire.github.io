@@ -7,6 +7,7 @@
 const groupesLeaflet = {};      // id de couche -> L.LayerGroup / L.MarkerClusterGroup
 const souscouchesLeaflet = {};  // id de couche -> { idCategorie: L.LayerGroup } (couches catégorisables, ex : commerces)
 const coucheChargee = {};       // id de couche -> bool (déjà fetchée ?)
+const donneesBrutes = {};       // id de couche -> tableau de Features GeoJSON brutes (croisements/recherches, ex : recherche foncière)
 window.indexRecherche = [];  // alimenté au fur et à mesure du chargement des couches
 
 function couleurPrix(prix) {
@@ -155,6 +156,7 @@ function chargerCouche(layerConf, onReady, onError) {
         .then(reponses => {
             const data = urls.length > 1 ? reponses : reponses[0];
             const geo = layerConf.transform ? layerConf.transform(data) : data;
+            donneesBrutes[layerConf.id] = geo.features || [];
             if (layerConf.categoriser) {
                 const sousCouches = construireSousCouches(geo, layerConf);
                 souscouchesLeaflet[layerConf.id] = sousCouches;
