@@ -1548,6 +1548,13 @@ function construirePopupMonument(props) {
 }
 
 /* Randonnées. */
+/* nwn/rwn/lwn/iwn : préfixe "w" (walking) contrairement à ncn/rcn/lcn/icn
+   (préfixe "c", cycling) - schéma réseau OSM différent d'un mode à
+   l'autre, malgré la même échelle national/régional/local/international. */
+const LABELS_RESEAU_RANDONNEE = {
+    iwn: "Itinéraire international", nwn: "Itinéraire national",
+    rwn: "Itinéraire régional", lwn: "Itinéraire local"
+};
 function construirePopupRandonnee(props) {
     const duree = formaterDureeHeures(props.dureeEstim);
     const infos = [
@@ -1556,16 +1563,46 @@ function construirePopupRandonnee(props) {
         typeof props.denivelePo === "number" ? `+${Math.round(props.denivelePo)} m` : null,
         typeof props.deniveleNe === "number" ? `-${Math.round(Math.abs(props.deniveleNe))} m` : null
     ].filter(Boolean);
+    const nom = props.name || (props.id ? "Circuit " + props.id : "Circuit de randonnée");
+    const reseau = LABELS_RESEAU_RANDONNEE[props.network] || null;
 
     return `<div class="popup-fiche">
         <div class="popup-fiche-entete">
             <div class="popup-fiche-icon" style="background:${PALETTE.feuille}"><i class="fa-solid fa-person-hiking"></i></div>
             <div class="popup-fiche-titre-wrap">
-                <div class="popup-fiche-tag" style="color:${PALETTE.feuille}">Randonnée</div>
-                <div class="popup-fiche-titre">${props.id ? "Circuit " + echapperHtml(props.id) : "Circuit de randonnée"}</div>
+                <div class="popup-fiche-tag" style="color:${PALETTE.feuille}">${echapperHtml(reseau || "Randonnée")}</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
             </div>
         </div>
         ${infos.length ? `<div class="popup-fiche-section"><div class="popup-fiche-ligne">${infos.join(" · ")}</div></div>` : ""}
+    </div>`;
+}
+
+/* Points remarquables de la forêt de Bercé (voir config.js pour
+   categoriePointRemarquableBerce/le flux Overpass + fichier manuel). */
+function construirePopupPointRemarquableBerce(props) {
+    const cat = categoriePointRemarquableBerce(props);
+    const nom = premierChampValide(props, ["name"]) || cat.label;
+    const infos = [
+        /* Nom binomial (genre + espèce) : seule la première lettre se
+           met en majuscule (convention botanique), pas chaque mot comme
+           capitaliserMots le ferait ("Quercus Petraea" serait incorrect). */
+        props.species ? capitaliserPremiere(props.species) : null,
+        props.circumference ? `Circonférence ${props.circumference} m` : null,
+        props.height ? `Hauteur ${props.height} m` : null
+    ].filter(Boolean);
+    const description = (props.description || "").trim();
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${cat.color}"><i class="${cat.icon}"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${cat.color}">${echapperHtml(cat.label)}</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+            </div>
+        </div>
+        ${infos.length ? `<div class="popup-fiche-section"><div class="popup-fiche-ligne">${infos.map(echapperHtml).join(" · ")}</div></div>` : ""}
+        ${description ? `<div class="popup-fiche-section"><div class="popup-fiche-precision">${echapperHtml(description)}</div></div>` : ""}
     </div>`;
 }
 
@@ -1753,6 +1790,7 @@ function construirePopup(feature, layerConf) {
     else if (layerConf.id === "fontaines") html = construirePopupFontaine(props);
     else if (layerConf.id === "velo") html = construirePopupVelo(props);
     else if (layerConf.id === "catnat") html = construirePopupCatnat(props);
+    else if (layerConf.id === "pointsRemarquablesBerce") html = construirePopupPointRemarquableBerce(props);
     else if (layerConf.id === "irve") html = construirePopupIrve(props);
     else if (layerConf.id === "airecovoiturage") html = construirePopupCovoiturage(props);
     else if (layerConf.id === "marches") html = construirePopupMarche(props);

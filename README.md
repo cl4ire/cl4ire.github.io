@@ -764,6 +764,45 @@ sur "quelles autres données seraient intéressantes" :
   plus long que les 6h des flux Overpass : un historique d'arrêtés
   publiés change rarement, pas besoin de retaper l'API aussi souvent.
 
+## Tous les sentiers de randonnée + points remarquables de la forêt de Bercé
+
+Deux demandes de l'utilisatrice à la suite du brainstorming précédent.
+
+**Randonnées** — la couche `randonnees` ne contenait qu'un seul tracé
+digitalisé à la main (`couches/tourisme/randonnees.geojson`, id "J1").
+Passée en flux Overpass (relations `route=hiking`, même principe que les
+itinéraires cyclables : `out geom;` pour la géométrie complète), **fusionné
+avec le tracé existant** plutôt que de le remplacer (`fetchRandonnees`,
+même schéma flux + fichier local que les casiers colis) : on ne sait pas
+si ce tracé est déjà présent dans OSM sous un autre identifiant, donc on
+le garde systématiquement plutôt que de risquer de le perdre.
+
+Pas de dénivelé/altitude disponible depuis Overpass pour calculer une
+vraie durée estimée : `distanceMultiLigneKm` calcule la distance réelle
+par géométrie (somme des distances haversine entre points consécutifs),
+et `dureeEstim = distance / 4` reprend exactement la même convention que
+le seul tracé existant avant cet ajout (J1 : 4,04 km pour 1,01 h, soit
+tout juste 4 km/h) — pas une valeur inventée, la continuité du tracé
+existant sert de référence. `titleFields` passé de `["id"]` à
+`["name", "id"]` : les tracés OSM portent en général un vrai nom
+("Sentier de la Futaie des Clos"...), contrairement à "J1".
+
+**Points remarquables de la forêt de Bercé** — nouvelle couche
+`pointsRemarquablesBerce` (groupe Nature & rando), sur le même principe
+que les casiers colis : flux Overpass (arbres nommés `natural=tree`+
+`name`, sources `natural=spring`, attractions `tourism=attraction`+
+`name`) complété par un fichier local
+(`couches/tourisme/pointsRemarquablesBerce_manuels.geojson`) pour les
+sites emblématiques documentés par l'ONF (carte touristique, application
+mobile) mais pas forcément cartographiés sur OpenStreetMap — repérés
+avec l'utilisatrice : le **Chêne Boppe** (Futaie des Clos, plus vieux
+chêne de la forêt), la **Fontaine de la Coudre** et la **Source de
+l'Hermitière**. Fichier actuellement vide (mêmes coordonnées à repérer
+que pour les casiers colis, voir la section dédiée plus haut pour la
+marche à suivre et le format attendu) : à compléter dès que les
+coordonnées de ces trois sites sont connues, ou dès qu'un signalement
+similaire est fait sur un autre point remarquable.
+
 ## Ce qui reste à faire
 
 - Le fichier DVF étant volumineux même en différé, envisager de le
@@ -793,6 +832,12 @@ sur "quelles autres données seraient intéressantes" :
   recensé" de façon suspecte, inspecter la réponse réseau réelle et
   ajuster `elementsReponseCatnat`/`libelleEvenementCatnat`/
   `dateEvenementCatnat` dans `js/config.js`/`js/popup.js`.
+- **Couche `pointsRemarquablesBerce` : coordonnées du Chêne Boppe, de la
+  Fontaine de la Coudre et de la Source de l'Hermitière à ajouter** dans
+  `couches/tourisme/pointsRemarquablesBerce_manuels.geojson` (voir la
+  section dédiée plus haut) dès qu'elles sont connues — fichier
+  actuellement vide, ces trois sites n'apparaîtront sur la carte qu'une
+  fois leurs coordonnées renseignées (ou trouvées sur OpenStreetMap).
 
 ## Déploiement
 
