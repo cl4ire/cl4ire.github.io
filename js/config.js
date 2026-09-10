@@ -161,7 +161,7 @@ const COMMUNES_TERRITOIRE = {
 };
 
 /* SIREN de la comcom Loir-Lucé-Bercé (code_siren dans couches/communes.geojson). */
-const URL_CADASTRE_EPCI = "https://cadastre.data.gouv.fr/bundler/cadastre-etalab/epcis/200070373/geojson/communes";
+const URL_CADASTRE_EPCI = "https://cadastre.data.gouv.fr/bundler/cadastre-etalab/epcis/200070373/geojson/parcelles";
 
 /* Extrait récursivement toutes les Features d'une réponse, quelle que
    soit sa forme exacte (une seule FeatureCollection, un tableau de

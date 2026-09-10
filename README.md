@@ -60,21 +60,24 @@ carburants, **Habitat & urbanisme** pour le cadastre) :
 - **Parcelles cadastrales** (`id: "cadastre"`) — un seul flux pour tout le
   territoire (`URL_CADASTRE_EPCI` dans `config.js`) : le bundler Etalab par
   EPCI (n° SIREN de la comcom Loir-Lucé-Bercé), plutôt qu'un fichier par
-  commune. `fusionnerCadastre`/`extraireFeatures` complètent chaque
-  parcelle (référence lisible, nom de commune) et restent tolérants sur la
-  forme exacte de la réponse (FeatureCollection unique, tableau, ou objet
-  regroupé par commune) : je n'ai pas pu vérifier en conditions réelles la
-  structure précise ni les noms de propriétés (`section`, `numero`,
-  `contenance`...), accès réseau restreint pendant le développement — si la
-  couche ne se charge pas ou affiche des champs vides, ouvrez l'URL dans un
-  navigateur pour voir la vraie forme et ajustez `fusionnerCadastre` dans
-  `js/config.js` en conséquence. `layers.js` accepte aussi `file` comme
-  tableau d'URL (une par élément, `transform` reçoit alors le tableau des
-  réponses) si jamais un seul flux EPCI ne suffit pas pour un autre besoin.
-  Couche volumineuse (parcellaire complet de 24 communes) : en plus d'être
-  `lazy`, elle ne s'affiche qu'à partir du zoom 15 (`zoomMin`, mécanisme
-  générique dans `layers.js`/`surveillerZoom`), comme les visualisateurs de
-  cadastre habituels — sinon des dizaines de milliers de parcelles se
+  commune. Attention au dernier segment de l'URL : `.../geojson/parcelles`
+  donne bien les parcelles, `.../geojson/communes` donne les *contours de
+  commune* (un type de fichier à part dans le jeu de données Etalab, pas un
+  simple "regroupé par commune") — confusion qui a fait planter la couche
+  une première fois. La réponse est un tableau JSON de Features (pas une
+  FeatureCollection), chaque propriété confirmée en conditions réelles :
+  `id`, `commune` (code INSEE), `prefixe`, `section`, `numero`, `contenance`
+  (surface en m²), `arpente`, `created`, `updated`. `fusionnerCadastre`
+  complète chaque parcelle (référence lisible "AB 60", nom de commune) ;
+  `extraireFeatures` reste tolérant sur la forme exacte au cas où (tableau,
+  FeatureCollection, ou objet regroupé) mais la forme réelle est maintenant
+  connue et testée. `layers.js` accepte aussi `file` comme tableau d'URL
+  (une par élément, `transform` reçoit alors le tableau des réponses) si
+  jamais un seul flux EPCI ne suffit pas pour un autre besoin. Couche
+  volumineuse (parcellaire complet de 24 communes) : en plus d'être `lazy`,
+  elle ne s'affiche qu'à partir du zoom 15 (`zoomMin`, mécanisme générique
+  dans `layers.js`/`surveillerZoom`), comme les visualisateurs de cadastre
+  habituels — sinon des dizaines de milliers de parcelles se
   superposeraient de façon illisible et coûteuse à styliser.
 
 Pour ajouter une nouvelle couche en flux du même genre : GeoJSON distant
