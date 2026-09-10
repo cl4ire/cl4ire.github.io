@@ -645,6 +645,48 @@ function construirePopupMutation(props, feature) {
 }
 
 /* =========================================================
+   POPUP CONSIGNE / CASIER COLIS — flux Overpass (OpenStreetMap), voir
+   config.js pour le détail de la requête et les limites de couverture
+   (réseaux récents comme Vinted Go potentiellement sous-représentés).
+   Champs OSM bruts, pas toujours renseignés selon le contributeur : le
+   nom d'enseigne (catégorieLocker) et l'adresse sont reconstruits du
+   mieux possible plutôt que de compter sur un seul champ fixe.
+   ========================================================= */
+function construirePopupLocker(props) {
+    const cat = categorieLocker(props);
+    const nom = premierChampValide(props, ["name", "brand", "ref"]) || cat.label;
+    const adresse = [
+        [props["addr:housenumber"], props["addr:street"]].filter(Boolean).join(" "),
+        props["addr:city"]
+    ].filter(Boolean).join(" · ");
+    const horaires = parserHorairesOsm(props.opening_hours);
+    /* contact:phone/contact:website : variante de balisage OSM aussi
+       courante que phone/website selon le contributeur. */
+    const contacts = construireContacts({
+        ...props,
+        phone: props.phone || props["contact:phone"],
+        website: props.website || props["contact:website"]
+    });
+    const lignesHoraires = construireLignesHoraires(horaires);
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${cat.color}"><i class="fa-solid fa-box"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${cat.color}">${echapperHtml(cat.label)}</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${adresse ? `<div class="popup-fiche-adresse">${echapperHtml(adresse)}</div>` : ""}
+            </div>
+            ${construireBadgeOuvert(horaires)}
+        </div>
+
+        ${contacts.length ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Contact</div><div class="popup-fiche-contacts">${contacts.join("")}</div></div>` : ""}
+
+        ${lignesHoraires ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Horaires</div>${lignesHoraires}</div>` : ""}
+    </div>`;
+}
+
+/* =========================================================
    POPUP DÉCHÈTERIE / TRI — trois fiches différentes selon le champ
    "type" (voir iconeDechet dans config.js pour la même distinction côté
    marqueur) : déchèterie, composteur partagé, point d'apport volontaire.
@@ -827,6 +869,7 @@ function construirePopup(feature, layerConf) {
     else if (layerConf.id === "dpe") html = construirePopupDpe(props);
     else if (layerConf.id === "mutations") html = construirePopupMutation(props, feature);
     else if (layerConf.id === "dechets") html = construirePopupDechet(props);
+    else if (layerConf.id === "lockers") html = construirePopupLocker(props);
     else html = construirePopupGenerique(feature, layerConf);
     return injecterItineraire(html, feature);
 }

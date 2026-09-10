@@ -376,6 +376,50 @@ coquille observée `"ye"` au lieu de `"yes"` sur un enregistrement réel ;
 **Mixte** du Val de Loir" (une coquille, sur les deux syndicats gérant le
 territoire — SYVALORM et Syndicat Mixte du Val de Loir).
 
+## Consignes & casiers colis (Mondial Relay, Amazon Locker, Vinted Go...)
+
+Nouvelle couche `lockers` (groupe Services), en flux comme
+Vigieau/OLD/carburants : il n'existe pas de jeu de données dédié publié
+par un seul opérateur regroupant toutes les enseignes, mais ces points
+sont cartographiés dans OpenStreetMap sous un tag commun
+(`amenity=parcel_locker`, avec `brand`/`operator`/`network` selon
+l'enseigne), interrogeable en direct via
+[Overpass](https://overpass-api.de/) — pas de fichier dans le dépôt,
+comme les autres couches "flux" du site.
+
+- `BBOX_TERRITOIRE` (dans `config.js`) : rectangle englobant la comcom,
+  dérivé de la boîte englobante de `couches/epci.geojson` (le polygone
+  exact du territoire fait plus de 4000 sommets, bien trop pour un
+  filtre Overpass `poly:` précis — un simple rectangle, élargi d'~1 km,
+  suffit très largement pour un territoire de cette taille).
+- `geojsonDepuisOverpass` convertit la réponse Overpass (JSON natif de
+  l'API — un tableau `elements`, pas du GeoJSON) en GeoJSON standard
+  pour réutiliser le même pipeline de chargement que les autres couches.
+- `categorieLocker`/`TYPES_LOCKERS` reconnaissent l'enseigne par
+  mots-clés sur `brand`/`operator`/`network`/`name` (Mondial Relay,
+  Amazon Locker, Vinted Go, InPost, Chronopost, Colissimo, Relais Colis/
+  Pickup, DPD, UPS Access Point, avec un repli "Autre opérateur"),
+  chacune avec sa propre couleur de marqueur — même mécanisme que les
+  catégories de commerces. Popup dédiée (`construirePopupLocker`) :
+  enseigne, adresse (reconstruite depuis les champs `addr:*` OSM),
+  horaires (beaucoup sont en `24/7`) et contact, en tolérant les deux
+  conventions de balisage OSM pour le téléphone/site
+  (`phone`/`website` et `contact:phone`/`contact:website`).
+
+**Limite à avoir en tête** : la couverture dépend entièrement de ce que
+les contributeurs OpenStreetMap ont déjà cartographié localement. Les
+réseaux anciens et très cartographiés (Mondial Relay, Amazon Locker)
+devraient bien remonter ; les réseaux récents ou en forte expansion
+(Vinted Go en particulier, souvent hébergé dans des commerces déjà
+existants comme des supermarchés ou des laveries plutôt que dans un
+local dédié) peuvent être sous-représentés par rapport à la réalité du
+terrain, sans qu'il y ait de moyen fiable de le détecter automatiquement
+depuis le site. Pas de solution miracle à ça, c'est la limite du
+crowdsourcing — si des casiers manquent visiblement dans une commune du
+territoire, la meilleure remédiation est de les ajouter à OpenStreetMap
+directement (ils remonteront alors automatiquement ici, sans rien changer
+au site).
+
 ## Ce qui reste à faire
 
 - Vérifier/ajuster les champs affichés dans les popups pour les couches où
@@ -392,6 +436,13 @@ territoire — SYVALORM et Syndicat Mixte du Val de Loir).
   Parcellai.re ("terrain de 800 à 1 200 m², un seul bâtiment, zone
   constructible" → liste de candidats), déjà en grande partie couverte par
   les critères actuels de la recherche foncière.
+- ⚠️ Couche `lockers` (consignes/casiers colis) : la requête Overpass n'a
+  pas pu être vérifiée en conditions réelles (accès réseau restreint
+  pendant le développement, comme pour `old`/OLD plus haut) — le format
+  de réponse Overpass est stable et bien documenté donc ça devrait
+  fonctionner tel quel, mais si rien ne s'affiche en cochant la couche,
+  premier réflexe : tester `URL_OVERPASS_LOCKERS` (affichée dans la
+  console si erreur de chargement) directement dans un navigateur.
 
 ## Déploiement
 

@@ -315,6 +315,80 @@ function geojsonDepuisFluxODS(data) {
 }
 
 /* =========================================================
+   CONSIGNES / CASIERS COLIS (Mondial Relay, Amazon Locker, Vinted Go...)
+   Pas de jeu de données dédié publié par un seul opérateur : ces
+   points sont en revanche cartographiés dans OpenStreetMap sous un tag
+   commun (amenity=parcel_locker, avec brand/operator/network selon
+   l'enseigne), interrogeable en direct via Overpass — même principe de
+   couche "flux" que Vigieau/OLD/carburants (voir plus haut), pas de
+   fichier dans le dépôt. Couverture qui dépend entièrement de ce que
+   les contributeurs OSM ont déjà cartographié localement : les réseaux
+   très récents ou en forte expansion (Vinted Go, largement hébergé
+   dans des commerces existants) peuvent être sous-représentés par
+   rapport à la réalité du terrain, contrairement à Mondial Relay ou
+   Amazon Locker, plus anciens et mieux couverts. Pas de solution
+   miracle à ça : c'est la limite du crowdsourcing, à signaler plutôt
+   qu'à cacher (voir le bandeau "Ce qui reste à faire" du README).
+   ========================================================= */
+
+/* Rectangle englobant la comcom Loir-Lucé-Bercé (bbox de
+   couches/epci.geojson, élargie d'environ 1 km) : le polygone exact du
+   territoire fait plus de 4000 sommets, bien trop pour un filtre
+   Overpass "poly:" ; un simple rectangle suffit très largement pour un
+   territoire de cette taille, quitte à déborder un peu sur les
+   communes limitrophes plutôt que de risquer de rater des casiers en
+   bordure de territoire. */
+const BBOX_TERRITOIRE = { sud: 47.60, ouest: 0.30, nord: 47.92, est: 0.72 };
+
+const REQUETE_OVERPASS_LOCKERS =
+    `[out:json][timeout:25];node["amenity"="parcel_locker"]` +
+    `(${BBOX_TERRITOIRE.sud},${BBOX_TERRITOIRE.ouest},${BBOX_TERRITOIRE.nord},${BBOX_TERRITOIRE.est});out body;`;
+const URL_OVERPASS_LOCKERS = "https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(REQUETE_OVERPASS_LOCKERS);
+
+/* Réponse Overpass (JSON natif de l'API, pas du GeoJSON) : un tableau
+   "elements", chaque nœud portant directement lat/lon (pas besoin de
+   "out geom", réservé aux ways/relations) et ses tags OSM bruts. */
+function geojsonDepuisOverpass(data) {
+    const elements = (data && data.elements) || [];
+    return {
+        type: "FeatureCollection",
+        features: elements
+            .filter(el => el.type === "node" && typeof el.lat === "number" && typeof el.lon === "number")
+            .map(el => ({
+                type: "Feature",
+                geometry: { type: "Point", coordinates: [el.lon, el.lat] },
+                properties: el.tags || {}
+            }))
+    };
+}
+
+const TYPES_LOCKERS = [
+    { id: "mondialrelay", label: "Mondial Relay", color: PALETTE.riviere, motifs: ["mondial relay", "mondialrelay"] },
+    { id: "amazon", label: "Amazon Locker", color: "#FF9900", motifs: ["amazon"] },
+    { id: "vintedgo", label: "Vinted Go", color: "#09B1BA", motifs: ["vinted"] },
+    { id: "inpost", label: "InPost", color: "#FFC700", motifs: ["inpost"] },
+    { id: "chronopost", label: "Chronopost", color: "#001E62", motifs: ["chronopost"] },
+    { id: "colissimo", label: "Colissimo / La Poste", color: PALETTE.foret, motifs: ["colissimo", "la poste", "laposte"] },
+    { id: "relaiscolis", label: "Relais Colis / Pickup", color: PALETTE.terracotta, motifs: ["relais colis", "pickup"] },
+    { id: "dpd", label: "DPD Pickup", color: "#DC0032", motifs: ["dpd"] },
+    { id: "ups", label: "UPS Access Point", color: "#351C15", motifs: ["ups"] }
+];
+const TYPE_LOCKER_DEFAUT = { id: "autre", label: "Autre opérateur", color: PALETTE.ardoise };
+
+/* Enseigne reconnue par mots-clés (brand/operator/network/name) plutôt
+   que par une liste de valeurs exactes : OSM ne normalise pas
+   parfaitement ces champs (variantes de casse/orthographe selon le
+   contributeur), un simple "contient" reste robuste à ça. */
+function categorieLocker(props) {
+    const texte = [props.brand, props.operator, props.network, props.name].filter(Boolean).join(" ").toLowerCase();
+    return TYPES_LOCKERS.find(cat => cat.motifs.some(m => texte.includes(m))) || TYPE_LOCKER_DEFAUT;
+}
+
+function iconeLocker(feature) {
+    return { icon: "fa-solid fa-box", color: categorieLocker(feature.properties || {}).color };
+}
+
+/* =========================================================
    COUCHES
    type: "point" | "line" | "polygon" | "choropleth"
    lazy: true  -> chargée seulement quand l'utilisateur coche la couche
@@ -350,6 +424,17 @@ const LAYERS = [
         lazy: false, searchable: true, cluster: true,
         titleFields: ["name", "type", "com_nom"],
         subtitleFields: ["com_nom", "opening_hours"]
+    },
+    {
+        id: "lockers", group: "services", label: "Consignes & casiers colis",
+        /* Flux Overpass (OpenStreetMap), voir la section dédiée plus haut
+           dans ce fichier pour le détail (bbox, limites de couverture). */
+        file: URL_OVERPASS_LOCKERS, transform: geojsonDepuisOverpass,
+        type: "point", icon: "fa-solid fa-box", color: PALETTE.ardoise,
+        iconePourFeature: iconeLocker,
+        lazy: true, searchable: true, cluster: true,
+        titleFields: ["name", "brand", "ref"],
+        subtitleFields: ["brand", "operator"]
     },
     {
         id: "irve", group: "services", label: "Bornes de recharge",
