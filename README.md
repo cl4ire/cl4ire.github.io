@@ -555,6 +555,78 @@ suite). Pour ajouter un point :
    n'est qu'un pense-bête temporaire, pas une seconde base à maintenir en
    parallèle indéfiniment.
 
+## Médecins, vétérinaires, bibliothèques, offices de tourisme, aires de camping-car
+
+Cinq nouvelles couches en flux Overpass (OpenStreetMap), sur le même principe
+que les points relais/casiers colis ci-dessus : `medecins` et `veterinaires`
+(groupe Sécurité & santé), `bibliotheques` (groupe Services & mairie),
+`officesTourisme` et `campingcar` (groupe Nature & rando). Choisies après
+recherche de données pertinentes pour un portail grand public (demande
+explicite : "tout avoir à un seul et même endroit"), avec validation de
+l'utilisatrice avant intégration — voir aussi les pistes écartées ci-dessous.
+
+- `creerFetchOverpass(requete, cacheCle)` (`config.js`) **généralise** la
+  logique déjà utilisée pour les casiers colis (repli sur plusieurs miroirs,
+  cache `localStorage` 6h) plutôt que de la dupliquer cinq fois : chaque
+  couche ne fournit que sa propre requête Overpass et sa propre clé de
+  cache. `geojsonDepuisElementsOverpass` convertit la réponse (nodes et
+  ways, via `out center`) en GeoJSON standard — pas de fichier local de
+  complément ici, contrairement aux casiers colis, ce garde-fou n'ayant de
+  sens que là où un trou de couverture précis a été signalé et confirmé sur
+  le terrain (voir la section dédiée plus haut).
+- **Médecins** (`amenity=doctors` + `healthcare=doctor`, les deux tags
+  coexistent selon le contributeur, Overpass dédoublonne de lui-même) :
+  absent de toute autre couche du site (vérifié dans `commerces.geojson`,
+  qui ne contient que des pharmacies/opticiens/audioprothésistes sous sa
+  catégorie "Santé"), donc pas de doublon. Spécialité (`healthcare:speciality`)
+  traduite via un petit dictionnaire (`LABELS_SPECIALITE_MEDECIN`,
+  `js/popup.js`), repli sur "Médecin généraliste" si absente.
+- **Vétérinaires** (`amenity=veterinary`) : même principe, fiche minimale
+  (nom/enseigne, adresse, horaires, contact).
+- **Bibliothèques & médiathèques** (`amenity=library`) : accès Internet
+  (`internet_access`) et accessibilité PMR affichés quand renseignés.
+- **Offices de tourisme** (`office=tourism`, + repli sur l'ancien schéma
+  `tourism=information` + `information=office`).
+- **Aires de camping-car** (`tourism=caravan_site`) : capacité, vidange
+  sanitaire, eau potable, électricité et gratuité affichées quand
+  renseignées (`sanitary_dump_station`/`drinking_water`/`power_supply`/`fee`,
+  valeurs `yes`/`no` telles que balisées sur OSM, pas la convention
+  `True`/`False` des flux nationaux).
+
+Les cinq fiches réutilisent les mêmes aides que les casiers colis
+(`construireContacts`, `parserHorairesOsm`, `construireBadgeOuvert`...) via
+deux petites fonctions communes (`adresseOsm`/`contactsOsm` dans
+`popup.js`) plutôt que de dupliquer la reconstruction d'adresse/contact
+cinq fois de plus.
+
+**Même limite que les casiers colis** : la couverture dépend de ce que les
+contributeurs OpenStreetMap ont déjà cartographié, pas de ce qui existe
+réellement sur le territoire — un cabinet médical ou une aire de
+camping-car bien réel mais jamais ajouté à OSM restera invisible ici. Pas
+de fichier manuel de complément prévu pour l'instant (contrairement aux
+casiers colis, où des trous précis avaient été signalés et confirmés) :
+à ajouter le jour où un trou similaire est signalé sur l'une de ces
+couches, en suivant le même modèle que `lockers_manuels.geojson`.
+
+### Pistes écartées
+
+Deux données explicitement demandées mais volontairement **non**
+intégrées comme couches, faute de source de données ouverte exploitable :
+
+- **Cadastre solaire** — `loirluceberce.cadastre-solaire.fr` existe bien et
+  couvre le territoire, mais c'est un outil interactif propriétaire (édité
+  par Cythelia Energy) sans export de données en masse ni couche WMS
+  documentée : rien à tracer par bâtiment sur la carte sans reproduire leur
+  simulateur. Décision (validée) : pas de lien ajouté au portail non plus.
+- **Pharmacie de garde** — aucune donnée ouverte ni API stable identifiée
+  (le service officiel `pharmacie-de-garde.ameli.fr` n'expose rien
+  d'exploitable ; les alternatives sont des agrégateurs commerciaux, risque
+  CGU comparable au problème initial des casiers colis). Décision
+  (validée) : rien ajouté.
+- **Pharmacies** — déjà présentes et catégorisées dans la couche
+  `commerces` existante (catégorie "Santé") : pas de couche séparée, ça
+  aurait fait doublon.
+
 ## Ce qui reste à faire
 
 - Le fichier DVF étant volumineux même en différé, envisager de le

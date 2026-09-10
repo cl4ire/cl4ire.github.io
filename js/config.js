@@ -538,6 +538,113 @@ function iconeLocker(feature) {
 }
 
 /* =========================================================
+   AUTRES COUCHES EN FLUX OVERPASS (OpenStreetMap) : médecins,
+   vétérinaires, bibliothèques/médiathèques, offices de tourisme, aires
+   de camping-car. Même principe que les casiers colis ci-dessus (bbox
+   du territoire, repli sur plusieurs miroirs, cache localStorage 6h),
+   mais généralisé pour ne pas dupliquer cinq fois la même logique de
+   récupération - seule la requête change d'une couche à l'autre. Pas
+   de fichier manuel de complément ici (contrairement aux casiers) :
+   ce garde-fou n'a de sens que là où un trou de couverture OSM précis
+   a été signalé et confirmé sur le terrain. */
+function creerFetchOverpass(requete, cacheCle) {
+    function lireCache() {
+        try {
+            const brut = localStorage.getItem(cacheCle);
+            if (!brut) return null;
+            const { horodatage, donnees } = JSON.parse(brut);
+            if (!horodatage || Date.now() - horodatage > CACHE_LOCKERS_DUREE_MS) return null;
+            return donnees;
+        } catch (_) {
+            return null; // quota dépassé, navigation privée... : pas grave, on retombe sur le réseau
+        }
+    }
+    function ecrireCache(donnees) {
+        try {
+            localStorage.setItem(cacheCle, JSON.stringify({ horodatage: Date.now(), donnees }));
+        } catch (_) {
+            // silencieux : le cache est un confort, pas un besoin
+        }
+    }
+    return function fetchOverpass() {
+        const enCache = lireCache();
+        if (enCache) return Promise.resolve(enCache);
+        const essayer = index => {
+            if (index >= MIROIRS_OVERPASS.length) {
+                return Promise.reject(new Error("Tous les miroirs Overpass ont échoué (dernier testé : " + MIROIRS_OVERPASS[MIROIRS_OVERPASS.length - 1] + ")"));
+            }
+            const url = MIROIRS_OVERPASS[index] + "?data=" + encodeURIComponent(requete);
+            return fetch(url)
+                .then(r => {
+                    if (!r.ok) throw new Error("Erreur HTTP " + r.status + " sur " + url);
+                    return r.json();
+                })
+                .catch(err => {
+                    console.warn("Miroir Overpass indisponible (" + MIROIRS_OVERPASS[index] + ") :", err);
+                    return essayer(index + 1);
+                });
+        };
+        return essayer(0).then(donnees => { ecrireCache(donnees); return donnees; });
+    };
+}
+
+/* data.elements (réponse Overpass native) -> GeoJSON, même logique que
+   geojsonDepuisOverpass mais sans fichier manuel de complément. */
+function geojsonDepuisElementsOverpass(data) {
+    const elements = (data && data.elements) || [];
+    return {
+        type: "FeatureCollection",
+        features: elements.map(el => {
+            const lat = typeof el.lat === "number" ? el.lat : (el.center && el.center.lat);
+            const lon = typeof el.lon === "number" ? el.lon : (el.center && el.center.lon);
+            if (typeof lat !== "number" || typeof lon !== "number") return null;
+            return { type: "Feature", geometry: { type: "Point", coordinates: [lon, lat] }, properties: el.tags || {} };
+        }).filter(Boolean)
+    };
+}
+
+/* healthcare=doctor en plus d'amenity=doctors : les deux tags coexistent
+   dans la donnée réelle selon le contributeur, Overpass dédoublonne de
+   lui-même les nœuds/ways qui portent les deux. */
+const REQUETE_OVERPASS_MEDECINS =
+    `[out:json][timeout:25];` +
+    `(node["amenity"="doctors"](${BBOX_OVERPASS});` +
+    `way["amenity"="doctors"](${BBOX_OVERPASS});` +
+    `node["healthcare"="doctor"](${BBOX_OVERPASS});` +
+    `way["healthcare"="doctor"](${BBOX_OVERPASS}););` +
+    `out center;`;
+const REQUETE_OVERPASS_VETERINAIRES =
+    `[out:json][timeout:25];` +
+    `(node["amenity"="veterinary"](${BBOX_OVERPASS});` +
+    `way["amenity"="veterinary"](${BBOX_OVERPASS}););` +
+    `out center;`;
+const REQUETE_OVERPASS_BIBLIOTHEQUES =
+    `[out:json][timeout:25];` +
+    `(node["amenity"="library"](${BBOX_OVERPASS});` +
+    `way["amenity"="library"](${BBOX_OVERPASS}););` +
+    `out center;`;
+/* office=tourism : balisage actuel. tourism=information + information=office :
+   ancien schéma, encore présent sur des points jamais mis à jour. */
+const REQUETE_OVERPASS_OFFICES_TOURISME =
+    `[out:json][timeout:25];` +
+    `(node["office"="tourism"](${BBOX_OVERPASS});` +
+    `way["office"="tourism"](${BBOX_OVERPASS});` +
+    `node["tourism"="information"]["information"="office"](${BBOX_OVERPASS});` +
+    `way["tourism"="information"]["information"="office"](${BBOX_OVERPASS}););` +
+    `out center;`;
+const REQUETE_OVERPASS_CAMPINGCAR =
+    `[out:json][timeout:25];` +
+    `(node["tourism"="caravan_site"](${BBOX_OVERPASS});` +
+    `way["tourism"="caravan_site"](${BBOX_OVERPASS}););` +
+    `out center;`;
+
+const fetchOverpassMedecins = creerFetchOverpass(REQUETE_OVERPASS_MEDECINS, "geoberce-cache-medecins");
+const fetchOverpassVeterinaires = creerFetchOverpass(REQUETE_OVERPASS_VETERINAIRES, "geoberce-cache-veterinaires");
+const fetchOverpassBibliotheques = creerFetchOverpass(REQUETE_OVERPASS_BIBLIOTHEQUES, "geoberce-cache-bibliotheques");
+const fetchOverpassOfficesTourisme = creerFetchOverpass(REQUETE_OVERPASS_OFFICES_TOURISME, "geoberce-cache-officestourisme");
+const fetchOverpassCampingCar = creerFetchOverpass(REQUETE_OVERPASS_CAMPINGCAR, "geoberce-cache-campingcar");
+
+/* =========================================================
    COUCHES
    type: "point" | "line" | "polygon" | "choropleth"
    lazy: true  -> chargée seulement quand l'utilisateur coche la couche
@@ -618,6 +725,15 @@ const LAYERS = [
         titleFields: ["name", "sport", "com_nom"],
         subtitleFields: ["sport", "com_nom"]
     },
+    {
+        id: "bibliotheques", group: "services", label: "Bibliothèques & médiathèques",
+        /* Flux Overpass (OpenStreetMap), voir plus haut dans ce fichier. */
+        fetchPersonnalise: fetchOverpassBibliotheques, transform: geojsonDepuisElementsOverpass,
+        type: "point", icon: "fa-solid fa-book", color: PALETTE.foret,
+        lazy: true, searchable: true, cluster: true,
+        titleFields: ["name"],
+        subtitleFields: ["opening_hours"]
+    },
 
     /* ---------- FAMILLE ---------- */
     {
@@ -692,6 +808,24 @@ const LAYERS = [
         titleFields: ["c_nom", "c_com_nom"],
         subtitleFields: ["c_adr_num", "c_adr_voie", "c_com_nom"]
     },
+    {
+        id: "medecins", group: "securite", label: "Médecins",
+        /* Flux Overpass (OpenStreetMap), voir plus haut dans ce fichier.
+           Complétude dépendante d'OSM, même limite que les casiers colis. */
+        fetchPersonnalise: fetchOverpassMedecins, transform: geojsonDepuisElementsOverpass,
+        type: "point", icon: "fa-solid fa-user-doctor", color: "#AD4826",
+        lazy: true, searchable: true, cluster: true,
+        titleFields: ["name"],
+        subtitleFields: ["healthcare:speciality", "phone"]
+    },
+    {
+        id: "veterinaires", group: "securite", label: "Vétérinaires",
+        fetchPersonnalise: fetchOverpassVeterinaires, transform: geojsonDepuisElementsOverpass,
+        type: "point", icon: "fa-solid fa-paw", color: "#AD4826",
+        lazy: true, searchable: true, cluster: true,
+        titleFields: ["name", "brand"],
+        subtitleFields: ["phone", "opening_hours"]
+    },
 
     /* ---------- PATRIMOINE ---------- */
     {
@@ -711,6 +845,23 @@ const LAYERS = [
         lazy: false, searchable: false, cluster: false,
         titleFields: ["id"],
         subtitleFields: ["distance", "dureeEstim"]
+    },
+    {
+        id: "officesTourisme", group: "tourisme", label: "Offices de tourisme",
+        /* Flux Overpass (OpenStreetMap), voir plus haut dans ce fichier. */
+        fetchPersonnalise: fetchOverpassOfficesTourisme, transform: geojsonDepuisElementsOverpass,
+        type: "point", icon: "fa-solid fa-map-location-dot", color: PALETTE.riviere,
+        lazy: true, searchable: true, cluster: true,
+        titleFields: ["name"],
+        subtitleFields: ["opening_hours", "phone"]
+    },
+    {
+        id: "campingcar", group: "tourisme", label: "Aires de camping-car",
+        fetchPersonnalise: fetchOverpassCampingCar, transform: geojsonDepuisElementsOverpass,
+        type: "point", icon: "fa-solid fa-caravan", color: PALETTE.terracotta,
+        lazy: true, searchable: true, cluster: true,
+        titleFields: ["name"],
+        subtitleFields: ["capacity", "fee"]
     },
 
     /* ---------- URBANISME (fichiers lourds => chargement différé) ---------- */
