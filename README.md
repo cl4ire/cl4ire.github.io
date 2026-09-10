@@ -580,7 +580,18 @@ l'utilisatrice avant intégration — voir aussi les pistes écartées ci-dessou
   qui ne contient que des pharmacies/opticiens/audioprothésistes sous sa
   catégorie "Santé"), donc pas de doublon. Spécialité (`healthcare:speciality`)
   traduite via un petit dictionnaire (`LABELS_SPECIALITE_MEDECIN`,
-  `js/popup.js`), repli sur "Médecin généraliste" si absente.
+  `js/popup.js`), repli sur "Médecin généraliste" si absente. Lien
+  "Chercher un RDV sur Doctolib" (`construireLienDoctolib`) ajouté dans le
+  bloc contact **seulement pour la médecine générale** (pas de
+  `healthcare:speciality`, ou explicitement `general_practitioner`) :
+  Doctolib n'a pas d'API publique de recherche par praticien, donc pas de
+  moyen fiable de retrouver la fiche exacte d'un médecin depuis son
+  nom/adresse OSM — le lien pointe vers la recherche par ville
+  (`doctolib.fr/medecin-generaliste/<ville>`, schéma d'URL public vérifié),
+  pas vers un profil précis (d'où le libellé "Chercher", pas "Prendre
+  rendez-vous avec ce médecin"). Pas de lien pour les autres spécialités :
+  plutôt ne rien afficher qu'un slug de spécialité Doctolib deviné et
+  potentiellement cassé.
 - **Vétérinaires** (`amenity=veterinary`) : même principe, fiche minimale
   (nom/enseigne, adresse, horaires, contact).
 - **Bibliothèques & médiathèques** (`amenity=library`) : accès Internet
@@ -593,7 +604,21 @@ l'utilisatrice avant intégration — voir aussi les pistes écartées ci-dessou
   valeurs `yes`/`no` telles que balisées sur OSM, pas la convention
   `True`/`False` des flux nationaux).
 
-Les cinq fiches réutilisent les mêmes aides que les casiers colis
+Trois couches supplémentaires ajoutées ensuite, même principe, toujours
+groupe Sécurité & santé :
+
+- **Dentistes** (`amenity=dentist`) : fiche identique à celle des médecins
+  (adresse, horaires, contact), sans lien Doctolib (schéma d'URL de
+  recherche par spécialité non vérifié pour les dentistes, voir plus bas).
+- **Casernes de pompiers** (`amenity=fire_station`) et **Gendarmerie &
+  police** (`amenity=police`, `libelleForceOrdre` distingue Gendarmerie/
+  Police municipale/Police nationale par mots-clés dans `operator`/`name`)
+  — fiches volontairement minimales (pas d'horaires publiques à afficher,
+  pas vocation à être appelées pour autre chose qu'une urgence) : un
+  simple rappel du 18/112 ou du 17/112 plutôt qu'un numéro de standard qui
+  inciterait à l'appeler à la place du bon numéro d'urgence.
+
+Les huit fiches réutilisent les mêmes aides que les casiers colis
 (`construireContacts`, `parserHorairesOsm`, `construireBadgeOuvert`...) via
 deux petites fonctions communes (`adresseOsm`/`contactsOsm` dans
 `popup.js`) plutôt que de dupliquer la reconstruction d'adresse/contact
@@ -626,6 +651,20 @@ intégrées comme couches, faute de source de données ouverte exploitable :
 - **Pharmacies** — déjà présentes et catégorisées dans la couche
   `commerces` existante (catégorie "Santé") : pas de couche séparée, ça
   aurait fait doublon.
+- **Remplacer OpenStreetMap par data.gouv.fr pour la couche médecins** —
+  investigué à la demande explicite de l'utilisatrice, deux options
+  trouvées, aucune n'est une amélioration :
+  - "Annuaire santé Ameli" (dataset statique data.gouv.fr) : depuis sa
+    refonte, ne contient plus les horaires de cabinet ni les tarifs
+    (justement ce qu'OSM permet d'afficher aujourd'hui), mis à jour
+    seulement une fois par an, et volumineux à l'échelle nationale
+    (aurait nécessité un extrait déjà filtré, fourni par un humain, comme
+    pour le DVF/DPE/PLUi).
+  - API FHIR Annuaire Santé (ANS/esante.gouv.fr) : bien plus riche et à
+    jour, mais exige une clé API personnelle liée à un compte — pas
+    intégrable proprement dans un site statique GitHub Pages sans
+    l'exposer publiquement dans le code source à chaque visiteur.
+  Décision (validée) : couche `medecins` laissée sur OpenStreetMap/Overpass.
 
 ## Ce qui reste à faire
 

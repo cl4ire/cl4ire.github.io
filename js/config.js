@@ -618,6 +618,21 @@ const REQUETE_OVERPASS_VETERINAIRES =
     `(node["amenity"="veterinary"](${BBOX_OVERPASS});` +
     `way["amenity"="veterinary"](${BBOX_OVERPASS}););` +
     `out center;`;
+const REQUETE_OVERPASS_DENTISTES =
+    `[out:json][timeout:25];` +
+    `(node["amenity"="dentist"](${BBOX_OVERPASS});` +
+    `way["amenity"="dentist"](${BBOX_OVERPASS}););` +
+    `out center;`;
+const REQUETE_OVERPASS_POMPIERS =
+    `[out:json][timeout:25];` +
+    `(node["amenity"="fire_station"](${BBOX_OVERPASS});` +
+    `way["amenity"="fire_station"](${BBOX_OVERPASS}););` +
+    `out center;`;
+const REQUETE_OVERPASS_GENDARMERIE =
+    `[out:json][timeout:25];` +
+    `(node["amenity"="police"](${BBOX_OVERPASS});` +
+    `way["amenity"="police"](${BBOX_OVERPASS}););` +
+    `out center;`;
 const REQUETE_OVERPASS_BIBLIOTHEQUES =
     `[out:json][timeout:25];` +
     `(node["amenity"="library"](${BBOX_OVERPASS});` +
@@ -643,6 +658,9 @@ const fetchOverpassVeterinaires = creerFetchOverpass(REQUETE_OVERPASS_VETERINAIR
 const fetchOverpassBibliotheques = creerFetchOverpass(REQUETE_OVERPASS_BIBLIOTHEQUES, "geoberce-cache-bibliotheques");
 const fetchOverpassOfficesTourisme = creerFetchOverpass(REQUETE_OVERPASS_OFFICES_TOURISME, "geoberce-cache-officestourisme");
 const fetchOverpassCampingCar = creerFetchOverpass(REQUETE_OVERPASS_CAMPINGCAR, "geoberce-cache-campingcar");
+const fetchOverpassDentistes = creerFetchOverpass(REQUETE_OVERPASS_DENTISTES, "geoberce-cache-dentistes");
+const fetchOverpassPompiers = creerFetchOverpass(REQUETE_OVERPASS_POMPIERS, "geoberce-cache-pompiers");
+const fetchOverpassGendarmerie = creerFetchOverpass(REQUETE_OVERPASS_GENDARMERIE, "geoberce-cache-gendarmerie");
 
 /* =========================================================
    COUCHES
@@ -825,6 +843,30 @@ const LAYERS = [
         lazy: true, searchable: true, cluster: true,
         titleFields: ["name", "brand"],
         subtitleFields: ["phone", "opening_hours"]
+    },
+    {
+        id: "dentistes", group: "securite", label: "Dentistes",
+        fetchPersonnalise: fetchOverpassDentistes, transform: geojsonDepuisElementsOverpass,
+        type: "point", icon: "fa-solid fa-tooth", color: "#AD4826",
+        lazy: true, searchable: true, cluster: true,
+        titleFields: ["name"],
+        subtitleFields: ["phone", "opening_hours"]
+    },
+    {
+        id: "pompiers", group: "securite", label: "Casernes de pompiers",
+        fetchPersonnalise: fetchOverpassPompiers, transform: geojsonDepuisElementsOverpass,
+        type: "point", icon: "fa-solid fa-fire", color: "#AD4826",
+        lazy: true, searchable: true, cluster: true,
+        titleFields: ["name"],
+        subtitleFields: ["operator"]
+    },
+    {
+        id: "gendarmerie", group: "securite", label: "Gendarmerie & police",
+        fetchPersonnalise: fetchOverpassGendarmerie, transform: geojsonDepuisElementsOverpass,
+        type: "point", icon: "fa-solid fa-shield-halved", color: "#AD4826",
+        lazy: true, searchable: true, cluster: true,
+        titleFields: ["name"],
+        subtitleFields: ["operator", "phone"]
     },
 
     /* ---------- PATRIMOINE ---------- */
