@@ -389,7 +389,44 @@ const MIROIRS_OVERPASS = [
     "https://overpass.osm.ch/api/interpreter"
 ];
 
+/* Cache la réponse Overpass dans localStorage entre deux rechargements
+   de page (pas seulement en mémoire le temps d'une session : chargerCouche
+   évite déjà les doublons de requête TANT QUE la page reste ouverte, ça
+   ne protège pas contre quelqu'un qui recharge la page plusieurs fois de
+   suite en train de tester). Deux raisons : Overpass, service public
+   gratuit, demande explicitement à ses consommateurs de mettre en cache
+   plutôt que de le solliciter en boucle pour la même requête - et,
+   plus concrètement, c'est aussi ce qui a déclenché le 429 (Too Many
+   Requests) rapporté après plusieurs tests successifs. 6h : la présence
+   d'un casier/point relais ne change pas assez vite pour justifier plus
+   frais que ça. */
+const CACHE_LOCKERS_CLE = "geoberce-cache-lockers";
+const CACHE_LOCKERS_DUREE_MS = 6 * 60 * 60 * 1000;
+
+function lireCacheLockers() {
+    try {
+        const brut = localStorage.getItem(CACHE_LOCKERS_CLE);
+        if (!brut) return null;
+        const { horodatage, donnees } = JSON.parse(brut);
+        if (!horodatage || Date.now() - horodatage > CACHE_LOCKERS_DUREE_MS) return null;
+        return donnees;
+    } catch (_) {
+        return null; // quota dépassé, navigation privée... : pas grave, on retombe sur le réseau
+    }
+}
+
+function ecrireCacheLockers(donnees) {
+    try {
+        localStorage.setItem(CACHE_LOCKERS_CLE, JSON.stringify({ horodatage: Date.now(), donnees }));
+    } catch (_) {
+        // silencieux : le cache est un confort, pas un besoin
+    }
+}
+
 function fetchOverpassLockers() {
+    const enCache = lireCacheLockers();
+    if (enCache) return Promise.resolve(enCache);
+
     const essayer = index => {
         if (index >= MIROIRS_OVERPASS.length) {
             return Promise.reject(new Error("Tous les miroirs Overpass ont échoué (dernier testé : " + MIROIRS_OVERPASS[MIROIRS_OVERPASS.length - 1] + ")"));
@@ -405,7 +442,7 @@ function fetchOverpassLockers() {
                 return essayer(index + 1);
             });
     };
-    return essayer(0);
+    return essayer(0).then(donnees => { ecrireCacheLockers(donnees); return donnees; });
 }
 
 /* Réponse Overpass (JSON natif de l'API, pas du GeoJSON) : un tableau

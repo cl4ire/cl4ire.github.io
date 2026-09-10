@@ -455,6 +455,18 @@ requête (`REQUETE_OVERPASS_LOCKERS`) interroge donc les trois à la fois :
   `chargerCouche` (`layers.js`) — une couche peut fournir sa propre
   logique de récupération (retries, miroirs...) à la place du
   fetch/transform standard, réutilisable par d'autres couches si besoin.
+- Réponse mise en cache dans `localStorage` 6h (`lireCacheLockers`/
+  `ecrireCacheLockers`) : Overpass, service public gratuit, demande
+  explicitement à ses consommateurs de mettre en cache plutôt que de le
+  solliciter en boucle pour la même requête — et c'est aussi
+  concrètement ce qui a déclenché un `429 Too Many Requests` en
+  conditions réelles après plusieurs tests successifs (recharger la
+  page revenait à refaire la requête à chaque fois : `chargerCouche` a
+  bien un garde-fou contre les doublons, mais seulement en mémoire, pas
+  d'un chargement de page à l'autre). Dégrade proprement si
+  `localStorage` est indisponible (navigation privée stricte, quota
+  dépassé...) : retombe simplement sur le réseau à chaque fois plutôt
+  que de planter.
 - `categorieLocker`/`TYPES_LOCKERS` reconnaissent l'enseigne par
   mots-clés, aussi bien sur les champs d'un casier
   (`brand`/`operator`/`network`/`name`) que sur ceux d'un point relais
