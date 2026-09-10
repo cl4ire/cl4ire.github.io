@@ -57,18 +57,20 @@ carburants, **Habitat & urbanisme** pour le cadastre) :
   `geofilter.distance`. La réponse (format historique Opendatasoft) est
   convertie en GeoJSON par `geojsonDepuisFluxODS` (`layers.js`) avant de
   rentrer dans le pipeline générique de chargement.
-- **Parcelles cadastrales** (`id: "cadastre"`) — pas de flux unique pour tout
-  le territoire : un fichier GeoJSON par commune (source Etalab/DGFiP,
-  `COMMUNES_TERRITOIRE` dans `config.js` pour la liste des 24 communes),
-  récupérés en parallèle puis fusionnés par `fusionnerCadastre`. Support
-  générique ajouté dans `layers.js` : `file` peut être un tableau d'URL
-  (au lieu d'une seule), auquel cas `transform` reçoit le tableau des
-  réponses plutôt qu'une réponse unique. ⚠️ Comme pour le WMS ci-dessus,
-  je n'ai pas pu vérifier en conditions réelles le motif d'URL exact
-  (`https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/communes/72/<insee>/cadastre-<insee>-parcelles.geojson`)
-  ni les noms de propriétés (`section`, `numero`, `contenance`...) : si la
-  couche ne se charge pas, vérifiez une URL dans un navigateur et ajustez
-  `URLS_CADASTRE`/`fusionnerCadastre` dans `js/config.js` en conséquence.
+- **Parcelles cadastrales** (`id: "cadastre"`) — un seul flux pour tout le
+  territoire (`URL_CADASTRE_EPCI` dans `config.js`) : le bundler Etalab par
+  EPCI (n° SIREN de la comcom Loir-Lucé-Bercé), plutôt qu'un fichier par
+  commune. `fusionnerCadastre`/`extraireFeatures` complètent chaque
+  parcelle (référence lisible, nom de commune) et restent tolérants sur la
+  forme exacte de la réponse (FeatureCollection unique, tableau, ou objet
+  regroupé par commune) : je n'ai pas pu vérifier en conditions réelles la
+  structure précise ni les noms de propriétés (`section`, `numero`,
+  `contenance`...), accès réseau restreint pendant le développement — si la
+  couche ne se charge pas ou affiche des champs vides, ouvrez l'URL dans un
+  navigateur pour voir la vraie forme et ajustez `fusionnerCadastre` dans
+  `js/config.js` en conséquence. `layers.js` accepte aussi `file` comme
+  tableau d'URL (une par élément, `transform` reçoit alors le tableau des
+  réponses) si jamais un seul flux EPCI ne suffit pas pour un autre besoin.
   Couche volumineuse (parcellaire complet de 24 communes) : en plus d'être
   `lazy`, elle ne s'affiche qu'à partir du zoom 15 (`zoomMin`, mécanisme
   générique dans `layers.js`/`surveillerZoom`), comme les visualisateurs de
