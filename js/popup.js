@@ -797,6 +797,77 @@ function construirePopupVeterinaire(props) {
     </div>`;
 }
 
+function construirePopupDentiste(props) {
+    const nom = premierChampValide(props, ["name"]) || "Dentiste";
+    const adresse = adresseOsm(props);
+    const horaires = parserHorairesOsm(props.opening_hours);
+    const contacts = contactsOsm(props);
+    const lignesHoraires = construireLignesHoraires(horaires);
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:#AD4826"><i class="fa-solid fa-tooth"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:#AD4826">Dentiste</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${adresse ? `<div class="popup-fiche-adresse">${echapperHtml(adresse)}</div>` : ""}
+            </div>
+            ${construireBadgeOuvert(horaires)}
+        </div>
+        ${contacts.length ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Contact</div><div class="popup-fiche-contacts">${contacts.join("")}</div></div>` : ""}
+        ${lignesHoraires ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Horaires</div>${lignesHoraires}</div>` : ""}
+    </div>`;
+}
+
+/* Casernes de pompiers / gendarmerie-police : pas de fiche "commerce"
+   (pas d'horaires publiques à afficher, pas vocation à être appelées
+   pour autre chose qu'une urgence) - juste de quoi identifier/localiser
+   le poste, avec un rappel du bon numéro plutôt qu'un numéro de standard
+   qui inciterait à l'appeler à la place du 18/112 ou 17/112. */
+function construirePopupPompiers(props) {
+    const nom = premierChampValide(props, ["name"]) || "Caserne de pompiers";
+    const adresse = adresseOsm(props);
+    const operateur = props.operator || null;
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:#AD4826"><i class="fa-solid fa-fire"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:#AD4826">Caserne de pompiers</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${adresse ? `<div class="popup-fiche-adresse">${echapperHtml(adresse)}</div>` : ""}
+                ${operateur ? `<div class="popup-fiche-puce" style="color:#AD4826"><i class="fa-solid fa-building"></i>${echapperHtml(operateur)}</div>` : ""}
+            </div>
+        </div>
+        <div class="popup-fiche-section"><div class="popup-fiche-precision">En cas d'urgence, composez le 18 ou le 112.</div></div>
+    </div>`;
+}
+
+function libelleForceOrdre(props) {
+    const texte = [props.operator, props.name].filter(Boolean).join(" ").toLowerCase();
+    if (texte.includes("gendarmerie")) return "Gendarmerie";
+    if (texte.includes("municipale")) return "Police municipale";
+    if (texte.includes("police")) return "Police nationale";
+    return "Gendarmerie / Police";
+}
+function construirePopupGendarmerie(props) {
+    const tag = libelleForceOrdre(props);
+    const nom = premierChampValide(props, ["name"]) || tag;
+    const adresse = adresseOsm(props);
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:#AD4826"><i class="fa-solid fa-shield-halved"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:#AD4826">${echapperHtml(tag)}</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${adresse ? `<div class="popup-fiche-adresse">${echapperHtml(adresse)}</div>` : ""}
+            </div>
+        </div>
+        <div class="popup-fiche-section"><div class="popup-fiche-precision">En cas d'urgence, composez le 17 ou le 112.</div></div>
+    </div>`;
+}
+
 const LABELS_INTERNET_BIBLIOTHEQUE = { yes: "Accès Internet", wlan: "Wifi disponible", terminal: "Poste informatique" };
 function construirePopupBibliotheque(props) {
     const nom = premierChampValide(props, ["name"]) || "Bibliothèque";
@@ -1489,6 +1560,9 @@ function construirePopup(feature, layerConf) {
     else if (layerConf.id === "bibliotheques") html = construirePopupBibliotheque(props);
     else if (layerConf.id === "officesTourisme") html = construirePopupOfficeTourisme(props);
     else if (layerConf.id === "campingcar") html = construirePopupCampingCar(props);
+    else if (layerConf.id === "dentistes") html = construirePopupDentiste(props);
+    else if (layerConf.id === "pompiers") html = construirePopupPompiers(props);
+    else if (layerConf.id === "gendarmerie") html = construirePopupGendarmerie(props);
     else if (layerConf.id === "irve") html = construirePopupIrve(props);
     else if (layerConf.id === "airecovoiturage") html = construirePopupCovoiturage(props);
     else if (layerConf.id === "marches") html = construirePopupMarche(props);

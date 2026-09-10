@@ -604,7 +604,21 @@ l'utilisatrice avant intégration — voir aussi les pistes écartées ci-dessou
   valeurs `yes`/`no` telles que balisées sur OSM, pas la convention
   `True`/`False` des flux nationaux).
 
-Les cinq fiches réutilisent les mêmes aides que les casiers colis
+Trois couches supplémentaires ajoutées ensuite, même principe, toujours
+groupe Sécurité & santé :
+
+- **Dentistes** (`amenity=dentist`) : fiche identique à celle des médecins
+  (adresse, horaires, contact), sans lien Doctolib (schéma d'URL de
+  recherche par spécialité non vérifié pour les dentistes, voir plus bas).
+- **Casernes de pompiers** (`amenity=fire_station`) et **Gendarmerie &
+  police** (`amenity=police`, `libelleForceOrdre` distingue Gendarmerie/
+  Police municipale/Police nationale par mots-clés dans `operator`/`name`)
+  — fiches volontairement minimales (pas d'horaires publiques à afficher,
+  pas vocation à être appelées pour autre chose qu'une urgence) : un
+  simple rappel du 18/112 ou du 17/112 plutôt qu'un numéro de standard qui
+  inciterait à l'appeler à la place du bon numéro d'urgence.
+
+Les huit fiches réutilisent les mêmes aides que les casiers colis
 (`construireContacts`, `parserHorairesOsm`, `construireBadgeOuvert`...) via
 deux petites fonctions communes (`adresseOsm`/`contactsOsm` dans
 `popup.js`) plutôt que de dupliquer la reconstruction d'adresse/contact
