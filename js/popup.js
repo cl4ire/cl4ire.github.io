@@ -458,11 +458,22 @@ function formaterMontant(valeur) {
     return typeof valeur === "number" ? valeur.toLocaleString("fr-FR") + " €" : null;
 }
 
-/* Mêmes couleurs que les puces DPE du formulaire de recherche foncière
-   (voir .rf-dpe-* dans style.css), pour rester cohérent visuellement. */
-function couleurDpe(classe) {
-    const couleurs = { A: "#2e8b57", B: "#76a942", C: "#b7c94a", D: "#e0c83c", E: "#eda832", F: "#e47732", G: "#c94338" };
-    return couleurs[classe] || PALETTE.ardoise;
+/* couleurDpe et ventesDepuisMutation vivent dans config.js : partagées
+   avec l'icône par classe de la couche DPE et le style par prix/m² de
+   la couche mutations (voir js/config.js), pas seulement cette popup. */
+
+/* Bloc "Ventes connues", partagé entre la fiche parcelle (ci-dessous) et
+   la popup de la couche "mutations" elle-même (voir plus bas). */
+function construireVentesHtml(ventes) {
+    if (!ventes.length) return "";
+    return `<div class="popup-fiche-section">
+        <div class="popup-fiche-section-titre"><i class="fa-solid fa-euro-sign"></i>Ventes connues</div>
+        ${ventes.map(v => `<div class="popup-fiche-vente">
+            <span>${v.annee ? echapperHtml(String(v.annee)) : "—"}</span>
+            <strong>${formaterMontant(v.valeur) || "—"}</strong>
+            <span class="popup-fiche-vente-m2">${v.prixM2 ? v.prixM2.toLocaleString("fr-FR") + " €/m²" : ""}</span>
+        </div>`).join("")}
+    </div>`;
 }
 
 function construirePopupCadastreEntete(props) {
@@ -490,14 +501,7 @@ function construirePopupCadastre(props, infos) {
         <div class="popup-fiche-ligne">${infos.nbBatiments} bâtiment${infos.nbBatiments > 1 ? "s" : ""}${infos.surfaceBatie ? ` · ${Math.round(infos.surfaceBatie)} m²` : ""}</div>
     </div>` : "";
 
-    const ventes = infos.ventes.length ? `<div class="popup-fiche-section">
-        <div class="popup-fiche-section-titre"><i class="fa-solid fa-euro-sign"></i>Ventes connues</div>
-        ${infos.ventes.map(v => `<div class="popup-fiche-vente">
-            <span>${v.annee ? echapperHtml(String(v.annee)) : "—"}</span>
-            <strong>${formaterMontant(v.valeur) || "—"}</strong>
-            <span class="popup-fiche-vente-m2">${v.prixM2 ? v.prixM2.toLocaleString("fr-FR") + " €/m²" : ""}</span>
-        </div>`).join("")}
-    </div>` : "";
+    const ventes = construireVentesHtml(infos.ventes);
 
     const dpe = infos.dpe && infos.dpe.classe ? `<div class="popup-fiche-section">
         <div class="popup-fiche-section-titre"><i class="fa-solid fa-bolt"></i>DPE</div>
@@ -546,6 +550,100 @@ function ouvrirPopupParcelle(feature, layer) {
     });
 }
 
+/* =========================================================
+   POPUP DPE — même fiche que la section DPE de la parcelle, mais pour
+   la couche "Diagnostics énergétiques" prise isolément : un DPE de plus
+   qu'une donnée croisée avec une parcelle précise.
+   ========================================================= */
+function formaterDateSeule(date) {
+    if (!date) return "";
+    const d = new Date(date);
+    if (Number.isNaN(d.getTime())) return "";
+    return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+function capitaliserPremiere(texte) {
+    return texte ? String(texte).charAt(0).toUpperCase() + String(texte).slice(1) : "";
+}
+
+function construirePopupDpe(props) {
+    const classe = props.etiquette_dpe;
+    const couleur = couleurDpe(classe);
+    const nom = premierChampValide(props, ["adresse"]) || (props.type_batiment ? capitaliserPremiere(props.type_batiment) : "Diagnostic énergétique");
+
+    const energie = (classe || props.consommation) ? `<div class="popup-fiche-section">
+        <div class="popup-fiche-section-titre"><i class="fa-solid fa-bolt"></i>Énergie</div>
+        <div class="popup-fiche-ligne">
+            ${classe ? `<span class="popup-fiche-dpe-classe" style="background:${couleur}">${echapperHtml(classe)}</span>` : ""}
+            ${props.consommation ? `${Math.round(props.consommation)} kWh/m²/an` : ""}
+        </div>
+        ${(props.etiquette_ges || props.emissions_ges) ? `<div class="popup-fiche-ligne" style="margin-top:6px">
+            ${props.etiquette_ges ? `<span class="popup-fiche-dpe-classe" style="background:${couleurDpe(props.etiquette_ges)}">${echapperHtml(props.etiquette_ges)}</span>` : ""}
+            ${props.emissions_ges ? `${Math.round(props.emissions_ges)} kgCO²/m²/an <span class="popup-fiche-precision">(gaz à effet de serre)</span>` : ""}
+        </div>` : ""}
+    </div>` : "";
+
+    const detailsLogement = [
+        props.type_batiment ? capitaliserPremiere(props.type_batiment) : "",
+        props.surface_habitable ? `${Math.round(props.surface_habitable)} m²` : "",
+        props.annee_construction ? `construit en ${props.annee_construction}` : (props.periode_construction || "")
+    ].filter(Boolean);
+    const logement = detailsLogement.length ? `<div class="popup-fiche-section">
+        <div class="popup-fiche-section-titre"><i class="fa-solid fa-house"></i>Logement</div>
+        <div class="popup-fiche-ligne">${detailsLogement.map(echapperHtml).join(" · ")}</div>
+    </div>` : "";
+
+    const chauffage = [props.energie_chauffage, props.energie_ecs].filter(Boolean);
+    const sectionChauffage = chauffage.length ? `<div class="popup-fiche-section">
+        <div class="popup-fiche-section-titre"><i class="fa-solid fa-fire-flame-simple"></i>Chauffage</div>
+        <div class="popup-fiche-ligne">${chauffage.map(echapperHtml).join(" · ")}</div>
+    </div>` : "";
+
+    const dateEtablissement = formaterDateSeule(props.date_etablissement_dpe);
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${couleur}"><i class="fa-solid fa-bolt"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${couleur}">Diagnostic énergétique</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${props.commune ? `<div class="popup-fiche-adresse">${echapperHtml(props.commune)}</div>` : ""}
+            </div>
+        </div>
+        ${energie}${logement}${sectionChauffage}
+        ${dateEtablissement ? `<div class="popup-fiche-section"><div class="popup-fiche-precision"><i class="fa-regular fa-clock"></i> Diagnostic établi le ${echapperHtml(dateEtablissement)}</div></div>` : ""}
+    </div>`;
+}
+
+/* =========================================================
+   POPUP MUTATION — couche "Mutations immobilières (DVF)" prise
+   isolément (par opposition à la fiche parcelle, qui la croise avec le
+   cadastre) : réutilise ventesDepuisMutation/construireVentesHtml comme
+   la fiche parcelle, colorée avec la même échelle que le style de la
+   couche (stylePrixMutation dans config.js) pour rester cohérent entre
+   le remplissage de la parcelle sur la carte et sa popup.
+   ========================================================= */
+function construirePopupMutation(props, feature) {
+    const ventes = ventesDepuisMutation(feature);
+    const couleur = ventes[0] && ventes[0].prixM2 ? couleurPrix(ventes[0].prixM2) : PALETTE.terracotta;
+    const nom = premierChampValide(props, ["adresse"]) || `Parcelle ${[props.section, props.numero_parcelle].filter(Boolean).join(" ")}`.trim() || "Vente immobilière";
+    const adresse = [props.code_postal, props.commune].filter(Boolean).join(" · ");
+    const ventesHtml = construireVentesHtml(ventes);
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${couleur}"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${couleur}">Vente immobilière (DVF)</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${adresse ? `<div class="popup-fiche-adresse">${echapperHtml(adresse)}</div>` : ""}
+            </div>
+            ${props.nb_mutations > 1 ? `<span class="popup-fiche-badge info">${props.nb_mutations} ventes</span>` : ""}
+        </div>
+        ${ventesHtml || `<div class="popup-fiche-section"><div class="popup-fiche-vide">Aucune vente exploitable (pas de surface bâtie associée) sur cette parcelle.</div></div>`}
+    </div>`;
+}
+
 function construirePopup(feature, layerConf) {
     const props = feature.properties || {};
     if (layerConf.id === "carburants") return construirePopupCarburant(props);
@@ -554,6 +652,8 @@ function construirePopup(feature, layerConf) {
     if (layerConf.id === "mairies") return construirePopupMairie(props);
     if (layerConf.id === "bal") return construirePopupBal(props);
     if (layerConf.id === "cadastre") return construirePopupCadastreBase(props);
+    if (layerConf.id === "dpe") return construirePopupDpe(props);
+    if (layerConf.id === "mutations") return construirePopupMutation(props, feature);
 
     const titre = premierChampValide(props, layerConf.titleFields || []) || layerConf.label;
     const sousInfos = (layerConf.subtitleFields || []).map(c => props[c]).filter(v => v !== undefined && v !== null && v !== "" && v !== "NULL");

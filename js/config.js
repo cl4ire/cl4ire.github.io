@@ -143,6 +143,58 @@ function categoriePourFeature(feature) {
 }
 
 /* =========================================================
+   DPE ET MUTATIONS (DVF) — code couleur
+   Mêmes couleurs que les puces DPE du formulaire de recherche foncière
+   (.rf-dpe-* dans style.css) et que le prix/m² du popup parcelle
+   (construirePopupCadastre), pour rester cohérent partout où une classe
+   DPE ou un prix/m² apparaît sur le site.
+   ========================================================= */
+function couleurDpe(classe) {
+    const couleurs = { A: "#2e8b57", B: "#76a942", C: "#b7c94a", D: "#e0c83c", E: "#eda832", F: "#e47732", G: "#c94338" };
+    return couleurs[classe] || PALETTE.ardoise;
+}
+
+/* Point d'extension utilisé par icons.js/layers.js : un marqueur DPE par
+   classe énergétique plutôt qu'une seule couleur fixe pour toute la
+   couche, pour repérer les logements les moins performants d'un coup
+   d'œil sur la carte. */
+function iconeDpe(feature) {
+    return { icon: "fa-solid fa-bolt", color: couleurDpe((feature.properties || {}).etiquette_dpe) };
+}
+
+/* Ventes connues d'une mutation DVF, restreintes aux lots qui concernent
+   VRAIMENT la parcelle de cette mutation (une mutation/un acte notarié
+   peut en regrouper plusieurs) : réutilisé par la fiche parcelle
+   (infosParcelle dans recherche.js) ET par le popup/style de la couche
+   "mutations" elle-même (chaque feature y est déjà une mutation DVF). */
+function ventesDepuisMutation(dvfFeature) {
+    if (!dvfFeature) return [];
+    const refParcelle = dvfFeature.properties.reference_parcelle;
+    return (dvfFeature.properties.historique_mutations || []).map(m => {
+        const locaux = (m.elements_locaux || []).filter(e => e.parcelle === refParcelle && e.surface_batie > 0);
+        const surfaceBatie = locaux.reduce((s, e) => s + e.surface_batie, 0) || null;
+        const valeur = typeof m.valeur === "number" ? m.valeur : null;
+        return {
+            annee: m.annee || null, valeur,
+            nbBatiments: locaux.length || null, surfaceBatie,
+            prixM2: (surfaceBatie && valeur) ? Math.round(valeur / surfaceBatie) : null
+        };
+    });
+}
+
+/* Point d'extension (styleFn) de la couche "mutations" : colore chaque
+   parcelle vendue selon le prix/m² de sa vente la plus récente (même
+   échelle couleurPrix que la choroplethe "Prix immobilier par commune"),
+   plutôt qu'une seule couleur terracotta uniforme qui ne disait rien du
+   marché local. Grise (couleurPrix(null)) quand le prix/m² ne peut pas
+   être calculé (vente de terrain nu sans bâti, par exemple). */
+function stylePrixMutation(feature) {
+    const ventes = ventesDepuisMutation(feature);
+    const prixM2 = ventes[0] ? ventes[0].prixM2 : null;
+    return { color: "#fff", weight: 1, fillColor: couleurPrix(prixM2), fillOpacity: 0.6 };
+}
+
+/* =========================================================
    CADASTRE (parcellaire complet)
    Un seul flux pour toute la comcom Loir-Lucé-Bercé (bundler Etalab,
    par EPCI via son n° SIREN plutôt que commune par commune). Base pour
@@ -387,6 +439,7 @@ const LAYERS = [
         id: "dpe", group: "urbanisme", label: "Diagnostics énergétiques (DPE)",
         file: "couches/urbanisme/dpe_loir_luce_berce.geojson", type: "point",
         icon: "fa-solid fa-bolt", color: PALETTE.ardoise,
+        iconePourFeature: iconeDpe,
         lazy: true, searchable: false, cluster: true,
         titleFields: ["numero_dpe"],
         subtitleFields: ["etiquette_dpe", "annee_construction"]
@@ -411,6 +464,7 @@ const LAYERS = [
         id: "mutations", group: "urbanisme", label: "Mutations immobilières (DVF)",
         file: "couches/urbanisme/parcelles_dvf_2021_2025_loir_luce_berce.geojson", type: "polygon",
         color: PALETTE.terracotta,
+        styleFn: stylePrixMutation,
         lazy: true, searchable: false, cluster: false,
         titleFields: ["adresse", "reference_parcelle"],
         subtitleFields: ["commune", "nb_mutations"]

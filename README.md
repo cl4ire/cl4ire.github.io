@@ -254,6 +254,37 @@ plusieurs références) — le nombre de bâtiments/surface bâtie affichés ne
 retient désormais que les lots dont le champ `parcelle` correspond
 exactement à celle affichée.
 
+## Couches DPE et mutations (DVF) : code couleur + popups dédiées
+
+La fiche parcelle fait maintenant apparaître l'essentiel des mutations et
+DPE au clic sur une parcelle, mais les couches "Diagnostics énergétiques"
+et "Mutations immobilières (DVF)" restent utiles en tant que telles pour
+un usage différent : repérer d'un coup d'œil, en scannant une zone, où se
+trouvent les logements les moins performants ou les ventes les plus
+chères/abordables, sans cliquer parcelle par parcelle. Pour que ça ait
+vraiment cet intérêt, les deux couches sont maintenant colorées plutôt
+qu'affichées dans une seule couleur uniforme, et ont leur propre popup
+détaillée (avant : popup générique à champs bruts) :
+
+- **DPE** (`iconeDpe` dans `config.js`) — un marqueur par classe
+  énergétique (mêmes couleurs que les puces du formulaire de recherche
+  foncière et que le badge DPE de la fiche parcelle : `couleurDpe`,
+  partagée). Popup dédiée (`construirePopupDpe`) : classe DPE et GES,
+  consommation/émissions, type de logement, surface, année de
+  construction, énergie de chauffage/eau chaude, date d'établissement.
+- **Mutations (DVF)** (`stylePrixMutation` dans `config.js`) — chaque
+  parcelle vendue est colorée selon le prix/m² de sa vente la plus
+  récente, avec la même échelle de couleur que la choroplethe "Prix
+  immobilier par commune" (`couleurPrix`, déjà existante) ; grisée quand
+  le prix/m² ne peut pas être calculé (vente de terrain nu, sans bâti).
+  Popup dédiée (`construirePopupMutation`) : historique complet des
+  ventes connues sur cette parcelle, même bloc que la fiche parcelle
+  (`construireVentesHtml`, partagé) via `ventesDepuisMutation` (déplacée
+  dans `config.js`, réutilisée aussi par `infosParcelle` dans
+  `recherche.js` — un seul endroit qui sait filtrer les lots d'une
+  mutation à la bonne parcelle, plutôt que trois implémentations
+  différentes du même calcul).
+
 ## Ce qui reste à faire
 
 - Vérifier/ajuster les champs affichés dans les popups pour les couches où
