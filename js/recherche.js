@@ -32,6 +32,11 @@ const LABELS_PLUI = {
     U: "U — Zone urbaine", AUc: "AUc — À urbaniser (constructible)",
     AUs: "AUs — À urbaniser (stricte)", A: "A — Zone agricole", N: "N — Zone naturelle"
 };
+/* Zones où construire est possible dès aujourd'hui (contrairement à AUs,
+   qui attend l'ouverture à l'urbanisation) : sert à décider si "à
+   proximité" a un sens sur la fiche parcelle (popup.js), pas seulement
+   les zones agricoles/naturelles où ça n'intéresse personne. */
+const ZONES_PLUI_CONSTRUCTIBLES = ["U", "AUc"];
 const LABELS_RGA = { 1: "Faible", 2: "Moyen", 3: "Fort" };
 const CLASSES_DPE = ["A", "B", "C", "D", "E", "F", "G"];
 const LIMITE_RESULTATS = 3000;
@@ -177,25 +182,37 @@ function infosParcelle(feature, indices) {
         };
     }) : [];
 
-    return {
-        commune: p.commune, communeNom: p.commune_nom, surface: p.surface_m2,
-        adresse: dvf ? dvf.properties.adresse : null,
-        typezonePLUi: plui ? plui.properties.typezone : null,
-        libellePLUi: plui ? (plui.properties.libelong || plui.properties.libelle) : null,
-        niveauRGA: rga ? rga.properties.niveau : null,
-        ventes,
-        nbBatiments: ventes[0] ? ventes[0].nbBatiments : null,
-        surfaceBatie: ventes[0] ? ventes[0].surfaceBatie : null,
-        dpe: dpe ? {
-            classe: dpe.properties.etiquette_dpe, conso: dpe.properties.consommation,
-            anneeConstruction: dpe.properties.annee_construction
-        } : null,
-        proximite: CATEGORIES_PROXIMITE
+    const typezonePLUi = plui ? plui.properties.typezone : null;
+    const nbBatiments = ventes[0] ? ventes[0].nbBatiments : null;
+
+    /* "À proximité" n'a de sens que pour un terrain à bâtir ou une
+       parcelle qui porte déjà une maison (voir ZONES_PLUI_CONSTRUCTIBLES
+       plus haut) : sur une parcelle agricole/naturelle sans bâti, ni
+       personne ne s'en sert, ni la recherche par critères qui n'affiche
+       jamais ce champ — inutile de calculer la distance aux équipements
+       les plus proches (le plus coûteux de ce qui précède) à chaque fois. */
+    const proximite = (ZONES_PLUI_CONSTRUCTIBLES.includes(typezonePLUi) || nbBatiments)
+        ? CATEGORIES_PROXIMITE
             .map(cat => {
                 const distance = plusProche(centre, cat.layerId);
                 return distance !== null ? { titre: cat.titre, distance } : null;
             })
             .filter(Boolean)
+        : [];
+
+    return {
+        commune: p.commune, communeNom: p.commune_nom, surface: p.surface_m2,
+        adresse: dvf ? dvf.properties.adresse : null,
+        typezonePLUi,
+        libellePLUi: plui ? (plui.properties.libelong || plui.properties.libelle) : null,
+        niveauRGA: rga ? rga.properties.niveau : null,
+        ventes, nbBatiments,
+        surfaceBatie: ventes[0] ? ventes[0].surfaceBatie : null,
+        dpe: dpe ? {
+            classe: dpe.properties.etiquette_dpe, conso: dpe.properties.consommation,
+            anneeConstruction: dpe.properties.annee_construction
+        } : null,
+        proximite
     };
 }
 

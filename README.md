@@ -229,7 +229,15 @@ rien si déjà fait) puis remplace le contenu de la popup
 (`popup.setContent(...)`) une fois prêt. La section "à proximité" (école,
 commerce, mairie les plus proches — `L.LatLng.distanceTo`) n'a pas besoin
 de ce chargement différé : ces couches sont `lazy: false`, donc déjà
-disponibles dès le chargement initial du site.
+disponibles dès le chargement initial du site. Elle ne s'affiche
+volontairement que pour un terrain à bâtir (zone PLUi `U`/`AUc`, voir
+`ZONES_PLUI_CONSTRUCTIBLES`) ou une parcelle qui porte déjà une maison :
+sur une parcelle agricole/naturelle sans bâti, la distance à l'école ou au
+commerce le plus proche n'a pas de sens. `infosParcelle` ne calcule même
+pas ces distances (le plus coûteux du lot) quand ni l'un ni l'autre
+n'est vrai — utile aussi pour la recherche par critères, qui appelle la
+même fonction sur toutes les parcelles visibles sans jamais utiliser ce
+champ.
 
 Au passage, ce travail a mis en évidence un bug dans l'enrichissement
 utilisé par la recherche foncière : le zonage PLUi était censé être filtré

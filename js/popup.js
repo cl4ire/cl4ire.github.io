@@ -513,6 +513,11 @@ function construirePopupCadastre(props, infos) {
         ${infos.niveauRGA ? `<div class="popup-fiche-ligne">Aléa argiles : ${echapperHtml(LABELS_RGA[infos.niveauRGA] || String(infos.niveauRGA))}</div>` : ""}
     </div>` : "";
 
+    /* infos.proximite n'est déjà rempli par infosParcelle (recherche.js)
+       que pour un terrain à bâtir ou une parcelle qui porte déjà une
+       maison — sur une parcelle agricole/naturelle sans bâti, la
+       distance à l'école ou au commerce le plus proche n'intéresse
+       personne, donc on ne la calcule même pas. */
     const proximite = infos.proximite.length ? `<div class="popup-fiche-section">
         <div class="popup-fiche-section-titre"><i class="fa-solid fa-location-dot"></i>À proximité</div>
         ${infos.proximite.map(p => `<div class="popup-fiche-jour"><span>${echapperHtml(p.titre)}</span><strong>${formaterDistance(p.distance)}</strong></div>`).join("")}
