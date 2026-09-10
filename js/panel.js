@@ -37,7 +37,11 @@ function construirePanneauCouches(map) {
 
             checkbox.addEventListener("change", function () {
                 if (checkbox.checked) {
-                    chargerCouche(conf, () => groupesLeaflet[conf.id].addTo(map));
+                    chargerCouche(conf, () => {
+                        if (coucheDoitEtreVisible(conf, map)) {
+                            groupesLeaflet[conf.id].addTo(map);
+                        }
+                    });
                 } else if (groupesLeaflet[conf.id]) {
                     map.removeLayer(groupesLeaflet[conf.id]);
                 }
@@ -50,6 +54,13 @@ function construirePanneauCouches(map) {
                 badge.className = "layer-lazy-badge";
                 badge.title = "Chargée à la demande (fichier volumineux)";
                 badge.textContent = "●";
+                texte.appendChild(badge);
+            }
+            if (conf.zoomMin) {
+                const badge = document.createElement("span");
+                badge.className = "layer-zoom-badge";
+                badge.title = "Visible seulement en zoomant sur le territoire";
+                badge.innerHTML = `<i class="fa-solid fa-magnifying-glass-plus"></i>`;
                 texte.appendChild(badge);
             }
 

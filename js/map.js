@@ -34,6 +34,7 @@ fetch("couches/communes.geojson")
 
 /* ---------- 3. Couches de données, panneau, recherche, accueil ---------- */
 initialiserCouches(map);
+surveillerZoom(map);
 construirePanneauCouches(map);
 initFiltrePanneau();
 construireEcranAccueil(map);
