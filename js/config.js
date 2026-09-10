@@ -752,6 +752,19 @@ const LAYERS = [
         titleFields: ["name"],
         subtitleFields: ["opening_hours"]
     },
+    {
+        id: "franceServices", group: "services", label: "France Services",
+        /* Extrait filtré sur le territoire (3 points) du fichier national
+           "Liste des structures labellisées France services" (ANCT,
+           data.gouv.fr), fourni par l'utilisatrice le 10/09/2026 - voir le
+           README pour la procédure de mise à jour (pas de flux public
+           filtrable par territoire côté ANCT, contrairement à Overpass). */
+        file: "couches/services/franceServices.geojson", type: "point",
+        icon: "fa-solid fa-people-roof", color: PALETTE.riviere,
+        lazy: false, searchable: true, cluster: true,
+        titleFields: ["lib_fs"],
+        subtitleFields: ["lib_com", "format_fs"]
+    },
 
     /* ---------- FAMILLE ---------- */
     {

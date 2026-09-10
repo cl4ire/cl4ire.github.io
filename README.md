@@ -633,6 +633,46 @@ casiers colis, où des trous précis avaient été signalés et confirmés) :
 à ajouter le jour où un trou similaire est signalé sur l'une de ces
 couches, en suivant le même modèle que `lockers_manuels.geojson`.
 
+## France Services
+
+Couche `franceServices` (groupe Services & mairie), sur un principe
+différent des couches Overpass ci-dessus : pas de flux public filtrable
+par territoire côté ANCT (contrairement à Overpass), donc **fichier
+statique** dans le dépôt (`couches/services/franceServices.geojson`),
+comme la plupart des couches du site — un extrait filtré du CSV national
+"Liste des structures labellisées France services" (ANCT, data.gouv.fr),
+fourni par l'utilisatrice le 10/09/2026 (`insee_com` sur les 24 communes du
+territoire, `js/config.js` → `COMMUNES_TERRITOIRE`) : 3 points, tous
+rattachés au Grand-Lucé/La Chartre-sur-le-Loir.
+
+- Champs français gardés tels quels depuis le CSV source (`lib_fs`,
+  `adresse`, `mail`, `telephone`, `prise_rdv`, `commentaire`,
+  `labellisation_fs`...) plutôt que renommés, comme les autres couches du
+  site (DPE, mutations, commerces...) : humanisés seulement à l'affichage
+  dans `construirePopupFranceServices` (`popup.js`).
+- Horaires en six champs séparés par jour (`h_lundi`...`h_samedi`,
+  format `"09:00 - 12:30 / 14:00 - 17:30"`), pas en syntaxe OSM :
+  `parserHorairesFranceServices` les ramène à la même structure
+  `{Mo: [...], ...}` que `parserHorairesOsm` pour réutiliser
+  `construireLignesHoraires`/`construireBadgeOuvert` sans dupliquer
+  l'affichage.
+- Un point peut être un **bus itinérant** (`format_fs: "Bus_équivalent"`
+  ou `"Mobile"`) plutôt qu'un lieu fixe — cas réel sur ce territoire (le
+  bus France services du Centre Social Rural de Lucé dessert toute la
+  comcom en tournée, rattaché administrativement à la même adresse que
+  l'espace fixe du Grand-Lucé). Afficher ses horaires comme un vrai
+  horaire d'accueil sur place aurait été trompeur : la fiche affiche à la
+  place une puce "Bus itinérant sur le territoire" et masque le badge
+  ouvert/fermé.
+
+**Mise à jour** : pas de mécanisme automatique (contrairement aux couches
+Overpass, qui se resynchronisent seules) — retélécharger le CSV le plus
+récent depuis le [dataset ANCT sur data.gouv.fr](https://www.data.gouv.fr/datasets/liste-des-structures-labellisees-france-services)
+et relancer un filtre sur `insee_com` ∈ `COMMUNES_TERRITOIRE` (même
+script que celui utilisé pour produire le fichier actuel : lecture CSV
+`;`-séparé avec BOM UTF-8, un `Feature` par ligne retenue,
+`[longitude, latitude]` depuis les colonnes `latitude`/`longitude`).
+
 ### Pistes écartées
 
 Deux données explicitement demandées mais volontairement **non**
