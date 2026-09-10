@@ -423,7 +423,7 @@ function ecrireCacheLockers(donnees) {
     }
 }
 
-function fetchOverpassLockers() {
+function recupererOverpassLockers() {
     const enCache = lireCacheLockers();
     if (enCache) return Promise.resolve(enCache);
 
@@ -445,24 +445,51 @@ function fetchOverpassLockers() {
     return essayer(0).then(donnees => { ecrireCacheLockers(donnees); return donnees; });
 }
 
-/* Réponse Overpass (JSON natif de l'API, pas du GeoJSON) : un tableau
-   "elements". Un node porte directement lat/lon ; un way (post_partner
-   sur un contour de bâtiment) porte un champ "center" à la place grâce
-   à "out center" dans la requête - les deux formes sont donc gérées ici
-   plutôt que de supposer que tout est un node. */
+/* Casiers/points relais connus sur le terrain mais pas encore
+   cartographiés dans OpenStreetMap - donc invisibles pour Overpass, quel
+   que soit le tag interrogé (constaté en conditions réelles : certains
+   casiers bien réels n'existent tout simplement pas dans OSM). Un petit
+   fichier local en COMPLÉMENT, pas en remplacement : la vraie base reste
+   OSM/Overpass (seule solution qui profite aussi à tous les autres
+   usages d'OSM, pas seulement ce site), ce fichier ne sert qu'à combler
+   des trous ponctuels signalés en attendant leur ajout là-bas. Toujours
+   récupéré en direct sans cache : un fichier local statique ne coûte
+   rien à refetch, contrairement à Overpass, et on veut qu'un ajout dans
+   ce fichier soit visible tout de suite plutôt que d'attendre 6h. Mêmes
+   noms de champs qu'un flux Overpass (brand/opening_hours/addr:*...),
+   voir le README pour le détail : ainsi categorieLocker/iconeLocker/
+   construirePopupLocker fonctionnent sans aucune distinction entre les
+   deux origines. */
+function fetchLockersManuels() {
+    return fetch("couches/services/lockers_manuels.geojson")
+        .then(r => r.ok ? r.json() : { type: "FeatureCollection", features: [] })
+        .catch(() => ({ type: "FeatureCollection", features: [] }));
+}
+
+function fetchOverpassLockers() {
+    return Promise.all([recupererOverpassLockers(), fetchLockersManuels()])
+        .then(([overpass, manuels]) => ({ overpass, manuels }));
+}
+
+/* data.overpass : réponse Overpass (JSON natif de l'API, pas du GeoJSON)
+   - un tableau "elements". Un node porte directement lat/lon ; un way
+   (post_partner sur un contour de bâtiment) porte un champ "center" à la
+   place grâce à "out center" dans la requête - les deux formes sont donc
+   gérées ici plutôt que de supposer que tout est un node.
+   data.manuels : déjà un vrai GeoJSON (voir fetchLockersManuels), ajouté
+   tel quel aux features issues d'Overpass. */
 function geojsonDepuisOverpass(data) {
-    const elements = (data && data.elements) || [];
-    return {
-        type: "FeatureCollection",
-        features: elements
-            .map(el => {
-                const lat = typeof el.lat === "number" ? el.lat : (el.center && el.center.lat);
-                const lon = typeof el.lon === "number" ? el.lon : (el.center && el.center.lon);
-                if (typeof lat !== "number" || typeof lon !== "number") return null;
-                return { type: "Feature", geometry: { type: "Point", coordinates: [lon, lat] }, properties: el.tags || {} };
-            })
-            .filter(Boolean)
-    };
+    const elements = (data && data.overpass && data.overpass.elements) || [];
+    const featuresOverpass = elements
+        .map(el => {
+            const lat = typeof el.lat === "number" ? el.lat : (el.center && el.center.lat);
+            const lon = typeof el.lon === "number" ? el.lon : (el.center && el.center.lon);
+            if (typeof lat !== "number" || typeof lon !== "number") return null;
+            return { type: "Feature", geometry: { type: "Point", coordinates: [lon, lat] }, properties: el.tags || {} };
+        })
+        .filter(Boolean);
+    const featuresManuels = (data && data.manuels && data.manuels.features) || [];
+    return { type: "FeatureCollection", features: [...featuresOverpass, ...featuresManuels] };
 }
 
 const TYPES_LOCKERS = [
