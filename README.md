@@ -651,6 +651,20 @@ intégrées comme couches, faute de source de données ouverte exploitable :
 - **Pharmacies** — déjà présentes et catégorisées dans la couche
   `commerces` existante (catégorie "Santé") : pas de couche séparée, ça
   aurait fait doublon.
+- **Remplacer OpenStreetMap par data.gouv.fr pour la couche médecins** —
+  investigué à la demande explicite de l'utilisatrice, deux options
+  trouvées, aucune n'est une amélioration :
+  - "Annuaire santé Ameli" (dataset statique data.gouv.fr) : depuis sa
+    refonte, ne contient plus les horaires de cabinet ni les tarifs
+    (justement ce qu'OSM permet d'afficher aujourd'hui), mis à jour
+    seulement une fois par an, et volumineux à l'échelle nationale
+    (aurait nécessité un extrait déjà filtré, fourni par un humain, comme
+    pour le DVF/DPE/PLUi).
+  - API FHIR Annuaire Santé (ANS/esante.gouv.fr) : bien plus riche et à
+    jour, mais exige une clé API personnelle liée à un compte — pas
+    intégrable proprement dans un site statique GitHub Pages sans
+    l'exposer publiquement dans le code source à chaque visiteur.
+  Décision (validée) : couche `medecins` laissée sur OpenStreetMap/Overpass.
 
 ## Ce qui reste à faire
 
