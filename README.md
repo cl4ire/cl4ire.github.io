@@ -183,7 +183,15 @@ part (`coucheRechercheActuelle`, distincte de `groupesLeaflet["cadastre"]`)
 à partir du sous-ensemble filtré, l'ajoute à la carte et cadre la vue
 dessus — plafonné à 3000 résultats (`LIMITE_RESULTATS`) par sécurité, même
 si le fait de ne partir que de la vue actuelle rend ce plafond peu
-probable à atteindre en pratique.
+probable à atteindre en pratique. Le panneau reste ouvert après ce clic
+(sur cette même vue "recherche-view") plutôt que de repasser sur l'arbre
+de couches normal : sinon on perd ses critères à chaque fois qu'on
+regarde le résultat, il faut rouvrir le panneau et tout ressaisir pour
+affiner. Un bouton séparé "Vider la sélection sur la carte" (`rf-vider` /
+`viderSelectionCarte`) retire seulement la couche de résultats surlignée,
+sans toucher aux critères du formulaire — à distinguer de "Réinitialiser
+les critères" (`rf-reset`) qui fait l'inverse (vide le formulaire, laisse
+la carte telle quelle). Les deux actions sont volontairement séparées.
 
 **Limites volontaires**, faute de données dans le SIG aujourd'hui :
 - "Nombre de bâtiments" et "Surface bâtie" viennent de la dernière mutation
@@ -194,6 +202,49 @@ probable à atteindre en pratique.
   critères : aucune source de données n'est intégrée au site pour ça. Les
   ajouter demanderait de trouver et intégrer un flux dédié (voir la logique
   déjà en place pour Vigieau/OLD/carburants/cadastre comme modèle).
+
+## Fiche parcelle (popup cadastre)
+
+Cliquer sur une parcelle ouvre une fiche détaillée (`construirePopupCadastre`
+dans `js/popup.js`) plutôt qu'un simple popup de champs bruts : bâti, ventes
+DVF, DPE, urbanisme (zone PLUi + aléa RGA) et équipements les plus proches
+— même esprit "à la Parcellai.re" que la recherche foncière, appliqué à une
+seule parcelle au clic. Elle réutilise `infosParcelle` (`js/recherche.js`),
+la même fonction que la recherche par critères, désormais factorisée pour
+servir aux deux usages sans dupliquer les jointures géométriques
+DVF/DPE/PLUi/RGA.
+
+Contrairement aux autres fiches, son contenu dépend de couches encore en
+différé (mutations/DPE/PLUi/RGA, `lazy: true`) : les charger à la
+construction de CHAQUE parcelle visible aurait déclenché ces 4 flux à
+chaque déplacement de carte, pour rien la plupart du temps (l'utilisateur
+ne clique que sur une poignée de parcelles). La popup s'ouvre donc d'abord
+avec seulement référence/surface/commune (`construirePopupCadastreBase`,
+contenu immédiat), puis se complète une fois les données chargées :
+`layers.js` écoute l'évènement Leaflet `popupopen` de chaque parcelle
+(une seule fois par parcelle, via `layer._infosChargees`) et appelle
+`ouvrirPopupParcelle`, qui déclenche `chargerDonneesFoncieres` (la même
+fonction que la recherche foncière — idempotente, elle ne re-télécharge
+rien si déjà fait) puis remplace le contenu de la popup
+(`popup.setContent(...)`) une fois prêt. La section "à proximité" (école,
+commerce, mairie les plus proches — `L.LatLng.distanceTo`) n'a pas besoin
+de ce chargement différé : ces couches sont `lazy: false`, donc déjà
+disponibles dès le chargement initial du site.
+
+Au passage, ce travail a mis en évidence un bug dans l'enrichissement
+utilisé par la recherche foncière : le zonage PLUi était censé être filtré
+par commune via son champ `insee`, or ce champ s'est avéré **systématiquement
+vide** dans le flux réel (contrairement au jeu de données de test utilisé
+au départ, qui le renseignait) — la zone PLUi ne remontait donc jamais, ni
+dans la fiche parcelle ni dans le filtre "Zone PLUi" de la recherche.
+Corrigé en cherchant directement la zone qui contient la parcelle sur
+l'ensemble des zones (quelques centaines : un point-in-polygon direct
+reste rapide), sans étape de regroupement par commune au préalable.
+Également corrigé au passage : `elements_locaux` d'une mutation DVF peut
+porter sur plusieurs parcelles à la fois (un acte notarié regroupant
+plusieurs références) — le nombre de bâtiments/surface bâtie affichés ne
+retient désormais que les lots dont le champ `parcelle` correspond
+exactement à celle affichée.
 
 ## Ce qui reste à faire
 
@@ -206,10 +257,11 @@ probable à atteindre en pratique.
   propre groupe "Commerces").
 - Remplacer/compléter les icônes Font Awesome par des icônes SVG maison si
   vous voulez pousser encore plus loin l'identité graphique.
-- Suite logique du cadastre : une vraie "fiche parcelle" au clic (ventes DVF,
-  DPE, zonage PLUi, aléa RGA à cet endroit, à proximité...) en croisant
-  `reference_parcelle` (mutations) avec `reference`/`id` (cadastre), puis
-  éventuellement une recherche par critères ("Trouver un terrain").
+- La fiche parcelle et la recherche foncière existent maintenant toutes les
+  deux ; suite logique possible : une recherche "inversée" façon
+  Parcellai.re ("terrain de 800 à 1 200 m², un seul bâtiment, zone
+  constructible" → liste de candidats), déjà en grande partie couverte par
+  les critères actuels de la recherche foncière.
 
 ## Déploiement
 

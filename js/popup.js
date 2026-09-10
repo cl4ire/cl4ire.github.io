@@ -439,6 +439,105 @@ function construirePopupBal(props) {
     </div>`;
 }
 
+/* =========================================================
+   POPUP PARCELLE (cadastre) — fiche "à la Parcellai.re" : bâti, ventes
+   DVF, DPE, urbanisme (zone PLUi/aléa RGA) et équipements les plus
+   proches. Contrairement aux autres fiches, son contenu dépend de
+   couches encore en différé (mutations/DPE/PLUi/RGA) : la popup s'ouvre
+   d'abord avec juste référence/surface (construirePopupCadastreBase),
+   puis se complète une fois les données chargées (voir
+   ouvrirPopupParcelle, appelée depuis layers.js au premier "popupopen"
+   de chaque parcelle plutôt qu'à la construction de toutes les
+   parcelles visibles, sans quoi chaque déplacement de carte
+   déclencherait ces chargements pour rien).
+   ========================================================= */
+function formaterMontant(valeur) {
+    return typeof valeur === "number" ? valeur.toLocaleString("fr-FR") + " €" : null;
+}
+
+/* Mêmes couleurs que les puces DPE du formulaire de recherche foncière
+   (voir .rf-dpe-* dans style.css), pour rester cohérent visuellement. */
+function couleurDpe(classe) {
+    const couleurs = { A: "#2e8b57", B: "#76a942", C: "#b7c94a", D: "#e0c83c", E: "#eda832", F: "#e47732", G: "#c94338" };
+    return couleurs[classe] || PALETTE.ardoise;
+}
+
+function construirePopupCadastreEntete(props) {
+    return `<div class="popup-fiche-entete">
+        <div class="popup-fiche-icon" style="background:${PALETTE.ardoise}"><i class="fa-solid fa-draw-polygon"></i></div>
+        <div class="popup-fiche-titre-wrap">
+            <div class="popup-fiche-tag" style="color:${PALETTE.ardoise}">Parcelle cadastrale</div>
+            <div class="popup-fiche-titre">${echapperHtml(props.reference || "—")}</div>
+            <div class="popup-fiche-adresse">${echapperHtml(props.commune_nom || "")}</div>
+        </div>
+        ${props.surface_m2 ? `<span class="popup-fiche-badge info">${Math.round(props.surface_m2).toLocaleString("fr-FR")} m²</span>` : ""}
+    </div>`;
+}
+
+function construirePopupCadastreBase(props) {
+    return `<div class="popup-fiche popup-fiche-parcelle">
+        ${construirePopupCadastreEntete(props)}
+        <div class="popup-fiche-chargement"><i class="fa-solid fa-circle-notch fa-spin"></i>Chargement des informations foncières…</div>
+    </div>`;
+}
+
+function construirePopupCadastre(props, infos) {
+    const bati = infos.nbBatiments ? `<div class="popup-fiche-section">
+        <div class="popup-fiche-section-titre"><i class="fa-solid fa-house"></i>Bâti</div>
+        <div class="popup-fiche-ligne">${infos.nbBatiments} bâtiment${infos.nbBatiments > 1 ? "s" : ""}${infos.surfaceBatie ? ` · ${Math.round(infos.surfaceBatie)} m²` : ""}</div>
+    </div>` : "";
+
+    const ventes = infos.ventes.length ? `<div class="popup-fiche-section">
+        <div class="popup-fiche-section-titre"><i class="fa-solid fa-euro-sign"></i>Ventes connues</div>
+        ${infos.ventes.map(v => `<div class="popup-fiche-vente">
+            <span>${v.annee ? echapperHtml(String(v.annee)) : "—"}</span>
+            <strong>${formaterMontant(v.valeur) || "—"}</strong>
+            <span class="popup-fiche-vente-m2">${v.prixM2 ? v.prixM2.toLocaleString("fr-FR") + " €/m²" : ""}</span>
+        </div>`).join("")}
+    </div>` : "";
+
+    const dpe = infos.dpe && infos.dpe.classe ? `<div class="popup-fiche-section">
+        <div class="popup-fiche-section-titre"><i class="fa-solid fa-bolt"></i>DPE</div>
+        <div class="popup-fiche-ligne">
+            <span class="popup-fiche-dpe-classe" style="background:${couleurDpe(infos.dpe.classe)}">${echapperHtml(infos.dpe.classe)}</span>
+            ${infos.dpe.conso ? `${Math.round(infos.dpe.conso)} kWh/m²/an` : ""}
+        </div>
+    </div>` : "";
+
+    const urbanisme = (infos.typezonePLUi || infos.niveauRGA) ? `<div class="popup-fiche-section">
+        <div class="popup-fiche-section-titre"><i class="fa-solid fa-building-shield"></i>Urbanisme</div>
+        ${infos.typezonePLUi ? `<div class="popup-fiche-ligne">Zone ${echapperHtml(infos.typezonePLUi)}${infos.libellePLUi ? ` <span class="popup-fiche-precision">${echapperHtml(infos.libellePLUi)}</span>` : ""}</div>` : ""}
+        ${infos.niveauRGA ? `<div class="popup-fiche-ligne">Aléa argiles : ${echapperHtml(LABELS_RGA[infos.niveauRGA] || String(infos.niveauRGA))}</div>` : ""}
+    </div>` : "";
+
+    const proximite = infos.proximite.length ? `<div class="popup-fiche-section">
+        <div class="popup-fiche-section-titre"><i class="fa-solid fa-location-dot"></i>À proximité</div>
+        ${infos.proximite.map(p => `<div class="popup-fiche-jour"><span>${echapperHtml(p.titre)}</span><strong>${formaterDistance(p.distance)}</strong></div>`).join("")}
+    </div>` : "";
+
+    const rien = !bati && !ventes && !dpe && !urbanisme && !proximite
+        ? `<div class="popup-fiche-section"><div class="popup-fiche-vide">Aucune information supplémentaire disponible pour cette parcelle.</div></div>` : "";
+
+    return `<div class="popup-fiche popup-fiche-parcelle">
+        ${construirePopupCadastreEntete({ ...props, commune_nom: infos.adresse ? `${infos.adresse} · ${props.commune_nom}` : props.commune_nom })}
+        ${bati}${ventes}${dpe}${urbanisme}${proximite}${rien}
+    </div>`;
+}
+
+/* Déclenchée au premier "popupopen" de chaque parcelle (voir layers.js) :
+   charge les couches foncières encore différées (idempotent, chargerCouche
+   ne re-télécharge rien si déjà fait), calcule les infos de cette seule
+   parcelle, puis remplace le contenu "chargement..." par la fiche complète. */
+function ouvrirPopupParcelle(feature, layer) {
+    if (layer._infosChargees) return;
+    layer._infosChargees = true;
+    chargerDonneesFoncieres().then(() => {
+        const infos = infosParcelle(feature);
+        const popup = layer.getPopup();
+        if (popup) popup.setContent(construirePopupCadastre(feature.properties, infos));
+    });
+}
+
 function construirePopup(feature, layerConf) {
     const props = feature.properties || {};
     if (layerConf.id === "carburants") return construirePopupCarburant(props);
@@ -446,6 +545,7 @@ function construirePopup(feature, layerConf) {
     if (layerConf.id === "banques") return construirePopupBanque(props);
     if (layerConf.id === "mairies") return construirePopupMairie(props);
     if (layerConf.id === "bal") return construirePopupBal(props);
+    if (layerConf.id === "cadastre") return construirePopupCadastreBase(props);
 
     const titre = premierChampValide(props, layerConf.titleFields || []) || layerConf.label;
     const sousInfos = (layerConf.subtitleFields || []).map(c => props[c]).filter(v => v !== undefined && v !== null && v !== "" && v !== "NULL");
