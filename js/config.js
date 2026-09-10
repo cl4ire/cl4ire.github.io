@@ -694,6 +694,52 @@ const REQUETE_OVERPASS_POINTS_BERCE =
     `way["natural"="spring"](${BBOX_OVERPASS});` +
     `node["tourism"="attraction"]["name"](${BBOX_OVERPASS}););` +
     `out center;`;
+const REQUETE_OVERPASS_PARKINGS =
+    `[out:json][timeout:25];` +
+    `(node["amenity"="parking"](${BBOX_OVERPASS});` +
+    `way["amenity"="parking"](${BBOX_OVERPASS}););` +
+    `out center;`;
+const REQUETE_OVERPASS_VENTE_FERME =
+    `[out:json][timeout:25];` +
+    `(node["shop"="farm"](${BBOX_OVERPASS});` +
+    `way["shop"="farm"](${BBOX_OVERPASS}););` +
+    `out center;`;
+/* Petit patrimoine rural sur tout le territoire (pas seulement la forêt
+   de Bercé) : croix de chemin, lavoirs, moulins (deux tags concurrents
+   selon le contributeur : man_made=watermill ou historic=mill), fontaines
+   anciennes/monumentales (amenity=fountain, différent de
+   amenity=drinking_water déjà couvert par la couche "fontaines"). */
+const REQUETE_OVERPASS_PATRIMOINE_RURAL =
+    `[out:json][timeout:25];` +
+    `(node["historic"="wayside_cross"](${BBOX_OVERPASS});` +
+    `way["historic"="wayside_cross"](${BBOX_OVERPASS});` +
+    `node["man_made"="wash_house"](${BBOX_OVERPASS});` +
+    `way["man_made"="wash_house"](${BBOX_OVERPASS});` +
+    `node["man_made"="watermill"](${BBOX_OVERPASS});` +
+    `way["man_made"="watermill"](${BBOX_OVERPASS});` +
+    `node["historic"="mill"](${BBOX_OVERPASS});` +
+    `way["historic"="mill"](${BBOX_OVERPASS});` +
+    `node["amenity"="fountain"](${BBOX_OVERPASS});` +
+    `way["amenity"="fountain"](${BBOX_OVERPASS}););` +
+    `out center;`;
+/* Antennes-relais mobiles : PIVOT depuis l'idée initiale de couche WMS
+   ARCEP (couverture mobile théorique) - contrairement à la couche OLD/
+   débroussaillement, aucun nom de couche WMS concret trouvé en recherche
+   pour ce flux précis (juste l'existence d'un service WMS "Téléphonie
+   mobile", sans détail exploitable) : deviner un nom au hasard aurait
+   plus de chances de donner une couche vide sans piste de correction
+   qu'un vrai résultat, contrairement à OLD où un nom de couche
+   documenté existait. Repli sur OpenStreetMap (man_made=mast avec
+   tower:type=communication ou communication:mobile_phone=yes) : pas
+   une carte de couverture théorique, mais un signal concret et fiable
+   (position des pylônes/antennes), même mécanique que toutes les autres
+   couches Overpass du site. */
+const REQUETE_OVERPASS_ANTENNES =
+    `[out:json][timeout:25];` +
+    `(node["man_made"="mast"]["tower:type"="communication"](${BBOX_OVERPASS});` +
+    `node["man_made"="mast"]["communication:mobile_phone"="yes"](${BBOX_OVERPASS});` +
+    `node["man_made"="tower"]["tower:type"="communication"](${BBOX_OVERPASS}););` +
+    `out center;`;
 
 const fetchOverpassMedecins = creerFetchOverpass(REQUETE_OVERPASS_MEDECINS, "geoberce-cache-medecins");
 const fetchOverpassVeterinaires = creerFetchOverpass(REQUETE_OVERPASS_VETERINAIRES, "geoberce-cache-veterinaires");
@@ -702,6 +748,22 @@ const fetchOverpassOfficesTourisme = creerFetchOverpass(REQUETE_OVERPASS_OFFICES
 const fetchOverpassCampingCar = creerFetchOverpass(REQUETE_OVERPASS_CAMPINGCAR, "geoberce-cache-campingcar");
 const fetchOverpassRandonnees = creerFetchOverpass(REQUETE_OVERPASS_RANDONNEES, "geoberce-cache-randonnees");
 const fetchOverpassPointsBerce = creerFetchOverpass(REQUETE_OVERPASS_POINTS_BERCE, "geoberce-cache-points-berce");
+const fetchOverpassParkings = creerFetchOverpass(REQUETE_OVERPASS_PARKINGS, "geoberce-cache-parkings");
+const fetchOverpassVenteFerme = creerFetchOverpass(REQUETE_OVERPASS_VENTE_FERME, "geoberce-cache-ventefermes");
+const fetchOverpassPatrimoineRural = creerFetchOverpass(REQUETE_OVERPASS_PATRIMOINE_RURAL, "geoberce-cache-patrimoinerural");
+const fetchOverpassAntennes = creerFetchOverpass(REQUETE_OVERPASS_ANTENNES, "geoberce-cache-antennes");
+
+function categoriePatrimoineRural(props) {
+    if (props.historic === "wayside_cross") return { id: "croix", label: "Croix de chemin", icon: "fa-solid fa-cross", color: PALETTE.ardoise };
+    if (props.man_made === "wash_house") return { id: "lavoir", label: "Lavoir", icon: "fa-solid fa-water", color: PALETTE.riviere };
+    if (props.man_made === "watermill" || props.historic === "mill") return { id: "moulin", label: "Moulin", icon: "fa-solid fa-industry", color: PALETTE.terracotta };
+    if (props.amenity === "fountain") return { id: "fontaine", label: "Fontaine", icon: "fa-solid fa-droplet", color: PALETTE.riviere };
+    return { id: "autre", label: "Petit patrimoine", icon: "fa-solid fa-landmark", color: "#7F7E7B" };
+}
+function iconePatrimoineRural(feature) {
+    const cat = categoriePatrimoineRural(feature.properties || {});
+    return { icon: cat.icon, color: cat.color };
+}
 
 /* Distance d'une géométrie (somme des distances entre points consécutifs,
    formule de haversine) - pas de dénivelé disponible depuis Overpass pour
@@ -1023,6 +1085,24 @@ const LAYERS = [
         titleFields: ["name"],
         subtitleFields: []
     },
+    {
+        id: "parkings", group: "services", label: "Parkings publics",
+        fetchPersonnalise: fetchOverpassParkings, transform: geojsonDepuisElementsOverpass,
+        type: "point", icon: "fa-solid fa-square-parking", color: PALETTE.ardoise,
+        lazy: true, searchable: true, cluster: true,
+        titleFields: ["name"],
+        subtitleFields: ["capacity", "fee"]
+    },
+    {
+        id: "antennes", group: "services", label: "Antennes-relais mobiles",
+        /* Pivot depuis l'idée initiale de couche WMS ARCEP (couverture
+           mobile) - voir plus haut dans ce fichier pour le détail. */
+        fetchPersonnalise: fetchOverpassAntennes, transform: geojsonDepuisElementsOverpass,
+        type: "point", icon: "fa-solid fa-tower-cell", color: PALETTE.ardoise,
+        lazy: true, searchable: true, cluster: true,
+        titleFields: ["operator", "ref"],
+        subtitleFields: ["operator"]
+    },
 
     /* ---------- FAMILLE ---------- */
     {
@@ -1060,6 +1140,14 @@ const LAYERS = [
         lazy: false, searchable: true, cluster: true,
         titleFields: ["name", "brand", "com_nom"],
         subtitleFields: ["com_nom", "has_atm"]
+    },
+    {
+        id: "venteFerme", group: "commerces", label: "Vente directe à la ferme",
+        fetchPersonnalise: fetchOverpassVenteFerme, transform: geojsonDepuisElementsOverpass,
+        type: "point", icon: "fa-solid fa-tractor", color: PALETTE.feuille,
+        lazy: true, searchable: true, cluster: true,
+        titleFields: ["name"],
+        subtitleFields: ["opening_hours"]
     },
 
     /* ---------- MOBILITÉ ---------- */
@@ -1156,6 +1244,19 @@ const LAYERS = [
         lazy: false, searchable: true, cluster: true,
         titleFields: ["denomination_de_l_edifice", "autre_appellation_de_l_edifice"],
         subtitleFields: ["commune_forme_index", "datation_de_l_edifice"]
+    },
+    {
+        id: "patrimoineRural", group: "patrimoine", label: "Petit patrimoine rural",
+        /* Croix de chemin, lavoirs, moulins, fontaines anciennes - sur
+           tout le territoire, contrairement à pointsRemarquablesBerce
+           qui reste spécifique à la forêt (sites ONF nommés). Voir plus
+           haut dans ce fichier pour le détail des tags par catégorie. */
+        fetchPersonnalise: fetchOverpassPatrimoineRural, transform: geojsonDepuisElementsOverpass,
+        type: "point", icon: "fa-solid fa-landmark", color: "#7F7E7B",
+        iconePourFeature: iconePatrimoineRural,
+        lazy: true, searchable: true, cluster: true,
+        titleFields: ["name"],
+        subtitleFields: []
     },
 
     /* ---------- TOURISME ---------- */

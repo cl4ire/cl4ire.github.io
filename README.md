@@ -803,6 +803,61 @@ marche à suivre et le format attendu) : à compléter dès que les
 coordonnées de ces trois sites sont connues, ou dès qu'un signalement
 similaire est fait sur un autre point remarquable.
 
+## Parkings, vente directe à la ferme, antennes-relais, petit patrimoine rural
+
+Quatre couches supplémentaires, suite à une nouvelle liste de pistes de
+l'utilisatrice (couverture mobile, permis de construire, temps réel
+ALÉOP, patrimoine, marchés de producteurs, vente à la ferme, parkings) —
+certaines pistes n'ont **pas** donné de nouvelle couche, pour des raisons
+concrètes détaillées ci-dessous.
+
+- **Parkings publics** (`parkings`, `amenity=parking`) et **Vente directe
+  à la ferme** (`venteFerme`, `shop=farm`, groupe Commerces) : même
+  architecture Overpass que toutes les couches précédentes.
+- **Petit patrimoine rural** (`patrimoineRural`, groupe Patrimoine) :
+  extension du principe de `pointsRemarquablesBerce` à **tout le
+  territoire** plutôt qu'à la seule forêt de Bercé — croix de chemin
+  (`historic=wayside_cross`), lavoirs (`man_made=wash_house`), moulins
+  (`man_made=watermill` ou `historic=mill`, deux tags concurrents selon
+  le contributeur, les deux interrogés), fontaines anciennes/monumentales
+  (`amenity=fountain`, à ne pas confondre avec `amenity=drinking_water`
+  déjà couvert par la couche "Points d'eau potable"). `categoriePatrimoineRural`
+  (`config.js`) distingue les quatre catégories par icône/couleur, réutilisée
+  à la fois pour le marqueur (`iconePatrimoineRural`) et la popup.
+- **Antennes-relais mobiles** (`antennes`, groupe Services) : **pivot**
+  depuis l'idée initiale de couche WMS ARCEP (couverture mobile
+  théorique, comme la couche OLD/débroussaillement). Le service WMS
+  "Téléphonie mobile" de l'ARCEP existe bien, mais contrairement à OLD
+  (où un nom de couche précis avait été documenté et utilisé), aucun nom
+  de couche exploitable n'a pu être trouvé en recherche pour ce flux —
+  deviner un nom au hasard aurait eu plus de chances de donner une case
+  à cocher qui n'affiche jamais rien, sans piste de correction, qu'un
+  vrai résultat. Repli sur OpenStreetMap (`man_made=mast` +
+  `tower:type=communication` ou `communication:mobile_phone=yes`) :
+  pas une carte de couverture théorique par opérateur, mais un signal
+  concret et fiable (position réelle des pylônes/antennes), même
+  mécanique Overpass que toutes les autres couches du site.
+
+**Pistes évaluées mais écartées** (documentées ici plutôt que de laisser
+une trace uniquement dans la conversation) :
+- **SITADEL (permis de construire)** — la donnée officielle existe, mais
+  le SDES documente lui-même une géolocalisation peu fiable à l'adresse
+  précise (absence de préfixe de parcelle pour la plupart des communes).
+  Afficher des permis à des adresses potentiellement fausses serait plus
+  trompeur qu'utile sur une carte grand public. Décision (validée) :
+  rien ajouté pour l'instant ; un indicateur agrégé par commune (nombre
+  de permis délivrés par an, comme la couche prix immobilier) resterait
+  possible si un extrait CSV filtré est fourni.
+- **ALÉOP temps réel** — l'API existe bien (couverture Sarthe depuis
+  2022), mais exige une clé API personnelle obtenue sur demande auprès
+  de la région : même blocage que l'API FHIR Annuaire Santé pour les
+  médecins, pas intégrable dans un site statique public sans exposer la
+  clé à chaque visiteur. Décision (validée) : pas de suivi temps réel.
+- **Marchés de producteurs** — la couche `marches` existante couvre déjà
+  tous les marchés du territoire ; OpenStreetMap ne distingue pas un
+  marché de producteurs d'un marché classique (même tag
+  `amenity=marketplace` pour les deux), donc rien à ajouter de plus ici.
+
 ## Ce qui reste à faire
 
 - Le fichier DVF étant volumineux même en différé, envisager de le
