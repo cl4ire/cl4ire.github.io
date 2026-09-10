@@ -73,13 +73,11 @@ function afficherResultatsProximite(map, titre, resultats) {
             </span>
             <span class="result-item-distance">${formaterDistance(item.distance)}</span>
         `;
-        ligne.addEventListener("click", () => {
-            map.setView(item.latlng, 17);
-            L.popup()
-                .setLatLng(item.latlng)
-                .setContent(`<div class="popup-geo"><div class="popup-geo-titre">${item.titre}</div>${item.sousTitre ? `<div class="popup-geo-sous">${item.sousTitre}</div>` : ""}</div>`)
-                .openOn(map);
-        });
+        /* Rouvre la vraie popup (stylée) du marqueur plutôt que d'en
+           construire une nouvelle, pauvre, à la volée : voir
+           ouvrirPopupIndex (layers.js), qui gère aussi le cas d'un
+           marqueur replié dans un cluster. */
+        ligne.addEventListener("click", () => ouvrirPopupIndex(map, item));
         liste.appendChild(ligne);
     });
 }

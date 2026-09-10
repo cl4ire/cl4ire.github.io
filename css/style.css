@@ -273,15 +273,6 @@ button { font-family: inherit; cursor: pointer; }
     font-weight: 700;
 }
 
-/* ---------- POPUPS GÉNÉRIQUES ---------- */
-.popup-geo { font-family: var(--font-texte); min-width: 180px; }
-.popup-geo-tag { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; margin-bottom: 2px; }
-.popup-geo-titre { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
-.popup-geo-sous { font-size: 12px; color: var(--ardoise); margin-bottom: 6px; }
-.popup-geo-details { margin: 6px 0 0; font-size: 11.5px; }
-.popup-geo-details dt { color: var(--ardoise); float: left; clear: left; width: 45%; }
-.popup-geo-details dd { margin: 0 0 3px 45%; }
-
 /* ---------- POPUP CARBURANT — fiche détaillée ---------- */
 .leaflet-popup-content-wrapper:has(.popup-carburant) { border-radius: 18px; padding: 0; overflow: hidden; }
 .leaflet-popup-content:has(.popup-carburant) { margin: 0; width: 390px !important; }
@@ -385,6 +376,15 @@ button { font-family: inherit; cursor: pointer; }
 .popup-fiche-flux-liste { display: flex; flex-wrap: wrap; gap: 6px; }
 .popup-fiche-flux { display: inline-flex; align-items: center; gap: 6px; padding: 6px 9px; border: 1px solid var(--bordure); border-radius: 8px; background: var(--fond); color: #454440; font-size: 10.5px; font-weight: 700; }
 .popup-fiche-flux span { width: 9px; height: 9px; border-radius: 50%; background: currentColor; flex: 0 0 auto; }
+
+/* ---------- ITINÉRAIRE (Google Maps / Waze), en pied de fiche ---------- */
+/* Classe unique injectée par injecterItineraire (popup.js) dans toutes
+   les popups du site, quel que soit leur conteneur (.popup-fiche comme
+   .popup-carburant) — pas besoin de variante par type de popup. */
+.popup-fiche-itineraire { display: flex; gap: 8px; padding: 10px 16px; background: var(--fond); }
+.popup-fiche-itineraire a { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px; border-radius: 8px; background: #fff; border: 1px solid var(--bordure); color: #2A2A28; font-size: 11px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+.popup-fiche-itineraire a:hover { border-color: var(--primaire); color: var(--primaire); }
+.popup-fiche-itineraire a i { font-size: 12px; }
 
 .modal { position: fixed; inset: 0; background: rgba(15,20,18,0.45); display: none; align-items: center; justify-content: center; z-index: 2000; }
 .modal-open { display: flex; }
