@@ -143,12 +143,17 @@ function chargerCouche(layerConf, onReady, onError) {
         return;
     }
 
-    fetch(layerConf.file)
-        .then(r => {
-            if (!r.ok) throw new Error("Erreur HTTP " + r.status + " sur " + layerConf.file);
-            return r.json();
-        })
-        .then(data => {
+    /* layerConf.file peut être une seule URL, ou un tableau (ex : cadastre,
+       un fichier par commune) : dans ce cas on récupère tout en parallèle
+       et on passe le tableau de réponses à transform() pour fusion. */
+    const urls = Array.isArray(layerConf.file) ? layerConf.file : [layerConf.file];
+
+    Promise.all(urls.map(url => fetch(url).then(r => {
+        if (!r.ok) throw new Error("Erreur HTTP " + r.status + " sur " + url);
+        return r.json();
+    })))
+        .then(reponses => {
+            const data = urls.length > 1 ? reponses : reponses[0];
             const geo = layerConf.transform ? layerConf.transform(data) : data;
             if (layerConf.categoriser) {
                 const sousCouches = construireSousCouches(geo, layerConf);
@@ -180,5 +185,29 @@ function initialiserCouches(map) {
                 }
             });
         }
+    });
+}
+
+/* Certaines couches volumineuses (ex : cadastre) ne s'affichent qu'à
+   partir d'un certain niveau de zoom (layerConf.zoomMin), comme les
+   visualisateurs de cadastre habituels : dézoomé sur tout le territoire,
+   des dizaines de milliers de parcelles ne seraient ni lisibles, ni
+   tenables en performance. */
+function coucheDoitEtreVisible(conf, map) {
+    return !conf.zoomMin || map.getZoom() >= conf.zoomMin;
+}
+
+function surveillerZoom(map) {
+    map.on("zoomend", () => {
+        LAYERS.forEach(conf => {
+            if (!conf.zoomMin || !coucheChargee[conf.id]) return;
+            const checkbox = document.getElementById("layer-" + conf.id);
+            if (!checkbox || !checkbox.checked) return;
+
+            const doitEtreVisible = coucheDoitEtreVisible(conf, map);
+            const estSurCarte = map.hasLayer(groupesLeaflet[conf.id]);
+            if (doitEtreVisible && !estSurCarte) groupesLeaflet[conf.id].addTo(map);
+            if (!doitEtreVisible && estSurCarte) map.removeLayer(groupesLeaflet[conf.id]);
+        });
     });
 }

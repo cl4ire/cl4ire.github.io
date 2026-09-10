@@ -34,9 +34,9 @@ configuration — pour ajouter une couche, il suffit d'ajouter une entrée dans
 
 ## Couches en flux (données distantes, non copiées dans le dépôt)
 
-Trois couches interrogent une source distante en direct plutôt qu'un fichier
-du dépôt, dans le groupe **Risques & prévention** (et **Mobilité** pour les
-carburants) :
+Ces couches interrogent une source distante en direct plutôt qu'un fichier
+du dépôt, dans le groupe **Risques & prévention** (**Mobilité** pour les
+carburants, **Habitat & urbanisme** pour le cadastre) :
 
 - **Vigieau** (`id: "vigieau"`) — zones sous arrêté sécheresse en vigueur,
   flux GeoJSON public mis à jour quotidiennement. La couleur (vigilance →
@@ -57,6 +57,23 @@ carburants) :
   `geofilter.distance`. La réponse (format historique Opendatasoft) est
   convertie en GeoJSON par `geojsonDepuisFluxODS` (`layers.js`) avant de
   rentrer dans le pipeline générique de chargement.
+- **Parcelles cadastrales** (`id: "cadastre"`) — pas de flux unique pour tout
+  le territoire : un fichier GeoJSON par commune (source Etalab/DGFiP,
+  `COMMUNES_TERRITOIRE` dans `config.js` pour la liste des 24 communes),
+  récupérés en parallèle puis fusionnés par `fusionnerCadastre`. Support
+  générique ajouté dans `layers.js` : `file` peut être un tableau d'URL
+  (au lieu d'une seule), auquel cas `transform` reçoit le tableau des
+  réponses plutôt qu'une réponse unique. ⚠️ Comme pour le WMS ci-dessus,
+  je n'ai pas pu vérifier en conditions réelles le motif d'URL exact
+  (`https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/communes/72/<insee>/cadastre-<insee>-parcelles.geojson`)
+  ni les noms de propriétés (`section`, `numero`, `contenance`...) : si la
+  couche ne se charge pas, vérifiez une URL dans un navigateur et ajustez
+  `URLS_CADASTRE`/`fusionnerCadastre` dans `js/config.js` en conséquence.
+  Couche volumineuse (parcellaire complet de 24 communes) : en plus d'être
+  `lazy`, elle ne s'affiche qu'à partir du zoom 15 (`zoomMin`, mécanisme
+  générique dans `layers.js`/`surveillerZoom`), comme les visualisateurs de
+  cadastre habituels — sinon des dizaines de milliers de parcelles se
+  superposeraient de façon illisible et coûteuse à styliser.
 
 Pour ajouter une nouvelle couche en flux du même genre : GeoJSON distant
 → il suffit de mettre une URL absolue dans `file` (avec `transform` si le
@@ -75,6 +92,10 @@ volumes ou de données à ne récupérer qu'à la demande.
   propre groupe "Commerces").
 - Remplacer/compléter les icônes Font Awesome par des icônes SVG maison si
   vous voulez pousser encore plus loin l'identité graphique.
+- Suite logique du cadastre : une vraie "fiche parcelle" au clic (ventes DVF,
+  DPE, zonage PLUi, aléa RGA à cet endroit, à proximité...) en croisant
+  `reference_parcelle` (mutations) avec `reference`/`id` (cadastre), puis
+  éventuellement une recherche par critères ("Trouver un terrain").
 
 ## Déploiement
 

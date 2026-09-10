@@ -8,7 +8,8 @@ const CHAMPS_MASQUES = new Set([
     "marker-color", "X", "Y", "Xlong", "Ylat", "gpu_doc_id",
     "gpu_status", "gpu_timestamp", "partition", "idurba", "idzone",
     "c_gid", "c_etat_valid", "c_x_coor2", "c_y_coor2",
-    "c_lat_coor1", "c_long_coor1", "c_xy_precis", "c_id_adr"
+    "c_lat_coor1", "c_long_coor1", "c_xy_precis", "c_id_adr",
+    "commune", "prefixe", "section", "numero", "contenance"
 ]);
 
 function humaniser(cle) { return cle.replace(/_/g, " ").replace(/^c /, "").replace(/\b\w/g, l => l.toUpperCase()); }

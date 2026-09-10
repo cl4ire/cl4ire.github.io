@@ -142,6 +142,51 @@ function categoriePourFeature(feature) {
     return categorieCommerce((feature.properties || {}).type).id;
 }
 
+/* =========================================================
+   CADASTRE (parcellaire complet)
+   Le territoire n'a pas de flux unique : chaque commune a son propre
+   fichier GeoJSON (source Etalab, dérivée du Plan Cadastral Informatisé
+   de la DGFiP, mise à jour ~trimestrielle). On les récupère tous et on
+   les fusionne en une seule couche. Base pour une future "fiche
+   parcelle" (croisement avec les mutations DVF, le DPE, le PLUi...).
+   ========================================================= */
+const COMMUNES_TERRITOIRE = {
+    "72027": "Beaumont-sur-Dême", "72028": "Beaumont-Pied-de-Bœuf", "72052": "Chahaignes",
+    "72068": "La Chartre-sur-le-Loir", "72071": "Montval-sur-Loir", "72103": "Courdemanche",
+    "72115": "Dissay-sous-Courcillon", "72134": "Flée", "72143": "Le Grand-Lucé",
+    "72153": "Jupilles", "72160": "Lavernat", "72161": "Lhomme", "72173": "Luceau",
+    "72183": "Marçon", "72210": "Montreuil-le-Henri", "72221": "Nogent-sur-Loir",
+    "72248": "Pruillé-l'Éguillé", "72262": "Loir en Vallée", "72279": "Saint-Georges-de-la-Couée",
+    "72311": "Saint-Pierre-de-Chevillé", "72314": "Saint-Pierre-du-Lorouër",
+    "72325": "Saint-Vincent-du-Lorouër", "72356": "Thoiré-sur-Dinan", "72376": "Villaines-sous-Lucé"
+};
+
+/* Une URL par commune (format Etalab, à vérifier/ajuster si besoin :
+   voir la note dans README.md). */
+const URLS_CADASTRE = Object.keys(COMMUNES_TERRITOIRE).map(
+    insee => `https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/communes/72/${insee}/cadastre-${insee}-parcelles.geojson`
+);
+
+/* Fusionne les réponses (une par commune) en une seule FeatureCollection,
+   et complète chaque parcelle avec une référence lisible et le nom de la
+   commune (le fichier source ne porte que le code INSEE). */
+function fusionnerCadastre(reponses) {
+    const features = [];
+    reponses.forEach(reponse => {
+        (reponse.features || []).forEach(feature => {
+            const p = feature.properties || {};
+            feature.properties = {
+                ...p,
+                reference: [p.section, p.numero].filter(Boolean).join(" ") || p.id,
+                commune_nom: COMMUNES_TERRITOIRE[p.commune] || p.commune,
+                surface_m2: p.contenance
+            };
+            features.push(feature);
+        });
+    });
+    return { type: "FeatureCollection", features };
+}
+
 /* Transforme la réponse de l'API historique Opendatasoft (records/1.0/search)
    en GeoJSON standard, pour réutiliser le même pipeline de chargement que
    les couches fichier. Utilisé par les couches "flux" (ex : carburants). */
@@ -362,6 +407,21 @@ const LAYERS = [
         lazy: true, searchable: false, cluster: false,
         titleFields: ["adresse", "reference_parcelle"],
         subtitleFields: ["commune", "nb_mutations"]
+    },
+    {
+        id: "cadastre", group: "urbanisme", label: "Parcelles cadastrales",
+        /* Flux du cadastre (Etalab/DGFiP), un fichier par commune, fusionnés
+           en une seule couche par fusionnerCadastre. Volumineux (parcellaire
+           complet des 24 communes) : chargée à la demande et affichée
+           seulement à partir d'un certain niveau de zoom (voir zoomMin dans
+           layers.js), comme les visualisateurs de cadastre habituels. */
+        file: URLS_CADASTRE, transform: fusionnerCadastre,
+        type: "polygon", color: PALETTE.ardoise,
+        styleFn: () => ({ color: PALETTE.ardoise, weight: 1, opacity: 0.6, fillOpacity: 0 }),
+        zoomMin: 15,
+        lazy: true, searchable: false, cluster: false,
+        titleFields: ["reference"],
+        subtitleFields: ["commune_nom", "surface_m2"]
     },
 
     /* ---------- RISQUES & PRÉVENTION (couches en flux, données distantes
