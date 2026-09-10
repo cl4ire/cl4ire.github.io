@@ -721,12 +721,41 @@ function libelleSpecialiteMedecin(valeur) {
     return listeValeurs(valeur).map(v => LABELS_SPECIALITE_MEDECIN[v] || capitaliserMots(v.replace(/_/g, " "))).join(", ");
 }
 
+function slugDoctolib(texte) {
+    return String(texte).normalize("NFD").replace(/\p{Diacritic}/gu, "")
+        .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+/* Doctolib n'a pas d'API publique de recherche par praticien : impossible
+   de retrouver de façon fiable la fiche exacte d'un médecin donné à partir
+   de son nom/adresse OSM (pas d'identifiant Doctolib dans la donnée
+   source). Ce qui EST fiable et public : l'URL de recherche par
+   spécialité + ville, sur le modèle vérifié
+   "doctolib.fr/medecin-generaliste/<ville>" - un lien "chercher un
+   rendez-vous", pas "prendre rendez-vous avec CE médecin précisément",
+   d'où le libellé du bouton. Uniquement pour la médecine générale (seul
+   slug de spécialité vérifié) : pas de "healthcare:speciality" du tout
+   (cas de la grande majorité des points amenity=doctors, médecine
+   générale par défaut) ou explicitement "general_practitioner" - pour
+   toute autre spécialité, pas de lien plutôt qu'un slug Doctolib deviné
+   et potentiellement cassé. */
+function construireLienDoctolib(props) {
+    const specialites = listeValeurs(props["healthcare:speciality"]);
+    if (specialites.length && specialites[0] !== "general_practitioner") return null;
+    const ville = props["addr:city"];
+    if (!ville) return null;
+    return `https://www.doctolib.fr/medecin-generaliste/${slugDoctolib(ville)}`;
+}
+
 function construirePopupMedecin(props) {
     const nom = premierChampValide(props, ["name"]) || "Médecin";
     const specialite = libelleSpecialiteMedecin(props["healthcare:speciality"]) || "Médecin généraliste";
     const adresse = adresseOsm(props);
     const horaires = parserHorairesOsm(props.opening_hours);
     const contacts = contactsOsm(props);
+    const lienDoctolib = construireLienDoctolib(props);
+    if (lienDoctolib) {
+        contacts.push(`<a class="popup-fiche-contact" href="${echapperHtml(lienDoctolib)}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-calendar-check"></i>Chercher un RDV sur Doctolib</a>`);
+    }
     const lignesHoraires = construireLignesHoraires(horaires);
     const accessibilite = LABELS_ACCESSIBILITE[props.wheelchair] || null;
 

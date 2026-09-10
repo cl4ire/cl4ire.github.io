@@ -580,7 +580,18 @@ l'utilisatrice avant intégration — voir aussi les pistes écartées ci-dessou
   qui ne contient que des pharmacies/opticiens/audioprothésistes sous sa
   catégorie "Santé"), donc pas de doublon. Spécialité (`healthcare:speciality`)
   traduite via un petit dictionnaire (`LABELS_SPECIALITE_MEDECIN`,
-  `js/popup.js`), repli sur "Médecin généraliste" si absente.
+  `js/popup.js`), repli sur "Médecin généraliste" si absente. Lien
+  "Chercher un RDV sur Doctolib" (`construireLienDoctolib`) ajouté dans le
+  bloc contact **seulement pour la médecine générale** (pas de
+  `healthcare:speciality`, ou explicitement `general_practitioner`) :
+  Doctolib n'a pas d'API publique de recherche par praticien, donc pas de
+  moyen fiable de retrouver la fiche exacte d'un médecin depuis son
+  nom/adresse OSM — le lien pointe vers la recherche par ville
+  (`doctolib.fr/medecin-generaliste/<ville>`, schéma d'URL public vérifié),
+  pas vers un profil précis (d'où le libellé "Chercher", pas "Prendre
+  rendez-vous avec ce médecin"). Pas de lien pour les autres spécialités :
+  plutôt ne rien afficher qu'un slug de spécialité Doctolib deviné et
+  potentiellement cassé.
 - **Vétérinaires** (`amenity=veterinary`) : même principe, fiche minimale
   (nom/enseigne, adresse, horaires, contact).
 - **Bibliothèques & médiathèques** (`amenity=library`) : accès Internet
