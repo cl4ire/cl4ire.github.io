@@ -868,6 +868,76 @@ function construirePopupGendarmerie(props) {
     </div>`;
 }
 
+/* =========================================================
+   FRANCE SERVICES — extrait statique filtré sur le territoire (voir
+   config.js), champs français directement issus du CSV national ANCT
+   (id_fs, insee_dep, lib_fs, adresse, complement_adresse, insee_com,
+   code_postal, lib_com, mail, telephone, h_lundi..h_samedi, prise_rdv,
+   commentaire, type_fs, format_fs, groupe_fs, labellisation_fs).
+   Horaires en six champs séparés ("09:00 - 12:30 / 14:00 - 17:30" par
+   jour), pas en syntaxe OSM : parserHorairesFranceServices les ramène à
+   la même structure {Mo: [...], ...} que parserHorairesOsm pour
+   réutiliser construireLignesHoraires/construireBadgeOuvert tels quels. */
+const LABELS_FORMAT_FRANCE_SERVICES = {
+    Fixe: "Espace fixe",
+    "Bus_équivalent": "Bus itinérant",
+    Mobile: "Service itinérant",
+    Antenne: "Antenne"
+};
+function libelleFormatFranceServices(valeur) {
+    if (!valeur) return null;
+    return LABELS_FORMAT_FRANCE_SERVICES[valeur] || capitaliserMots(valeur.replace(/_/g, " "));
+}
+function parserHorairesFranceServices(props) {
+    const champs = { Mo: "h_lundi", Tu: "h_mardi", We: "h_mercredi", Th: "h_jeudi", Fr: "h_vendredi", Sa: "h_samedi" };
+    const horaires = {};
+    let auMoinsUn = false;
+    Object.entries(champs).forEach(([jour, champ]) => {
+        const valeur = (props[champ] || "").trim();
+        if (!valeur) return;
+        auMoinsUn = true;
+        horaires[jour] = valeur.split("/").map(p => p.trim().replace(/\s*-\s*/, "-")).filter(Boolean);
+    });
+    return auMoinsUn ? horaires : null;
+}
+function construirePopupFranceServices(props) {
+    const nom = premierChampValide(props, ["lib_fs"]) || "France Services";
+    const adresse = [
+        [props.adresse, props.complement_adresse].filter(Boolean).join(", "),
+        [props.code_postal, props.lib_com].filter(Boolean).join(" ")
+    ].filter(Boolean).join(" · ");
+    /* Un "Bus_équivalent"/"Mobile" dessert le territoire en tournée : ses
+       horaires publiés sont ceux du point de rattachement administratif,
+       pas d'un lieu fixe où se rendre - les afficher comme si c'était un
+       vrai horaire d'accueil sur place induirait en erreur, d'où le repli
+       sur une simple puce "itinérant" plutôt qu'un badge ouvert/fermé. */
+    const itinerant = props.format_fs === "Bus_équivalent" || props.format_fs === "Mobile";
+    const horaires = itinerant ? null : parserHorairesFranceServices(props);
+    const contacts = construireContacts(props, { tel: "telephone", email: "mail" });
+    const lignesHoraires = construireLignesHoraires(horaires);
+    const formatLabel = libelleFormatFranceServices(props.format_fs);
+    const infos = [props.prise_rdv === "Oui" ? "Sur rendez-vous" : null].filter(Boolean);
+    const commentaire = (props.commentaire || "").trim();
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.riviere}"><i class="fa-solid fa-people-roof"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.riviere}">France Services</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${adresse ? `<div class="popup-fiche-adresse">${echapperHtml(adresse)}</div>` : ""}
+                ${itinerant ? `<div class="popup-fiche-puce" style="color:${PALETTE.riviere}"><i class="fa-solid fa-route"></i>${echapperHtml(formatLabel || "Service itinérant")} sur le territoire</div>` : ""}
+            </div>
+            ${horaires ? construireBadgeOuvert(horaires) : ""}
+        </div>
+        ${infos.length ? `<div class="popup-fiche-section"><div class="popup-fiche-ligne">${infos.map(echapperHtml).join(" · ")}</div></div>` : ""}
+        ${contacts.length ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Contact</div><div class="popup-fiche-contacts">${contacts.join("")}</div></div>` : ""}
+        ${lignesHoraires ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Horaires</div>${lignesHoraires}</div>` : ""}
+        ${commentaire ? `<div class="popup-fiche-section"><div class="popup-fiche-precision">${echapperHtml(commentaire)}</div></div>` : ""}
+        ${props.labellisation_fs ? `<div class="popup-fiche-section"><div class="popup-fiche-precision">${echapperHtml(props.labellisation_fs)}</div></div>` : ""}
+    </div>`;
+}
+
 const LABELS_INTERNET_BIBLIOTHEQUE = { yes: "Accès Internet", wlan: "Wifi disponible", terminal: "Poste informatique" };
 function construirePopupBibliotheque(props) {
     const nom = premierChampValide(props, ["name"]) || "Bibliothèque";
@@ -1563,6 +1633,7 @@ function construirePopup(feature, layerConf) {
     else if (layerConf.id === "dentistes") html = construirePopupDentiste(props);
     else if (layerConf.id === "pompiers") html = construirePopupPompiers(props);
     else if (layerConf.id === "gendarmerie") html = construirePopupGendarmerie(props);
+    else if (layerConf.id === "franceServices") html = construirePopupFranceServices(props);
     else if (layerConf.id === "irve") html = construirePopupIrve(props);
     else if (layerConf.id === "airecovoiturage") html = construirePopupCovoiturage(props);
     else if (layerConf.id === "marches") html = construirePopupMarche(props);
