@@ -216,15 +216,25 @@ function chargerCouche(layerConf, onReady, onError) {
 
     /* layerConf.file peut être une seule URL, ou un tableau (ex : cadastre,
        un fichier par commune) : dans ce cas on récupère tout en parallèle
-       et on passe le tableau de réponses à transform() pour fusion. */
-    const urls = Array.isArray(layerConf.file) ? layerConf.file : [layerConf.file];
+       et on passe le tableau de réponses à transform() pour fusion.
+       layerConf.fetchPersonnalise (optionnel) remplace complètement cette
+       récupération standard par une Promise fournie par la couche elle-même
+       - utilisé par les consignes/casiers colis pour réessayer plusieurs
+       miroirs Overpass l'un après l'autre (voir fetchOverpassLockers dans
+       config.js), l'instance publique principale étant connue pour renvoyer
+       des 504 sous charge. */
+    const recuperer = layerConf.fetchPersonnalise
+        ? layerConf.fetchPersonnalise()
+        : (() => {
+            const urls = Array.isArray(layerConf.file) ? layerConf.file : [layerConf.file];
+            return Promise.all(urls.map(url => fetch(url).then(r => {
+                if (!r.ok) throw new Error("Erreur HTTP " + r.status + " sur " + url);
+                return r.json();
+            }))).then(reponses => urls.length > 1 ? reponses : reponses[0]);
+        })();
 
-    Promise.all(urls.map(url => fetch(url).then(r => {
-        if (!r.ok) throw new Error("Erreur HTTP " + r.status + " sur " + url);
-        return r.json();
-    })))
-        .then(reponses => {
-            const data = urls.length > 1 ? reponses : reponses[0];
+    recuperer
+        .then(data => {
             const geo = layerConf.transform ? layerConf.transform(data) : data;
             donneesBrutes[layerConf.id] = geo.features || [];
             if (layerConf.viewportOnly) {
