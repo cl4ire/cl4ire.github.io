@@ -63,16 +63,24 @@ function couleurVigieau(feature) {
    ========================================================= */
 const TYPES_COMMERCES = [
     {
+        id: "boulangerie", label: "Boulangerie & pâtisserie", icon: "fa-solid fa-bread-slice", color: PALETTE.feuille,
+        types: ["bakery", "chocolate"]
+    },
+    {
         id: "alimentation", label: "Alimentation", icon: "fa-solid fa-basket-shopping", color: PALETTE.feuille,
-        types: ["supermarket", "convenience", "bakery", "butcher", "deli", "seafood", "greengrocer", "chocolate", "winery", "variety_store", "newsagent"]
+        types: ["supermarket", "convenience", "butcher", "deli", "seafood", "greengrocer", "winery", "variety_store", "newsagent"]
     },
     {
         id: "restauration", label: "Restaurants & bars", icon: "fa-solid fa-utensils", color: PALETTE.terracotta,
         types: ["restaurant", "bar", "pub", "fast_food"]
     },
     {
-        id: "beaute", label: "Coiffure & beauté", icon: "fa-solid fa-scissors", color: "#AD4826",
-        types: ["hairdresser", "beauty", "tattoo", "perfumery"]
+        id: "coiffure", label: "Coiffure", icon: "fa-solid fa-scissors", color: "#AD4826",
+        types: ["hairdresser"]
+    },
+    {
+        id: "beaute", label: "Beauté & bien-être", icon: "fa-solid fa-spa", color: PALETTE.terracotta,
+        types: ["beauty", "perfumery", "tattoo"]
     },
     {
         id: "sante", label: "Santé", icon: "fa-solid fa-briefcase-medical", color: PALETTE.riviere,
@@ -91,12 +99,24 @@ const TYPES_COMMERCES = [
         types: ["clothes", "shoes", "leather", "jewelry"]
     },
     {
-        id: "services", label: "Services", icon: "fa-solid fa-briefcase", color: PALETTE.ardoise,
-        types: ["post_office", "insurance", "estate_agent", "funeral_directors", "laundry", "cleaning", "photographer", "computer", "electronics", "association"]
+        id: "poste", label: "Bureau de poste", icon: "fa-solid fa-envelope", color: PALETTE.ardoise,
+        types: ["post_office"]
+    },
+    {
+        id: "servicesPro", label: "Services professionnels", icon: "fa-solid fa-briefcase", color: PALETTE.ardoise,
+        types: ["insurance", "estate_agent", "funeral_directors", "laundry", "cleaning", "photographer", "association"]
+    },
+    {
+        id: "hightech", label: "High-tech & électronique", icon: "fa-solid fa-laptop", color: PALETTE.riviere,
+        types: ["computer", "electronics", "e-cigarette"]
     },
     {
         id: "culture", label: "Culture & loisirs", icon: "fa-solid fa-palette", color: PALETTE.feuille,
-        types: ["books", "art", "cinema", "sports", "photo", "gift", "handicraft", "sewing", "antiques", "second_hand", "e-cigarette", "wholesale"]
+        types: ["books", "art", "cinema", "sports", "photo", "gift", "handicraft", "sewing"]
+    },
+    {
+        id: "brocante", label: "Brocante & antiquités", icon: "fa-solid fa-shop", color: "#7F7E7B",
+        types: ["antiques", "second_hand", "wholesale"]
     }
 ];
 const TYPE_COMMERCE_DEFAUT = { id: "autre", label: "Autres commerces", icon: "fa-solid fa-store", color: PALETTE.ardoise };
@@ -113,6 +133,13 @@ function categorieCommerce(typeBrut) {
 function iconeCommerce(feature) {
     const cat = categorieCommerce((feature.properties || {}).type);
     return { icon: cat.icon, color: cat.color };
+}
+
+/* Point d'extension utilisé par layers.js pour répartir les commerces en
+   sous-couches indépendantes (une par catégorie), afin que chacune soit
+   affichable/masquable séparément depuis la légende du panneau. */
+function categoriePourFeature(feature) {
+    return categorieCommerce((feature.properties || {}).type).id;
 }
 
 /* Transforme la réponse de l'API historique Opendatasoft (records/1.0/search)
@@ -223,7 +250,8 @@ const LAYERS = [
         id: "commerces", group: "commerces", label: "Commerces",
         file: "couches/commerces/commerces.geojson", type: "point",
         icon: "fa-solid fa-basket-shopping", color: PALETTE.feuille,
-        iconePourFeature: iconeCommerce, legend: TYPES_COMMERCES,
+        iconePourFeature: iconeCommerce,
+        legend: TYPES_COMMERCES, legendDefaut: TYPE_COMMERCE_DEFAUT, categoriser: categoriePourFeature,
         lazy: false, searchable: true, cluster: true,
         titleFields: ["name", "brand", "type"],
         subtitleFields: ["type", "opening_hours", "phone"]

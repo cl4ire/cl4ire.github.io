@@ -4,8 +4,9 @@
    couches décrites dans config.js, selon son "type".
    ========================================================= */
 
-const groupesLeaflet = {};   // id de couche -> L.LayerGroup / L.MarkerClusterGroup
-const coucheChargee = {};    // id de couche -> bool (déjà fetchée ?)
+const groupesLeaflet = {};      // id de couche -> L.LayerGroup / L.MarkerClusterGroup
+const souscouchesLeaflet = {};  // id de couche -> { idCategorie: L.LayerGroup } (couches catégorisables, ex : commerces)
+const coucheChargee = {};       // id de couche -> bool (déjà fetchée ?)
 window.indexRecherche = [];  // alimenté au fur et à mesure du chargement des couches
 
 function couleurPrix(prix) {
@@ -85,6 +86,35 @@ function construireCoucheDonnees(data, layerConf) {
     return cible;
 }
 
+/* Couches "catégorisables" (ex : commerces) : au lieu d'une seule couche
+   Leaflet pour toute la donnée, on construit une sous-couche indépendante
+   par catégorie (layerConf.categoriser renvoie l'id de catégorie pour
+   chaque feature), pour que chacune soit affichable/masquable séparément
+   depuis la légende (js/panel.js). groupesLeaflet[id] reste malgré tout
+   un layerGroup regroupant tout, pour que la case à cocher principale
+   continue de fonctionner comme les autres couches. */
+function construireSousCouches(data, layerConf) {
+    const categories = (layerConf.legend || [])
+        .concat(layerConf.legendDefaut ? [layerConf.legendDefaut] : []);
+
+    const featuresParCategorie = {};
+    categories.forEach(cat => { featuresParCategorie[cat.id] = []; });
+
+    (data.features || []).forEach(feature => {
+        const catId = layerConf.categoriser(feature);
+        if (!featuresParCategorie[catId]) featuresParCategorie[catId] = [];
+        featuresParCategorie[catId].push(feature);
+    });
+
+    const sousCouches = {};
+    Object.keys(featuresParCategorie).forEach(catId => {
+        const features = featuresParCategorie[catId];
+        if (!features.length) return;
+        sousCouches[catId] = construireCoucheDonnees({ type: "FeatureCollection", features }, layerConf);
+    });
+    return sousCouches;
+}
+
 /* Couche image (tuiles WMS) : pas de fetch/GeoJSON, juste un flux de tuiles
    du serveur distant. Utilisé pour les couches réglementaires diffusées
    uniquement en flux OGC (ex : obligations de débroussaillement). */
@@ -120,8 +150,13 @@ function chargerCouche(layerConf, onReady, onError) {
         })
         .then(data => {
             const geo = layerConf.transform ? layerConf.transform(data) : data;
-            const couche = construireCoucheDonnees(geo, layerConf);
-            groupesLeaflet[layerConf.id] = couche;
+            if (layerConf.categoriser) {
+                const sousCouches = construireSousCouches(geo, layerConf);
+                souscouchesLeaflet[layerConf.id] = sousCouches;
+                groupesLeaflet[layerConf.id] = L.layerGroup(Object.values(sousCouches));
+            } else {
+                groupesLeaflet[layerConf.id] = construireCoucheDonnees(geo, layerConf);
+            }
             coucheChargee[layerConf.id] = true;
             if (onReady) onReady();
         })

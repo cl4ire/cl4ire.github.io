@@ -58,7 +58,7 @@ function construirePanneauCouches(map) {
             details.appendChild(ligne);
 
             if (conf.legend) {
-                details.appendChild(construireLegende(conf.legend));
+                details.appendChild(construireLegende(conf, map));
             }
         });
 
@@ -67,8 +67,14 @@ function construirePanneauCouches(map) {
 }
 
 /* Petite légende repliable (icône + couleur par catégorie), affichée
-   sous une couche dont la config déclare un tableau "legend". */
-function construireLegende(categories) {
+   sous une couche dont la config déclare un tableau "legend". Chaque
+   catégorie a sa propre case à cocher : avec beaucoup de données (ex :
+   commerces), ça permet de n'afficher que certaines catégories plutôt
+   que de tout charger d'un bloc. Repose sur layerConf.categoriser côté
+   layers.js, qui construit une sous-couche Leaflet par catégorie. */
+function construireLegende(conf, map) {
+    const categories = (conf.legend || []).concat(conf.legendDefaut ? [conf.legendDefaut] : []);
+
     const details = document.createElement("details");
     details.className = "layer-legend";
 
@@ -78,13 +84,26 @@ function construireLegende(categories) {
 
     const liste = document.createElement("div");
     liste.className = "layer-legend-items";
+
     categories.forEach(cat => {
-        const item = document.createElement("span");
+        const item = document.createElement("label");
         item.className = "layer-legend-item";
         item.innerHTML = `
+            <input type="checkbox" checked>
             <span class="layer-legend-pastille" style="background:${cat.color}"><i class="${cat.icon}"></i></span>
             <span>${cat.label}</span>
         `;
+
+        item.querySelector("input").addEventListener("change", function () {
+            const couche = (souscouchesLeaflet[conf.id] || {})[cat.id];
+            if (!couche) return;
+            if (this.checked) {
+                map.addLayer(couche);
+            } else {
+                map.removeLayer(couche);
+            }
+        });
+
         liste.appendChild(item);
     });
     details.appendChild(liste);
