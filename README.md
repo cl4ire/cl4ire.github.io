@@ -418,6 +418,15 @@ comme les autres couches "flux" du site.
 - `geojsonDepuisOverpass` convertit la réponse Overpass (JSON natif de
   l'API — un tableau `elements`, pas du GeoJSON) en GeoJSON standard
   pour réutiliser le même pipeline de chargement que les autres couches.
+- `fetchOverpassLockers` (`config.js`) réessaie sur plusieurs miroirs
+  Overpass publics l'un après l'autre (`MIROIRS_OVERPASS`) plutôt qu'un
+  seul serveur fixe : l'instance principale (overpass-api.de) répond
+  parfois 504 sous charge (constaté en conditions réelles), un simple
+  échec ne doit pas faire tomber toute la couche. Branché via
+  `layerConf.fetchPersonnalise`, un point d'extension générique ajouté à
+  `chargerCouche` (`layers.js`) — une couche peut fournir sa propre
+  logique de récupération (retries, miroirs...) à la place du
+  fetch/transform standard, réutilisable par d'autres couches si besoin.
 - `categorieLocker`/`TYPES_LOCKERS` reconnaissent l'enseigne par
   mots-clés sur `brand`/`operator`/`network`/`name` (Mondial Relay,
   Amazon Locker, Vinted Go, InPost, Chronopost, Colissimo, Relais Colis/
@@ -457,13 +466,12 @@ au site).
   Parcellai.re ("terrain de 800 à 1 200 m², un seul bâtiment, zone
   constructible" → liste de candidats), déjà en grande partie couverte par
   les critères actuels de la recherche foncière.
-- ⚠️ Couche `lockers` (consignes/casiers colis) : la requête Overpass n'a
-  pas pu être vérifiée en conditions réelles (accès réseau restreint
-  pendant le développement, comme pour `old`/OLD plus haut) — le format
-  de réponse Overpass est stable et bien documenté donc ça devrait
-  fonctionner tel quel, mais si rien ne s'affiche en cochant la couche,
-  premier réflexe : tester `URL_OVERPASS_LOCKERS` (affichée dans la
-  console si erreur de chargement) directement dans un navigateur.
+- Couche `lockers` (consignes/casiers colis) : confirmée fonctionnelle en
+  conditions réelles, avec un repli sur plusieurs miroirs Overpass en cas
+  de 504 du serveur principal (voir plus haut). Si malgré tout rien ne
+  s'affiche en cochant la couche, la console liste chaque miroir essayé
+  (`console.warn`) avant l'erreur finale — de quoi savoir lequel a
+  répondu quoi, plutôt que de deviner.
 
 ## Déploiement
 

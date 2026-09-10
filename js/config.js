@@ -343,7 +343,37 @@ const BBOX_TERRITOIRE = { sud: 47.60, ouest: 0.30, nord: 47.92, est: 0.72 };
 const REQUETE_OVERPASS_LOCKERS =
     `[out:json][timeout:25];node["amenity"="parcel_locker"]` +
     `(${BBOX_TERRITOIRE.sud},${BBOX_TERRITOIRE.ouest},${BBOX_TERRITOIRE.nord},${BBOX_TERRITOIRE.est});out body;`;
-const URL_OVERPASS_LOCKERS = "https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(REQUETE_OVERPASS_LOCKERS);
+
+/* L'instance publique principale (overpass-api.de) est fréquemment
+   surchargée et répond parfois 504 aux heures de pointe (constaté en
+   conditions réelles) : plutôt que de faire échouer toute la couche sur
+   un simple pic de charge d'UN serveur, on retente sur d'autres miroirs
+   publics avant d'abandonner. Liste volontairement courte (3) pour ne
+   pas faire attendre l'utilisateur trop longtemps si tout est en panne. */
+const MIROIRS_OVERPASS = [
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter",
+    "https://overpass.osm.ch/api/interpreter"
+];
+
+function fetchOverpassLockers() {
+    const essayer = index => {
+        if (index >= MIROIRS_OVERPASS.length) {
+            return Promise.reject(new Error("Tous les miroirs Overpass ont échoué (dernier testé : " + MIROIRS_OVERPASS[MIROIRS_OVERPASS.length - 1] + ")"));
+        }
+        const url = MIROIRS_OVERPASS[index] + "?data=" + encodeURIComponent(REQUETE_OVERPASS_LOCKERS);
+        return fetch(url)
+            .then(r => {
+                if (!r.ok) throw new Error("Erreur HTTP " + r.status + " sur " + url);
+                return r.json();
+            })
+            .catch(err => {
+                console.warn("Miroir Overpass indisponible (" + MIROIRS_OVERPASS[index] + ") :", err);
+                return essayer(index + 1);
+            });
+    };
+    return essayer(0);
+}
 
 /* Réponse Overpass (JSON natif de l'API, pas du GeoJSON) : un tableau
    "elements", chaque nœud portant directement lat/lon (pas besoin de
@@ -428,8 +458,9 @@ const LAYERS = [
     {
         id: "lockers", group: "services", label: "Consignes & casiers colis",
         /* Flux Overpass (OpenStreetMap), voir la section dédiée plus haut
-           dans ce fichier pour le détail (bbox, limites de couverture). */
-        file: URL_OVERPASS_LOCKERS, transform: geojsonDepuisOverpass,
+           dans ce fichier pour le détail (bbox, limites de couverture,
+           repli sur plusieurs miroirs). */
+        fetchPersonnalise: fetchOverpassLockers, transform: geojsonDepuisOverpass,
         type: "point", icon: "fa-solid fa-box", color: PALETTE.ardoise,
         iconePourFeature: iconeLocker,
         lazy: true, searchable: true, cluster: true,
