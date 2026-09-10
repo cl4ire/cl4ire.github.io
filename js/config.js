@@ -354,12 +354,27 @@ const BBOX_TERRITOIRE = { sud: 47.60, ouest: 0.30, nord: 47.92, est: 0.72 };
    peut être tagué sur un "way" (contour de bâtiment) et pas seulement un
    node - un node porte déjà lat/lon directement avec "out center" (même
    résultat qu'"out body" dans ce cas), donc un seul mode de sortie
-   suffit pour les deux familles de points. */
+   suffit pour toutes les familles de points interrogées.
+
+   TROIS familles de tags, pas deux : amenity=parcel_locker (casiers
+   automatiques, la norme actuelle) et post_office=post_partner (points
+   relais en commerce, voir plus haut) ne suffisaient toujours pas à
+   faire remonter des casiers pourtant bien réels signalés sur le
+   terrain (ex. près d'un Leclerc) - troisième cas identifié :
+   amenity=vending_machine + vending=parcel_pickup (ou parcel_mail_in),
+   l'ANCIEN schéma de balisage des casiers, officiellement déprécié au
+   profit d'amenity=parcel_locker mais dont la bascule (faite par un bot
+   il y a plusieurs années) n'a pas forcément atteint 100% de la base
+   dans les zones moins actives en contributions. Coûte rien de
+   l'interroger aussi en plus du nouveau schéma plutôt que de perdre des
+   casiers réels juste parce qu'un nœud n'a jamais été migré. */
+const BBOX_OVERPASS = `${BBOX_TERRITOIRE.sud},${BBOX_TERRITOIRE.ouest},${BBOX_TERRITOIRE.nord},${BBOX_TERRITOIRE.est}`;
 const REQUETE_OVERPASS_LOCKERS =
     `[out:json][timeout:25];` +
-    `(node["amenity"="parcel_locker"](${BBOX_TERRITOIRE.sud},${BBOX_TERRITOIRE.ouest},${BBOX_TERRITOIRE.nord},${BBOX_TERRITOIRE.est});` +
-    `node["post_office"="post_partner"](${BBOX_TERRITOIRE.sud},${BBOX_TERRITOIRE.ouest},${BBOX_TERRITOIRE.nord},${BBOX_TERRITOIRE.est});` +
-    `way["post_office"="post_partner"](${BBOX_TERRITOIRE.sud},${BBOX_TERRITOIRE.ouest},${BBOX_TERRITOIRE.nord},${BBOX_TERRITOIRE.est}););` +
+    `(node["amenity"="parcel_locker"](${BBOX_OVERPASS});` +
+    `node["post_office"="post_partner"](${BBOX_OVERPASS});` +
+    `way["post_office"="post_partner"](${BBOX_OVERPASS});` +
+    `node["amenity"="vending_machine"]["vending"~"parcel"](${BBOX_OVERPASS}););` +
     `out center;`;
 
 /* L'instance publique principale (overpass-api.de) est fréquemment

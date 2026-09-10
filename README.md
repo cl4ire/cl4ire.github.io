@@ -408,7 +408,7 @@ sont cartographiés dans OpenStreetMap, interrogeable en direct via
 [Overpass](https://overpass-api.de/) — pas de fichier dans le dépôt,
 comme les autres couches "flux" du site.
 
-**Deux tags OSM différents interrogés, pas un seul.** Au départ, seul
+**Trois tags OSM différents interrogés, pas un seul.** Au départ, seul
 `amenity=parcel_locker` (un vrai casier automatique) était interrogé —
 ce qui ne remontait presque aucun point Mondial Relay (2 sur tout le
 territoire), signalé en conditions réelles. En cause : la grande
@@ -417,10 +417,19 @@ des "Points Relais" hébergés dans des commerces existants (tabac,
 presse, épicerie...), tagués sur le commerce lui-même via
 `post_office=post_partner` (+ `post_office:brand`/
 `post_office:service_provider` pour l'enseigne) — un schéma OSM à part,
-bien documenté, complètement différent d'`amenity=parcel_locker`. Amazon
-Locker et Vinted Go, eux, sont presque toujours de vrais casiers
-automatiques. La requête (`REQUETE_OVERPASS_LOCKERS`) interroge donc les
-deux à la fois :
+bien documenté, complètement différent d'`amenity=parcel_locker`.
+
+Un deuxième signalement en conditions réelles (des casiers connus près
+d'un Leclerc absents de la couche) a mis en évidence un troisième cas :
+certains casiers, notamment Amazon Locker, restent tagués selon
+l'**ancien** schéma OSM `amenity=vending_machine` + `vending=parcel_pickup`
+(ou `parcel_mail_in`) — officiellement déprécié au profit
+d'`amenity=parcel_locker`, un bot a fait la bascule il y a plusieurs
+années, mais elle n'a pas forcément atteint 100% de la base dans les
+zones moins actives en contributions OSM (typiquement, un parking de
+supermarché en zone rurale édité une fois puis plus jamais retouché).
+Coûte rien d'interroger aussi cet ancien schéma en plus du nouveau. La
+requête (`REQUETE_OVERPASS_LOCKERS`) interroge donc les trois à la fois :
 
 - `BBOX_TERRITOIRE` (dans `config.js`) : rectangle englobant la comcom,
   dérivé de la boîte englobante de `couches/epci.geojson` (le polygone
@@ -432,6 +441,11 @@ deux à la fois :
   gère à la fois les nodes (lat/lon directs) et les ways (un point
   relais peut être tagué sur le contour d'un bâtiment plutôt qu'un
   simple point — `out center` dans la requête fournit alors un centre).
+- Le filtre `["vending"~"parcel"]` (troisième branche de la requête)
+  attrape aussi bien `vending=parcel_pickup` que `parcel_mail_in` ou la
+  valeur combinée `parcel_pickup;parcel_mail_in` — une simple recherche
+  de sous-chaîne plutôt qu'une égalité stricte, pour rester robuste aux
+  variantes de valeur du même tag.
 - `fetchOverpassLockers` (`config.js`) réessaie sur plusieurs miroirs
   Overpass publics l'un après l'autre (`MIROIRS_OVERPASS`) plutôt qu'un
   seul serveur fixe : l'instance principale (overpass-api.de) répond
@@ -457,17 +471,27 @@ deux à la fois :
   téléphone/site (`phone`/`website` et `contact:phone`/
   `contact:website`).
 
-**Limite à avoir en tête** : la couverture dépend entièrement de ce que
-les contributeurs OpenStreetMap ont déjà cartographié localement, pour
-les deux familles de tags. Les réseaux anciens et très cartographiés
-(Mondial Relay, Amazon Locker) devraient bien remonter ; les réseaux
-récents ou en forte expansion (Vinted Go en particulier) peuvent rester
-sous-représentés par rapport à la réalité du terrain, sans qu'il y ait de
-moyen fiable de le détecter automatiquement depuis le site. Pas de
-solution miracle à ça, c'est la limite du crowdsourcing — si des points
-manquent visiblement dans une commune du territoire, la meilleure
-remédiation est de les ajouter à OpenStreetMap directement (ils
-remonteront alors automatiquement ici, sans rien changer au site).
+**Limite à avoir en tête, malgré les trois schémas de tags interrogés** :
+la couverture dépend entièrement de ce que les contributeurs
+OpenStreetMap ont déjà cartographié localement — pas de ce qui existe
+réellement sur le terrain. Un casier ou un point relais bien réel mais
+que personne n'a encore ajouté à OpenStreetMap (pas de node du tout,
+sous aucun des trois schémas) restera invisible ici quel que soit le
+nombre de variantes de tags interrogées : ce n'est pas un bug de
+requête à corriger, c'est un vrai trou dans la donnée source. Les
+réseaux anciens et très cartographiés (Mondial Relay, Amazon Locker)
+devraient bien remonter dans l'ensemble ; les réseaux récents ou en
+forte expansion (Vinted Go en particulier) peuvent rester
+sous-représentés, et même les réseaux bien couverts peuvent avoir des
+trous ponctuels (un point installé récemment, ou dans une zone peu
+éditée sur OSM). Pas de solution miracle à ça, c'est la limite du
+crowdsourcing — si un point manque visiblement quelque part sur le
+territoire, la seule vraie remédiation est de l'ajouter à OpenStreetMap
+directement (sur [osm.org](https://www.openstreetmap.org/), ou plus
+simplement via l'appli [StreetComplete](https://streetcomplete.app/) qui
+guide pas à pas pour ce genre d'ajout) : il remontera alors
+automatiquement ici au prochain chargement de la couche, sans rien
+changer au site.
 
 ## Ce qui reste à faire
 
