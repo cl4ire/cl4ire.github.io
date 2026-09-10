@@ -144,11 +144,10 @@ function categoriePourFeature(feature) {
 
 /* =========================================================
    CADASTRE (parcellaire complet)
-   Le territoire n'a pas de flux unique : chaque commune a son propre
-   fichier GeoJSON (source Etalab, dérivée du Plan Cadastral Informatisé
-   de la DGFiP, mise à jour ~trimestrielle). On les récupère tous et on
-   les fusionne en une seule couche. Base pour une future "fiche
-   parcelle" (croisement avec les mutations DVF, le DPE, le PLUi...).
+   Un seul flux pour toute la comcom Loir-Lucé-Bercé (bundler Etalab,
+   par EPCI via son n° SIREN plutôt que commune par commune). Base pour
+   une future "fiche parcelle" (croisement avec les mutations DVF, le
+   DPE, le PLUi...).
    ========================================================= */
 const COMMUNES_TERRITOIRE = {
     "72027": "Beaumont-sur-Dême", "72028": "Beaumont-Pied-de-Bœuf", "72052": "Chahaignes",
@@ -161,28 +160,36 @@ const COMMUNES_TERRITOIRE = {
     "72325": "Saint-Vincent-du-Lorouër", "72356": "Thoiré-sur-Dinan", "72376": "Villaines-sous-Lucé"
 };
 
-/* Une URL par commune (format Etalab, à vérifier/ajuster si besoin :
-   voir la note dans README.md). */
-const URLS_CADASTRE = Object.keys(COMMUNES_TERRITOIRE).map(
-    insee => `https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/communes/72/${insee}/cadastre-${insee}-parcelles.geojson`
-);
+/* SIREN de la comcom Loir-Lucé-Bercé (code_siren dans couches/communes.geojson). */
+const URL_CADASTRE_EPCI = "https://cadastre.data.gouv.fr/bundler/cadastre-etalab/epcis/200070373/geojson/communes";
 
-/* Fusionne les réponses (une par commune) en une seule FeatureCollection,
-   et complète chaque parcelle avec une référence lisible et le nom de la
+/* Extrait récursivement toutes les Features d'une réponse, quelle que
+   soit sa forme exacte (une seule FeatureCollection, un tableau de
+   FeatureCollection, un objet {insee: FeatureCollection, ...}...) :
+   je n'ai pas pu vérifier la structure exacte du bundler EPCI en
+   conditions réelles (accès réseau restreint pendant le développement),
+   donc on reste tolérant plutôt que de supposer une forme précise. */
+function extraireFeatures(valeur) {
+    if (!valeur) return [];
+    if (Array.isArray(valeur)) return valeur.flatMap(extraireFeatures);
+    if (valeur.type === "FeatureCollection" && Array.isArray(valeur.features)) return valeur.features;
+    if (valeur.type === "Feature") return [valeur];
+    if (typeof valeur === "object") return Object.values(valeur).flatMap(extraireFeatures);
+    return [];
+}
+
+/* Complète chaque parcelle avec une référence lisible et le nom de la
    commune (le fichier source ne porte que le code INSEE). */
-function fusionnerCadastre(reponses) {
-    const features = [];
-    reponses.forEach(reponse => {
-        (reponse.features || []).forEach(feature => {
-            const p = feature.properties || {};
-            feature.properties = {
-                ...p,
-                reference: [p.section, p.numero].filter(Boolean).join(" ") || p.id,
-                commune_nom: COMMUNES_TERRITOIRE[p.commune] || p.commune,
-                surface_m2: p.contenance
-            };
-            features.push(feature);
-        });
+function fusionnerCadastre(data) {
+    const features = extraireFeatures(data).map(feature => {
+        const p = feature.properties || {};
+        feature.properties = {
+            ...p,
+            reference: [p.section, p.numero].filter(Boolean).join(" ") || p.id,
+            commune_nom: COMMUNES_TERRITOIRE[p.commune] || p.commune,
+            surface_m2: p.contenance
+        };
+        return feature;
     });
     return { type: "FeatureCollection", features };
 }
@@ -410,12 +417,13 @@ const LAYERS = [
     },
     {
         id: "cadastre", group: "urbanisme", label: "Parcelles cadastrales",
-        /* Flux du cadastre (Etalab/DGFiP), un fichier par commune, fusionnés
-           en une seule couche par fusionnerCadastre. Volumineux (parcellaire
-           complet des 24 communes) : chargée à la demande et affichée
-           seulement à partir d'un certain niveau de zoom (voir zoomMin dans
-           layers.js), comme les visualisateurs de cadastre habituels. */
-        file: URLS_CADASTRE, transform: fusionnerCadastre,
+        /* Flux unique du cadastre pour toute la comcom (bundler Etalab par
+           EPCI), fusionné/complété par fusionnerCadastre. Volumineux
+           (parcellaire complet des 24 communes) : chargée à la demande et
+           affichée seulement à partir d'un certain niveau de zoom (voir
+           zoomMin dans layers.js), comme les visualisateurs de cadastre
+           habituels. */
+        file: URL_CADASTRE_EPCI, transform: fusionnerCadastre,
         type: "polygon", color: PALETTE.ardoise,
         styleFn: () => ({ color: PALETTE.ardoise, weight: 1, opacity: 0.6, fillOpacity: 0 }),
         zoomMin: 15,
