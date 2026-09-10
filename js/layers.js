@@ -69,6 +69,14 @@ function construireCoucheDonnees(data, layerConf) {
 
         onEachFeature: function (feature, layer) {
             layer.bindPopup(construirePopup(feature, layerConf));
+            /* La fiche parcelle a besoin de couches encore en différé
+               (mutations/DPE/PLUi/RGA) : plutôt que de les charger à la
+               construction de CHAQUE parcelle visible (donc à chaque
+               déplacement de carte), on ne le fait qu'à l'ouverture
+               réelle d'une popup précise (voir ouvrirPopupParcelle). */
+            if (layerConf.id === "cadastre") {
+                layer.on("popupopen", () => ouvrirPopupParcelle(feature, layer));
+            }
             if (layerConf.type !== "point") {
                 ajouterAuIndex(feature, layer.getBounds ? layer.getBounds().getCenter() : null, layerConf);
             }

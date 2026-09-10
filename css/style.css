@@ -206,6 +206,7 @@ button { font-family: inherit; cursor: pointer; }
 }
 .rf-bouton-principal:disabled { background: #C7CCD4; cursor: not-allowed; }
 .rf-bouton-secondaire { border: 1px solid var(--bordure); background: #fff; color: var(--ardoise); font-size: 12.5px; padding: 9px; border-radius: 10px; }
+.rf-bouton-secondaire:disabled { color: #C7CCD4; border-color: #EDEBE6; cursor: not-allowed; }
 
 /* ---------- ÉCRAN D'ACCUEIL ---------- */
 #hero {
@@ -362,6 +363,19 @@ button { font-family: inherit; cursor: pointer; }
 .popup-fiche-elu { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; color: var(--ardoise); }
 .popup-fiche-elu strong { color: #2A2A28; font-weight: 700; }
 .popup-fiche-elu span { flex: 0 0 auto; text-align: right; font-size: 10.5px; }
+
+/* ---------- POPUP PARCELLE (cadastre) — fiche "à la Parcellai.re" ---------- */
+.popup-fiche-section-titre i { margin-right: 5px; color: var(--ardoise); }
+.popup-fiche-chargement { display: flex; align-items: center; gap: 8px; color: var(--ardoise); font-size: 12px; padding: 16px; }
+.popup-fiche-vide { color: var(--ardoise); font-size: 11.5px; padding: 4px 0; }
+.popup-fiche-ligne { font-size: 12px; color: #2A2A28; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.popup-fiche-precision { color: var(--ardoise); font-size: 10.5px; }
+.popup-fiche-vente { display: grid; grid-template-columns: auto 1fr auto; align-items: baseline; gap: 8px; padding: 4px 0; font-size: 12px; }
+.popup-fiche-vente:not(:last-child) { border-bottom: 1px solid #F0EFEC; }
+.popup-fiche-vente span:first-child { color: var(--ardoise); font-weight: 700; }
+.popup-fiche-vente strong { justify-self: end; }
+.popup-fiche-vente-m2 { justify-self: end; color: var(--ardoise); font-size: 10.5px; }
+.popup-fiche-dpe-classe { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 6px; color: #fff; font-weight: 800; font-size: 12px; }
 
 .modal { position: fixed; inset: 0; background: rgba(15,20,18,0.45); display: none; align-items: center; justify-content: center; z-index: 2000; }
 .modal-open { display: flex; }

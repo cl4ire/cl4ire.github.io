@@ -95,61 +95,127 @@ function chargerDonneesFoncieres() {
     })));
 }
 
-/* Pour chaque parcelle cadastrale (déjà réduite aux seules parcelles
-   visibles à l'écran, voir ouvrirRecherche), retrouve la mutation DVF
-   correspondante (référence exacte), la zone PLUi et le niveau RGA à cet
-   endroit (le centre de la parcelle tombe dans quelle zone ?), et le DPE
-   le plus proche s'il est à l'intérieur de la parcelle. Les recherches
-   géométriques restent groupées par commune (les jeux de données
-   portent un code INSEE) : peu utile vu le nombre réduit de parcelles
-   désormais en jeu, mais ne coûte rien et reste correct si jamais la vue
-   couvre plusieurs communes. */
-function enrichirParcelles(parcelles) {
+/* Index pré-calculés une seule fois pour tout un lot de parcelles
+   (recherche par critères) : dvfParReference permet un accès direct par
+   référence de parcelle (O(1)) plutôt qu'un .find() sur ~11 000
+   mutations à chaque parcelle, dpeParCommune réduit le nombre de DPE à
+   tester au point-in-polygon en les groupant par code INSEE au préalable
+   (fiable : contrairement au zonage PLUi ci-dessous, ce champ est
+   toujours renseigné dans le flux DPE). Pour un usage ponctuel (une
+   seule parcelle, ex. popup au clic), infosParcelle reconstruit ces
+   index à la volée si on ne les lui fournit pas : le coût est le même
+   qu'une seule itération du lot, donc négligeable pour un clic isolé. */
+function construireIndicesFonciers() {
     const mutations = donneesBrutes["mutations"] || [];
     const dpePoints = donneesBrutes["dpe"] || [];
-    const zonesPLUi = donneesBrutes["zonagePLUi"] || [];
-    const zonesRGA = donneesBrutes["rga"] || [];
-
     const dvfParReference = {};
     mutations.forEach(f => { dvfParReference[f.properties.reference_parcelle] = f; });
+    return { dvfParReference, dpeParCommune: grouperParChamp(dpePoints, "code_insee") };
+}
 
-    const dpeParCommune = grouperParChamp(dpePoints, "code_insee");
-    const pluiParCommune = grouperParChamp(zonesPLUi, "insee");
+/* Couches déjà chargées au démarrage (lazy: false dans config.js), donc
+   toujours disponibles dans donneesBrutes sans chargement supplémentaire
+   : sert au "à proximité" de la fiche parcelle. */
+const CATEGORIES_PROXIMITE = [
+    { layerId: "education", titre: "École la plus proche" },
+    { layerId: "commerces", titre: "Commerce le plus proche" },
+    { layerId: "mairies", titre: "Mairie la plus proche" }
+];
 
+function plusProche(centre, layerId) {
+    const features = donneesBrutes[layerId] || [];
+    if (!centre || !features.length) return null;
+    const origine = L.latLng(centre[1], centre[0]);
+    let distanceMin = Infinity;
+    features.forEach(f => {
+        const pt = (f.geometry && f.geometry.type === "Point") ? f.geometry.coordinates : centroideFeature(f);
+        if (!pt) return;
+        const d = origine.distanceTo(L.latLng(pt[1], pt[0]));
+        if (d < distanceMin) distanceMin = d;
+    });
+    return Number.isFinite(distanceMin) ? distanceMin : null;
+}
+
+/* Calcule toutes les infos foncières d'UNE parcelle : mutation DVF
+   correspondante (référence exacte), zone PLUi et niveau RGA à cet
+   endroit (le centre de la parcelle tombe dans quelle zone ?), DPE le
+   plus proche s'il est à l'intérieur de la parcelle, et distance aux
+   équipements les plus proches. Le zonage PLUi n'est PAS groupé par
+   commune comme le sont DPE/mutations : son champ "insee" s'est avéré
+   systématiquement vide dans le flux réel (contrairement à ce que
+   laissait supposer le jeu de données de test utilisé au départ), le
+   grouper aurait donc fait échouer la recherche de zone à tous les
+   coups. Pas grave en pratique : quelques centaines de zones, un simple
+   point-in-polygon sur l'ensemble reste rapide. Pour les ventes,
+   "elements_locaux"/"elements_terrains" d'une mutation DVF peuvent
+   porter sur plusieurs parcelles à la fois (un même acte notarié
+   regroupant plusieurs références) : on ne garde que les lots dont le
+   champ "parcelle" correspond exactement à celle affichée, sinon le
+   nombre de bâtiments/surface bâtie compterait aussi ceux des parcelles
+   voisines vendues dans le même acte. */
+function infosParcelle(feature, indices) {
+    const { dvfParReference, dpeParCommune } = indices || construireIndicesFonciers();
+    const zonesPLUi = donneesBrutes["zonagePLUi"] || [];
+    const zonesRGA = donneesBrutes["rga"] || [];
+    const p = feature.properties;
+    const centre = centroideFeature(feature);
+
+    const dvf = dvfParReference[p.id] || null;
+    const dpe = (dpeParCommune[p.commune] || [])
+        .find(f => pointDansFeature(f.geometry.coordinates, feature)) || null;
+    const plui = zonesPLUi.find(zone => pointDansFeature(centre, zone)) || null;
+    const rga = zonesRGA.find(zone => pointDansFeature(centre, zone)) || null;
+
+    const ventes = dvf ? (dvf.properties.historique_mutations || []).map(m => {
+        const locaux = (m.elements_locaux || []).filter(e => e.parcelle === p.id && e.surface_batie > 0);
+        const surfaceBatie = locaux.reduce((s, e) => s + e.surface_batie, 0) || null;
+        const valeur = typeof m.valeur === "number" ? m.valeur : null;
+        return {
+            annee: m.annee || null, valeur,
+            nbBatiments: locaux.length || null, surfaceBatie,
+            prixM2: (surfaceBatie && valeur) ? Math.round(valeur / surfaceBatie) : null
+        };
+    }) : [];
+
+    return {
+        commune: p.commune, communeNom: p.commune_nom, surface: p.surface_m2,
+        adresse: dvf ? dvf.properties.adresse : null,
+        typezonePLUi: plui ? plui.properties.typezone : null,
+        libellePLUi: plui ? (plui.properties.libelong || plui.properties.libelle) : null,
+        niveauRGA: rga ? rga.properties.niveau : null,
+        ventes,
+        nbBatiments: ventes[0] ? ventes[0].nbBatiments : null,
+        surfaceBatie: ventes[0] ? ventes[0].surfaceBatie : null,
+        dpe: dpe ? {
+            classe: dpe.properties.etiquette_dpe, conso: dpe.properties.consommation,
+            anneeConstruction: dpe.properties.annee_construction
+        } : null,
+        proximite: CATEGORIES_PROXIMITE
+            .map(cat => {
+                const distance = plusProche(centre, cat.layerId);
+                return distance !== null ? { titre: cat.titre, distance } : null;
+            })
+            .filter(Boolean)
+    };
+}
+
+/* Pour chaque parcelle cadastrale (déjà réduite aux seules parcelles
+   visibles à l'écran, voir ouvrirRecherche) : ne garde que le sous-
+   ensemble compact utile au filtrage (voir correspond()), calculé via
+   infosParcelle ci-dessus. */
+function enrichirParcelles(parcelles) {
+    const indices = construireIndicesFonciers();
     parcelles.forEach(parcelle => {
-        const p = parcelle.properties;
-        const centre = centroideFeature(parcelle);
-        const dvf = dvfParReference[p.id] || null;
-
-        const dpe = (dpeParCommune[p.commune] || [])
-            .find(f => pointDansFeature(f.geometry.coordinates, parcelle)) || null;
-
-        const plui = (pluiParCommune[p.commune] || [])
-            .find(zone => pointDansFeature(centre, zone)) || null;
-
-        const rga = zonesRGA.find(zone => pointDansFeature(centre, zone)) || null;
-
-        let nbBatiments = null, surfaceBatie = null, prixVente = null, anneeVente = null;
-        if (dvf) {
-            const historique = Array.isArray(dvf.properties.historique_mutations) ? dvf.properties.historique_mutations : [];
-            const derniere = historique[0];
-            if (derniere) {
-                prixVente = typeof derniere.valeur === "number" ? derniere.valeur : null;
-                anneeVente = derniere.annee || null;
-                const batis = (derniere.elements_locaux || []).filter(e => e.surface_batie > 0);
-                if (batis.length) {
-                    nbBatiments = batis.length;
-                    surfaceBatie = batis.reduce((s, e) => s + e.surface_batie, 0);
-                }
-            }
-        }
-
+        const infos = infosParcelle(parcelle, indices);
+        const derniereVente = infos.ventes[0] || null;
         parcelle._recherche = {
-            commune: p.commune, surface: p.surface_m2,
-            typezonePLUi: plui ? plui.properties.typezone : null,
-            niveauRGA: rga ? rga.properties.niveau : null,
-            dvf: !!dvf, prixVente, anneeVente, nbBatiments, surfaceBatie,
-            etiquetteDpe: dpe ? dpe.properties.etiquette_dpe : null
+            commune: infos.commune, surface: infos.surface,
+            typezonePLUi: infos.typezonePLUi, niveauRGA: infos.niveauRGA,
+            dvf: infos.ventes.length > 0,
+            prixVente: derniereVente ? derniereVente.valeur : null,
+            anneeVente: derniereVente ? derniereVente.annee : null,
+            nbBatiments: infos.nbBatiments, surfaceBatie: infos.surfaceBatie,
+            etiquetteDpe: infos.dpe ? infos.dpe.classe : null
         };
     });
 
@@ -209,7 +275,11 @@ function afficherResultatsRecherche(map, features) {
         const checkbox = document.getElementById("layer-cadastre");
         if (checkbox) checkbox.checked = false;
     }
-    if (!features.length) return;
+    const boutonVider = document.getElementById("rf-vider");
+    if (!features.length) {
+        if (boutonVider) boutonVider.disabled = true;
+        return;
+    }
 
     const conf = LAYERS.find(l => l.id === "cadastre");
     coucheRechercheActuelle = construireCoucheDonnees(
@@ -217,9 +287,25 @@ function afficherResultatsRecherche(map, features) {
         { ...conf, styleFn: () => ({ color: PALETTE.terracotta, weight: 2, fillColor: PALETTE.terracotta, fillOpacity: 0.35 }) }
     );
     coucheRechercheActuelle.addTo(map);
+    if (boutonVider) boutonVider.disabled = false;
 
     const bounds = L.geoJSON({ type: "FeatureCollection", features }).getBounds();
     if (bounds.isValid()) map.fitBounds(bounds, { maxZoom: 17, padding: [40, 40] });
+}
+
+/* Retire uniquement les parcelles surlignées par la dernière recherche
+   affichée sur la carte, sans toucher aux critères du formulaire (voir
+   reinitialiserFormulaire ci-dessus, qui fait l'inverse) : les deux
+   actions sont volontairement séparées, l'une pour repartir sur des
+   critères vierges, l'autre pour juste faire de la place sur la carte
+   avant une nouvelle recherche. */
+function viderSelectionCarte(map) {
+    if (coucheRechercheActuelle) {
+        map.removeLayer(coucheRechercheActuelle);
+        coucheRechercheActuelle = null;
+    }
+    const boutonVider = document.getElementById("rf-vider");
+    if (boutonVider) boutonVider.disabled = true;
 }
 
 /* ---------- Formulaire ---------- */
@@ -303,7 +389,8 @@ function construireFormulaire() {
 
             <div class="rf-actions">
                 <button type="submit" id="rf-appliquer" class="rf-bouton-principal" disabled>Afficher les parcelles correspondantes</button>
-                <button type="button" id="rf-reset" class="rf-bouton-secondaire">Réinitialiser</button>
+                <button type="button" id="rf-vider" class="rf-bouton-secondaire" disabled>Vider la sélection sur la carte</button>
+                <button type="button" id="rf-reset" class="rf-bouton-secondaire">Réinitialiser les critères</button>
             </div>
         </form>
     `;
@@ -343,9 +430,13 @@ function ouvrirRecherche(map) {
     form.addEventListener("input", mettreAJourStatut);
     form.addEventListener("submit", event => {
         event.preventDefault();
+        /* Le panneau reste ouvert sur cette même vue (contrairement à
+           l'ancien comportement qui repassait sur l'arbre de couches) :
+           sinon on perd ses critères de recherche à chaque affichage,
+           et il faut rouvrir le panneau pour en essayer d'autres. */
         afficherResultatsRecherche(map, filtrerParcelles(lireCriteres()));
-        ouvrirVuePanneau("layers-normal-view");
     });
+    document.getElementById("rf-vider").addEventListener("click", () => viderSelectionCarte(map));
     document.getElementById("rf-reset").addEventListener("click", reinitialiserFormulaire);
 
     const statut = document.getElementById("rf-statut");
