@@ -325,6 +325,32 @@ button { font-family: inherit; cursor: pointer; }
 .popup-service i { color: var(--foret); font-size: 9px; }
 .popup-carburant-vide { color: var(--ardoise); font-size: 11px; padding: 5px 0; }
 
+/* ---------- POPUP COMMERCE — fiche détaillée ---------- */
+.leaflet-popup-content-wrapper:has(.popup-commerce) { border-radius: 18px; padding: 0; overflow: hidden; }
+.leaflet-popup-content:has(.popup-commerce) { margin: 0; width: 340px !important; }
+.popup-commerce { width: 340px; max-width: 100%; background: #fff; font-family: var(--font-texte); color: #2A2A28; }
+.popup-commerce-entete { display: flex; align-items: flex-start; gap: 11px; padding: 16px 16px 14px; border-bottom: 1px solid var(--bordure); }
+.popup-commerce-icon { width: 36px; height: 36px; flex: 0 0 36px; display: flex; align-items: center; justify-content: center; border-radius: 10px; color: #fff; font-size: 15px; }
+.popup-commerce-titre-wrap { min-width: 0; flex: 1; }
+.popup-commerce-tag { text-transform: uppercase; letter-spacing: .06em; font-size: 9px; font-weight: 800; }
+.popup-commerce-titre { margin-top: 1px; font-family: var(--font-titre); font-size: 16px; line-height: 1.1; font-weight: 700; }
+.popup-commerce-adresse { margin-top: 4px; color: var(--ardoise); font-size: 11px; line-height: 1.25; }
+.popup-commerce-badge { display: inline-flex; align-items: center; gap: 5px; flex: 0 0 auto; border-radius: 999px; padding: 5px 8px; font-size: 9px; font-weight: 800; white-space: nowrap; }
+.popup-commerce-badge span { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.popup-commerce-badge.ouvert { color: var(--feuille); background: #E8F7F1; }
+.popup-commerce-badge.ferme { color: var(--terracotta); background: #FBEDE8; }
+.popup-commerce-section { padding: 12px 16px; border-bottom: 1px solid var(--bordure); }
+.popup-commerce-section:last-child { border-bottom: 0; }
+.popup-commerce-section-titre { margin-bottom: 8px; font-size: 10.5px; font-weight: 800; color: var(--ardoise); text-transform: uppercase; letter-spacing: .05em; }
+.popup-commerce-contacts { display: flex; flex-direction: column; gap: 7px; }
+.popup-commerce-contact { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: #2A2A28; text-decoration: none; }
+.popup-commerce-contact:hover { color: var(--primaire); }
+.popup-commerce-contact i { width: 14px; text-align: center; color: var(--primaire); font-size: 11px; }
+.popup-commerce-jour { display: flex; justify-content: space-between; padding: 3px 0; font-size: 11.5px; color: var(--ardoise); }
+.popup-commerce-jour strong { color: #2A2A28; font-weight: 700; }
+.popup-commerce-jour.aujourdhui { color: var(--primaire); }
+.popup-commerce-jour.aujourdhui strong { color: var(--primaire); }
+
 .modal { position: fixed; inset: 0; background: rgba(15,20,18,0.45); display: none; align-items: center; justify-content: center; z-index: 2000; }
 .modal-open { display: flex; }
 .modal-content { background: #fff; border-radius: 16px; padding: 28px; max-width: 420px; width: 90%; position: relative; text-align: center; }
@@ -344,4 +370,6 @@ button { font-family: inherit; cursor: pointer; }
     .popup-carburant { width: min(390px, calc(100vw - 48px)); }
     .popup-carburant-entete { padding: 15px; }
     .popup-carburant-section { padding: 12px 15px; }
+    .leaflet-popup-content:has(.popup-commerce) { width: min(340px, calc(100vw - 48px)) !important; }
+    .popup-commerce { width: min(340px, calc(100vw - 48px)); }
 }
