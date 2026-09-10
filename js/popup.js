@@ -689,6 +689,167 @@ function construirePopupLocker(props) {
 }
 
 /* =========================================================
+   MÉDECINS, VÉTÉRINAIRES, BIBLIOTHÈQUES, OFFICES DE TOURISME, AIRES DE
+   CAMPING-CAR — cinq couches en flux Overpass (voir config.js), même
+   vocabulaire de champs OSM que les casiers colis (addr:*, phone/
+   contact:phone, website/contact:website, opening_hours, wheelchair),
+   donc les mêmes aides (construireContacts, parserHorairesOsm...)
+   suffisent, chaque fiche n'ajoutant que ce qui lui est propre.
+   ========================================================= */
+function adresseOsm(props) {
+    return [
+        [props["addr:housenumber"], props["addr:street"]].filter(Boolean).join(" "),
+        props["addr:city"]
+    ].filter(Boolean).join(" · ");
+}
+function contactsOsm(props) {
+    return construireContacts({
+        ...props,
+        phone: props.phone || props["contact:phone"],
+        website: props.website || props["contact:website"]
+    });
+}
+
+const LABELS_SPECIALITE_MEDECIN = {
+    general_practitioner: "Médecin généraliste",
+    gynaecology: "Gynécologie", paediatrics: "Pédiatrie", ophthalmology: "Ophtalmologie",
+    cardiology: "Cardiologie", dermatology: "Dermatologie", psychiatry: "Psychiatrie",
+    radiology: "Radiologie", orthopaedics: "Orthopédie"
+};
+function libelleSpecialiteMedecin(valeur) {
+    if (!valeur) return null;
+    return listeValeurs(valeur).map(v => LABELS_SPECIALITE_MEDECIN[v] || capitaliserMots(v.replace(/_/g, " "))).join(", ");
+}
+
+function construirePopupMedecin(props) {
+    const nom = premierChampValide(props, ["name"]) || "Médecin";
+    const specialite = libelleSpecialiteMedecin(props["healthcare:speciality"]) || "Médecin généraliste";
+    const adresse = adresseOsm(props);
+    const horaires = parserHorairesOsm(props.opening_hours);
+    const contacts = contactsOsm(props);
+    const lignesHoraires = construireLignesHoraires(horaires);
+    const accessibilite = LABELS_ACCESSIBILITE[props.wheelchair] || null;
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:#AD4826"><i class="fa-solid fa-user-doctor"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:#AD4826">${echapperHtml(specialite)}</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${adresse ? `<div class="popup-fiche-adresse">${echapperHtml(adresse)}</div>` : ""}
+            </div>
+            ${construireBadgeOuvert(horaires)}
+        </div>
+        ${accessibilite ? `<div class="popup-fiche-section"><div class="popup-fiche-ligne">${echapperHtml(accessibilite)}</div></div>` : ""}
+        ${contacts.length ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Contact</div><div class="popup-fiche-contacts">${contacts.join("")}</div></div>` : ""}
+        ${lignesHoraires ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Horaires</div>${lignesHoraires}</div>` : ""}
+    </div>`;
+}
+
+function construirePopupVeterinaire(props) {
+    const nom = premierChampValide(props, ["name", "brand"]) || "Vétérinaire";
+    const adresse = adresseOsm(props);
+    const horaires = parserHorairesOsm(props.opening_hours);
+    const contacts = contactsOsm(props);
+    const lignesHoraires = construireLignesHoraires(horaires);
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:#AD4826"><i class="fa-solid fa-paw"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:#AD4826">Vétérinaire</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${adresse ? `<div class="popup-fiche-adresse">${echapperHtml(adresse)}</div>` : ""}
+            </div>
+            ${construireBadgeOuvert(horaires)}
+        </div>
+        ${contacts.length ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Contact</div><div class="popup-fiche-contacts">${contacts.join("")}</div></div>` : ""}
+        ${lignesHoraires ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Horaires</div>${lignesHoraires}</div>` : ""}
+    </div>`;
+}
+
+const LABELS_INTERNET_BIBLIOTHEQUE = { yes: "Accès Internet", wlan: "Wifi disponible", terminal: "Poste informatique" };
+function construirePopupBibliotheque(props) {
+    const nom = premierChampValide(props, ["name"]) || "Bibliothèque";
+    const adresse = adresseOsm(props);
+    const horaires = parserHorairesOsm(props.opening_hours);
+    const contacts = contactsOsm(props);
+    const lignesHoraires = construireLignesHoraires(horaires);
+    const infos = [
+        LABELS_INTERNET_BIBLIOTHEQUE[props.internet_access] || null,
+        LABELS_ACCESSIBILITE[props.wheelchair] || null
+    ].filter(Boolean);
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.foret}"><i class="fa-solid fa-book"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.foret}">Bibliothèque / médiathèque</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${adresse ? `<div class="popup-fiche-adresse">${echapperHtml(adresse)}</div>` : ""}
+            </div>
+            ${construireBadgeOuvert(horaires)}
+        </div>
+        ${infos.length ? `<div class="popup-fiche-section"><div class="popup-fiche-ligne">${infos.map(echapperHtml).join(" · ")}</div></div>` : ""}
+        ${contacts.length ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Contact</div><div class="popup-fiche-contacts">${contacts.join("")}</div></div>` : ""}
+        ${lignesHoraires ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Horaires</div>${lignesHoraires}</div>` : ""}
+    </div>`;
+}
+
+function construirePopupOfficeTourisme(props) {
+    const nom = premierChampValide(props, ["name"]) || "Office de tourisme";
+    const adresse = adresseOsm(props);
+    const horaires = parserHorairesOsm(props.opening_hours);
+    const contacts = contactsOsm(props);
+    const lignesHoraires = construireLignesHoraires(horaires);
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.riviere}"><i class="fa-solid fa-map-location-dot"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.riviere}">Office de tourisme</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${adresse ? `<div class="popup-fiche-adresse">${echapperHtml(adresse)}</div>` : ""}
+            </div>
+            ${construireBadgeOuvert(horaires)}
+        </div>
+        ${contacts.length ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Contact</div><div class="popup-fiche-contacts">${contacts.join("")}</div></div>` : ""}
+        ${lignesHoraires ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Horaires</div>${lignesHoraires}</div>` : ""}
+    </div>`;
+}
+
+function construirePopupCampingCar(props) {
+    const nom = premierChampValide(props, ["name"]) || "Aire de camping-car";
+    const adresse = adresseOsm(props);
+    const horaires = parserHorairesOsm(props.opening_hours);
+    const contacts = contactsOsm(props);
+    const lignesHoraires = construireLignesHoraires(horaires);
+    const capacite = props.capacity ? `${props.capacity} emplacement${Number(props.capacity) > 1 ? "s" : ""}` : null;
+    const services = [
+        props.sanitary_dump_station === "yes" ? "Vidange sanitaire" : (props.sanitary_dump_station === "customers" ? "Vidange sanitaire (clients)" : null),
+        props.drinking_water === "yes" ? "Eau potable" : null,
+        props.power_supply === "yes" ? "Électricité" : null,
+        props.fee === "no" ? "Gratuit" : (props.fee === "yes" ? "Payant" : null)
+    ].filter(Boolean);
+    const ligne = [capacite, ...services].filter(Boolean);
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.terracotta}"><i class="fa-solid fa-caravan"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.terracotta}">Aire de camping-car</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${adresse ? `<div class="popup-fiche-adresse">${echapperHtml(adresse)}</div>` : ""}
+            </div>
+            ${construireBadgeOuvert(horaires)}
+        </div>
+        ${ligne.length ? `<div class="popup-fiche-section"><div class="popup-fiche-ligne">${ligne.map(echapperHtml).join(" · ")}</div></div>` : ""}
+        ${contacts.length ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Contact</div><div class="popup-fiche-contacts">${contacts.join("")}</div></div>` : ""}
+        ${lignesHoraires ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Horaires</div>${lignesHoraires}</div>` : ""}
+    </div>`;
+}
+
+/* =========================================================
    POPUP DÉCHÈTERIE / TRI — trois fiches différentes selon le champ
    "type" (voir iconeDechet dans config.js pour la même distinction côté
    marqueur) : déchèterie, composteur partagé, point d'apport volontaire.
@@ -1294,6 +1455,11 @@ function construirePopup(feature, layerConf) {
     else if (layerConf.id === "mutations") html = construirePopupMutation(props, feature);
     else if (layerConf.id === "dechets") html = construirePopupDechet(props);
     else if (layerConf.id === "lockers") html = construirePopupLocker(props);
+    else if (layerConf.id === "medecins") html = construirePopupMedecin(props);
+    else if (layerConf.id === "veterinaires") html = construirePopupVeterinaire(props);
+    else if (layerConf.id === "bibliotheques") html = construirePopupBibliotheque(props);
+    else if (layerConf.id === "officesTourisme") html = construirePopupOfficeTourisme(props);
+    else if (layerConf.id === "campingcar") html = construirePopupCampingCar(props);
     else if (layerConf.id === "irve") html = construirePopupIrve(props);
     else if (layerConf.id === "airecovoiturage") html = construirePopupCovoiturage(props);
     else if (layerConf.id === "marches") html = construirePopupMarche(props);
