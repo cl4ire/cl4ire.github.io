@@ -505,6 +505,56 @@ guide pas à pas pour ce genre d'ajout) : il remontera alors
 automatiquement ici au prochain chargement de la couche, sans rien
 changer au site.
 
+### Combler un trou tout de suite : `couches/services/lockers_manuels.geojson`
+
+Ajouter un point à OpenStreetMap est la bonne solution de fond (ça
+profite à tout le monde, pas seulement ce site), mais ça ne dépend pas
+de vous seul⋅e (quelqu'un doit valider/republier la donnée) et ça ne
+règle rien dans l'immédiat. Pour un besoin ponctuel — "il y a bien un
+casier là, pourquoi il n'apparaît pas" — `fetchOverpassLockers`
+(`config.js`) fusionne systématiquement les résultats d'Overpass avec ce
+petit fichier local, à chaque chargement de la couche (pas de cache
+dessus, contrairement à Overpass : un ajout doit être visible tout de
+suite). Pour ajouter un point :
+
+1. Repérer ses coordonnées (clic droit sur le point exact dans Google
+   Maps ou [osm.org](https://www.openstreetmap.org/) → "Que se
+   trouve-t-il ici ?" copie le `lat, lon`).
+2. Ajouter une entrée dans le tableau `features` du fichier, sur ce
+   modèle (mêmes noms de champs qu'un point OpenStreetMap, pour que la
+   catégorisation/couleur/popup fonctionnent sans aucune différence avec
+   un point venu d'Overpass — voir `categorieLocker`/`TYPES_LOCKERS`
+   dans `config.js` pour la liste des enseignes reconnues) :
+
+   ```json
+   {
+     "type": "Feature",
+     "geometry": { "type": "Point", "coordinates": [LONGITUDE, LATITUDE] },
+     "properties": {
+       "amenity": "parcel_locker",
+       "brand": "Mondial Relay",
+       "name": "Casier Mondial Relay - Leclerc Montval-sur-Loir",
+       "addr:street": "ZAC du Chêne vert",
+       "addr:city": "Montval-sur-Loir",
+       "opening_hours": "24/7"
+     }
+   }
+   ```
+
+   Pour un point relais hébergé dans un commerce (pas un casier
+   automatique), utiliser plutôt le schéma `post_office=post_partner` +
+   `post_office:brand`/`post_office:service_provider` — voir la section
+   ci-dessus pour le détail des champs, mêmes conventions qu'un point
+   Overpass. `opening_hours` suit la syntaxe OSM habituelle
+   (`Mo-Fr 08:00-19:00`, `24/7`...).
+3. Vérifier que le fichier reste un JSON valide (une virgule entre deux
+   objets `Feature` si vous en ajoutez plusieurs).
+4. **Important** : une fois que ce point a été ajouté à OpenStreetMap
+   (par vous ou quelqu'un d'autre) et qu'il remonte via Overpass, le
+   retirer de ce fichier pour éviter un doublon sur la carte — ce fichier
+   n'est qu'un pense-bête temporaire, pas une seconde base à maintenir en
+   parallèle indéfiniment.
+
 ## Ce qui reste à faire
 
 - Le fichier DVF étant volumineux même en différé, envisager de le
