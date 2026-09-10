@@ -157,7 +157,14 @@ function chargerCouche(layerConf, onReady, onError) {
             const data = urls.length > 1 ? reponses : reponses[0];
             const geo = layerConf.transform ? layerConf.transform(data) : data;
             donneesBrutes[layerConf.id] = geo.features || [];
-            if (layerConf.categoriser) {
+            if (layerConf.viewportOnly) {
+                /* Rien construit tout de suite : trop de features pour tout
+                   garder en objets Leaflet en mémoire (ex : cadastre, des
+                   dizaines de milliers de parcelles). Un layerGroup vide en
+                   attendant qu'actualiserCoucheViewport le remplisse par le
+                   sous-ensemble réellement visible. */
+                groupesLeaflet[layerConf.id] = L.layerGroup();
+            } else if (layerConf.categoriser) {
                 const sousCouches = construireSousCouches(geo, layerConf);
                 souscouchesLeaflet[layerConf.id] = sousCouches;
                 groupesLeaflet[layerConf.id] = L.layerGroup(Object.values(sousCouches));
@@ -199,17 +206,94 @@ function coucheDoitEtreVisible(conf, map) {
     return !conf.zoomMin || map.getZoom() >= conf.zoomMin;
 }
 
-function surveillerZoom(map) {
-    map.on("zoomend", () => {
-        LAYERS.forEach(conf => {
-            if (!conf.zoomMin || !coucheChargee[conf.id]) return;
-            const checkbox = document.getElementById("layer-" + conf.id);
-            if (!checkbox || !checkbox.checked) return;
+/* ---------- Rendu limité à l'écran (layerConf.viewportOnly) ---------- */
 
-            const doitEtreVisible = coucheDoitEtreVisible(conf, map);
-            const estSurCarte = map.hasLayer(groupesLeaflet[conf.id]);
-            if (doitEtreVisible && !estSurCarte) groupesLeaflet[conf.id].addTo(map);
-            if (!doitEtreVisible && estSurCarte) map.removeLayer(groupesLeaflet[conf.id]);
-        });
+/* Boîte englobante [minLon, minLat, maxLon, maxLat] d'une feature,
+   suffisante pour un test d'intersection avec la vue (pas besoin d'être
+   exacte au pixel près). */
+function bboxFeature(feature) {
+    const geom = feature.geometry;
+    let coords;
+    if (!geom) return null;
+    if (geom.type === "Polygon") coords = geom.coordinates.flat(1);
+    else if (geom.type === "MultiPolygon") coords = geom.coordinates.flat(2);
+    else if (geom.type === "Point") coords = [geom.coordinates];
+    else return null;
+
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    coords.forEach(([x, y]) => {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+    });
+    return [minX, minY, maxX, maxY];
+}
+
+function bboxIntersecteVue(bbox, bounds) {
+    if (!bbox) return false;
+    return bbox[0] <= bounds.getEast() && bbox[2] >= bounds.getWest() &&
+        bbox[1] <= bounds.getNorth() && bbox[3] >= bounds.getSouth();
+}
+
+/* Sous-ensemble des features d'une couche dont la boîte englobante
+   touche la vue actuelle de la carte. Utilisé à la fois pour le rendu
+   (actualiserCoucheViewport) et par la recherche foncière, pour que les
+   deux travaillent sur le même "ce qui est affiché à l'écran". */
+function featuresDansVue(layerId, map) {
+    const bounds = map.getBounds();
+    return (donneesBrutes[layerId] || []).filter(f => bboxIntersecteVue(bboxFeature(f), bounds));
+}
+
+/* Reconstruit la couche Leaflet d'une couche "viewportOnly" à partir du
+   seul sous-ensemble actuellement visible, et remplace l'ancienne sur la
+   carte. Bien plus léger que de garder des dizaines de milliers d'objets
+   Leaflet en mémoire pour une couche comme le cadastre. */
+function actualiserCoucheViewport(conf, map) {
+    if (!coucheDoitEtreVisible(conf, map)) {
+        if (groupesLeaflet[conf.id] && map.hasLayer(groupesLeaflet[conf.id])) {
+            map.removeLayer(groupesLeaflet[conf.id]);
+        }
+        return;
+    }
+
+    const visibles = featuresDansVue(conf.id, map);
+    const nouvelle = construireCoucheDonnees({ type: "FeatureCollection", features: visibles }, conf);
+
+    if (groupesLeaflet[conf.id] && map.hasLayer(groupesLeaflet[conf.id])) {
+        map.removeLayer(groupesLeaflet[conf.id]);
+    }
+    groupesLeaflet[conf.id] = nouvelle;
+    nouvelle.addTo(map);
+}
+
+/* Surveille zoom ET déplacement (moveend couvre les deux) pour : masquer/
+   afficher les couches à seuil de zoom (zoomMin), et reconstruire les
+   couches "viewportOnly" sur la zone actuellement visible. Un léger
+   anti-rebond évite de reconstruire à chaque pixel pendant un survol
+   rapide (zoom + déplacement enchaînés). */
+function surveillerAffichageCouches(map) {
+    let enAttente = null;
+
+    map.on("moveend", () => {
+        clearTimeout(enAttente);
+        enAttente = setTimeout(() => {
+            LAYERS.forEach(conf => {
+                if (!coucheChargee[conf.id]) return;
+                const checkbox = document.getElementById("layer-" + conf.id);
+                if (!checkbox || !checkbox.checked) return;
+
+                if (conf.viewportOnly) {
+                    actualiserCoucheViewport(conf, map);
+                    return;
+                }
+                if (!conf.zoomMin) return;
+
+                const doitEtreVisible = coucheDoitEtreVisible(conf, map);
+                const estSurCarte = map.hasLayer(groupesLeaflet[conf.id]);
+                if (doitEtreVisible && !estSurCarte) groupesLeaflet[conf.id].addTo(map);
+                if (!doitEtreVisible && estSurCarte) map.removeLayer(groupesLeaflet[conf.id]);
+            });
+        }, 150);
     });
 }

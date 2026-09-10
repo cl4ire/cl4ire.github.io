@@ -38,7 +38,9 @@ function construirePanneauCouches(map) {
             checkbox.addEventListener("change", function () {
                 if (checkbox.checked) {
                     chargerCouche(conf, () => {
-                        if (coucheDoitEtreVisible(conf, map)) {
+                        if (conf.viewportOnly) {
+                            actualiserCoucheViewport(conf, map);
+                        } else if (coucheDoitEtreVisible(conf, map)) {
                             groupesLeaflet[conf.id].addTo(map);
                         }
                     });

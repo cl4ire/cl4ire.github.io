@@ -17,6 +17,13 @@
    Piscine et permis récents ne sont pas dans les données du site
    aujourd'hui : ces critères n'apparaissent pas plutôt que d'afficher
    un filtre qui ne filtrerait rien.
+
+   La recherche porte sur les parcelles actuellement affichées à l'écran
+   (même logique que le rendu de la couche cadastre, voir layers.js/
+   featuresDansVue), pas sur les dizaines de milliers de parcelles du
+   territoire entier : ça allège à la fois le calcul (jointures
+   géométriques avec DPE/PLUi/RGA) et reste cohérent avec ce qu'on voit
+   sur la carte. Il faut donc être zoomé sur une zone avant de chercher.
    ========================================================= */
 
 const COUCHES_RECHERCHE = ["cadastre", "mutations", "dpe", "zonagePLUi", "rga"];
@@ -29,8 +36,13 @@ const LABELS_RGA = { 1: "Faible", 2: "Moyen", 3: "Fort" };
 const CLASSES_DPE = ["A", "B", "C", "D", "E", "F", "G"];
 const LIMITE_RESULTATS = 3000;
 
-let enrichissementCadastre = null;   // cache : calculé une seule fois
+let resultatsEnrichis = null;        // parcelles visibles à l'ouverture, enrichies une fois
 let coucheRechercheActuelle = null;  // couche Leaflet des résultats affichés
+
+function zoomMinCadastre() {
+    const conf = LAYERS.find(l => l.id === "cadastre");
+    return (conf && conf.zoomMin) || 0;
+}
 
 /* ---------- Géométrie (sans dépendance externe) ---------- */
 
@@ -83,17 +95,16 @@ function chargerDonneesFoncieres() {
     })));
 }
 
-/* Pour chaque parcelle cadastrale, retrouve la mutation DVF correspondante
-   (référence exacte), la zone PLUi et le niveau RGA à cet endroit (le
-   centre de la parcelle tombe dans quelle zone ?), et le DPE le plus
-   proche s'il est à l'intérieur de la parcelle. Les recherches
-   géométriques sont limitées à la même commune (les deux jeux de
-   données portent un code INSEE) pour rester rapides malgré le volume
-   de données (dizaines de milliers de parcelles). */
-function enrichirCadastre() {
-    if (enrichissementCadastre) return enrichissementCadastre;
-
-    const parcelles = donneesBrutes["cadastre"] || [];
+/* Pour chaque parcelle cadastrale (déjà réduite aux seules parcelles
+   visibles à l'écran, voir ouvrirRecherche), retrouve la mutation DVF
+   correspondante (référence exacte), la zone PLUi et le niveau RGA à cet
+   endroit (le centre de la parcelle tombe dans quelle zone ?), et le DPE
+   le plus proche s'il est à l'intérieur de la parcelle. Les recherches
+   géométriques restent groupées par commune (les jeux de données
+   portent un code INSEE) : peu utile vu le nombre réduit de parcelles
+   désormais en jeu, mais ne coûte rien et reste correct si jamais la vue
+   couvre plusieurs communes. */
+function enrichirParcelles(parcelles) {
     const mutations = donneesBrutes["mutations"] || [];
     const dpePoints = donneesBrutes["dpe"] || [];
     const zonesPLUi = donneesBrutes["zonagePLUi"] || [];
@@ -142,7 +153,7 @@ function enrichirCadastre() {
         };
     });
 
-    enrichissementCadastre = parcelles;
+    resultatsEnrichis = parcelles;
     return parcelles;
 }
 
@@ -183,7 +194,7 @@ function correspond(r, c) {
 }
 
 function filtrerParcelles(criteres) {
-    return enrichirCadastre().filter(feature => correspond(feature._recherche, criteres));
+    return (resultatsEnrichis || []).filter(feature => correspond(feature._recherche, criteres));
 }
 
 /* ---------- Affichage des résultats sur la carte ---------- */
@@ -305,7 +316,7 @@ function compterResultats() {
 function mettreAJourStatut() {
     const statut = document.getElementById("rf-statut");
     const bouton = document.getElementById("rf-appliquer");
-    if (!statut || !enrichissementCadastre) return;
+    if (!statut || !resultatsEnrichis) return;
 
     const n = compterResultats();
     if (n === 0) {
@@ -337,8 +348,16 @@ function ouvrirRecherche(map) {
     });
     document.getElementById("rf-reset").addEventListener("click", reinitialiserFormulaire);
 
+    const statut = document.getElementById("rf-statut");
+    const zoomMin = zoomMinCadastre();
+    if (map.getZoom() < zoomMin) {
+        statut.textContent = `Zoomez sur une zone du territoire (niveau ${zoomMin} ou plus) pour lancer une recherche : elle ne porte que sur les parcelles affichées à l'écran.`;
+        return;
+    }
+
     chargerDonneesFoncieres().then(() => {
-        enrichirCadastre();
+        const visibles = featuresDansVue("cadastre", map);
+        enrichirParcelles(visibles);
         document.getElementById("rf-appliquer").disabled = false;
         mettreAJourStatut();
     });
