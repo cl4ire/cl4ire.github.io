@@ -116,12 +116,17 @@ function construirePopupCarburant(props) {
 }
 
 /* =========================================================
-   POPUP COMMERCE — fiche détaillée
-   Horaires (syntaxe OSM), téléphone/email/site formatés, catégorie
-   reprise de config.js (categorieCommerce/TYPES_COMMERCES).
+   POPUPS "FICHE" — commerces, banques & DAB, mairies, boîtes aux
+   lettres. Base commune (horaires, contact, badge ouvert/fermé)
+   factorisée ci-dessous ; chaque couche ne fournit que ses propres
+   champs et sa couleur/icône (voir construirePopup en bas de fichier).
    ========================================================= */
 const JOURS_OSM = { Mo: "Lundi", Tu: "Mardi", We: "Mercredi", Th: "Jeudi", Fr: "Vendredi", Sa: "Samedi", Su: "Dimanche" };
 const ORDRE_JOURS_OSM = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+const JOUR_FR_VERS_OSM = {
+    "lundi": "Mo", "mardi": "Tu", "mercredi": "We", "jeudi": "Th",
+    "vendredi": "Fr", "samedi": "Sa", "dimanche": "Su"
+};
 
 function jourOsmAujourdhui() {
     return ORDRE_JOURS_OSM[(new Date().getDay() + 6) % 7]; // getDay() : 0 = dimanche
@@ -177,6 +182,35 @@ function parserHorairesOsm(valeur) {
     return auMoinsUn ? horaires : null;
 }
 
+/* Horaires en texte libre français, tels qu'exportés pour les mairies
+   ("Le Mardi : de 09h00 à 12h00\nLe Vendredi : de 14h00 à 18h00"), une
+   ligne par jour. On les ramène à la même structure {Mo: [...], ...}
+   que parserHorairesOsm pour pouvoir réutiliser estOuvertMaintenant et
+   l'affichage jour par jour. Ne couvre que ce motif (jour + une ou
+   plusieurs plages "de Xh à Y"), pas de spécification plus large à
+   gérer ici : les données sont déjà rédigées à la main par les mairies. */
+function parserHorairesMairie(texte) {
+    if (!texte || typeof texte !== "string") return null;
+    const horaires = {};
+    let auMoinsUn = false;
+    texte.split("\n").forEach(ligne => {
+        const m = ligne.trim().match(/^(?:l['’]|le\s+|la\s+)?\s*(\p{L}+)\s*:?\s*(.*)$/iu);
+        if (!m) return;
+        const jour = JOUR_FR_VERS_OSM[m[1].toLowerCase()];
+        if (!jour) return;
+        const plages = [];
+        const re = /(\d{1,2})h(\d{2})?\s*(?:à|a)\s*(\d{1,2})h(\d{2})?/gi;
+        let plage;
+        while ((plage = re.exec(m[2])) !== null) {
+            const h1 = plage[1].padStart(2, "0"), m1 = (plage[2] || "00").padStart(2, "0");
+            const h2 = plage[3].padStart(2, "0"), m2 = (plage[4] || "00").padStart(2, "0");
+            plages.push(`${h1}:${m1}-${h2}:${m2}`);
+        }
+        if (plages.length) { horaires[jour] = plages; auMoinsUn = true; }
+    });
+    return auMoinsUn ? horaires : null;
+}
+
 function estOuvertMaintenant(horaires) {
     if (!horaires) return null;
     const plages = horaires[jourOsmAujourdhui()];
@@ -207,48 +241,201 @@ function domaineSite(url) {
     }
 }
 
+/* Met en majuscule la première lettre de chaque mot, pour les champs
+   fournis tout en capitales (adresses des boîtes aux lettres...). */
+function capitaliserMots(texte) {
+    if (!texte) return "";
+    return String(texte).toLowerCase().replace(/(^|[\s'-])\p{L}/gu, l => l.toUpperCase());
+}
+
+/* Liens de contact génériques (téléphone/email/site), réutilisés par
+   toutes les fiches. `champs` permet d'adapter les noms de propriétés
+   d'une couche à l'autre (ex. contact_phone pour les mairies). */
+function construireContacts(props, champs = {}) {
+    const { tel = "phone", email = "email", site = "website" } = champs;
+    const contacts = [];
+    if (props[tel]) {
+        contacts.push(`<a class="popup-fiche-contact" href="tel:${echapperHtml(String(props[tel]).replace(/\s+/g, ""))}"><i class="fa-solid fa-phone"></i>${echapperHtml(formaterTelephone(props[tel]))}</a>`);
+    }
+    if (props[email]) {
+        contacts.push(`<a class="popup-fiche-contact" href="mailto:${echapperHtml(props[email])}"><i class="fa-solid fa-envelope"></i>${echapperHtml(props[email])}</a>`);
+    }
+    if (props[site]) {
+        contacts.push(`<a class="popup-fiche-contact" href="${echapperHtml(props[site])}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-globe"></i>${echapperHtml(domaineSite(props[site]))}</a>`);
+    }
+    return contacts;
+}
+
+/* Liste jour par jour à partir d'un objet horaires {Mo: [...], ...},
+   jour courant mis en évidence. */
+function construireLignesHoraires(horaires) {
+    if (!horaires) return "";
+    const aujourdhui = jourOsmAujourdhui();
+    return ORDRE_JOURS_OSM.filter(j => j in horaires).map(j => {
+        const plages = horaires[j];
+        const texte = plages.length ? plages.join(", ") : "Fermé";
+        return `<div class="popup-fiche-jour${j === aujourdhui ? " aujourdhui" : ""}"><span>${JOURS_OSM[j]}</span><strong>${echapperHtml(texte)}</strong></div>`;
+    }).join("");
+}
+
+function construireBadgeOuvert(horaires) {
+    if (!horaires) return "";
+    const ouvert = estOuvertMaintenant(horaires);
+    return `<span class="popup-fiche-badge ${ouvert ? "ouvert" : "ferme"}"><span></span>${ouvert ? "Ouvert" : "Fermé"}</span>`;
+}
+
+/* Élus d'une mairie, format "NOM Prénom (Rôle)\n..." — extraction par
+   motif plutôt qu'un split ligne à ligne strict, car certains exports
+   comportent des doublons/lignes recollées sans saut de ligne : une
+   simple recherche globale de "Nom (Rôle)" ignore proprement ce qui ne
+   correspond pas plutôt que de planter ou d'afficher du texte cassé. */
+function parserElus(texte) {
+    if (!texte || typeof texte !== "string") return [];
+    const re = /([A-ZÀ-Ý][\wÀ-ÖØ-öø-ÿ'’-]*(?:\s+[A-ZÀ-Ýa-zà-öø-ÿ][\wÀ-ÖØ-öø-ÿ'’-]*)*)\s*\(([^()]+)\)/g;
+    const vus = new Set();
+    const elus = [];
+    let m;
+    while ((m = re.exec(texte)) !== null) {
+        const nom = m[1].trim(), role = m[2].trim();
+        const cle = nom.toUpperCase();
+        if (vus.has(cle)) continue;
+        vus.add(cle);
+        elus.push({ nom, role });
+    }
+    return elus;
+}
+
+function construireElus(texte) {
+    const elus = parserElus(texte);
+    if (!elus.length) return "";
+    const lignes = elus.map(e => `<div class="popup-fiche-elu"><strong>${echapperHtml(e.nom)}</strong><span>${echapperHtml(e.role)}</span></div>`).join("");
+    return `<details class="popup-fiche-elus">
+        <summary><span>Conseil municipal (${elus.length})</span><i class="fa-solid fa-chevron-right"></i></summary>
+        <div class="popup-fiche-elus-liste">${lignes}</div>
+    </details>`;
+}
+
 function construirePopupCommerce(props) {
     const cat = categorieCommerce(props.type);
     const nom = premierChampValide(props, ["name", "brand"]) || cat.label;
     const adresse = [props.address, props.com_nom].filter(Boolean).join(" · ");
-
     const horaires = parserHorairesOsm(props.opening_hours);
-    const ouvert = estOuvertMaintenant(horaires);
-    const aujourdhui = jourOsmAujourdhui();
+    const contacts = construireContacts(props);
+    const lignesHoraires = construireLignesHoraires(horaires);
 
-    const contacts = [];
-    if (props.phone) {
-        contacts.push(`<a class="popup-commerce-contact" href="tel:${echapperHtml(props.phone.replace(/\s+/g, ""))}"><i class="fa-solid fa-phone"></i>${echapperHtml(formaterTelephone(props.phone))}</a>`);
-    }
-    if (props.email) {
-        contacts.push(`<a class="popup-commerce-contact" href="mailto:${echapperHtml(props.email)}"><i class="fa-solid fa-envelope"></i>${echapperHtml(props.email)}</a>`);
-    }
-    if (props.website) {
-        contacts.push(`<a class="popup-commerce-contact" href="${echapperHtml(props.website)}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-globe"></i>${echapperHtml(domaineSite(props.website))}</a>`);
-    }
-
-    const lignesHoraires = horaires
-        ? ORDRE_JOURS_OSM.filter(j => j in horaires).map(j => {
-            const plages = horaires[j];
-            const texte = plages.length ? plages.join(", ") : "Fermé";
-            return `<div class="popup-commerce-jour${j === aujourdhui ? " aujourdhui" : ""}"><span>${JOURS_OSM[j]}</span><strong>${echapperHtml(texte)}</strong></div>`;
-        }).join("")
-        : "";
-
-    return `<div class="popup-commerce">
-        <div class="popup-commerce-entete">
-            <div class="popup-commerce-icon" style="background:${cat.color}"><i class="${cat.icon}"></i></div>
-            <div class="popup-commerce-titre-wrap">
-                <div class="popup-commerce-tag" style="color:${cat.color}">${echapperHtml(cat.label)}</div>
-                <div class="popup-commerce-titre">${echapperHtml(nom)}</div>
-                ${adresse ? `<div class="popup-commerce-adresse">${echapperHtml(adresse)}</div>` : ""}
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${cat.color}"><i class="${cat.icon}"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${cat.color}">${echapperHtml(cat.label)}</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${adresse ? `<div class="popup-fiche-adresse">${echapperHtml(adresse)}</div>` : ""}
             </div>
-            ${horaires ? `<span class="popup-commerce-badge ${ouvert ? "ouvert" : "ferme"}"><span></span>${ouvert ? "Ouvert" : "Fermé"}</span>` : ""}
+            ${construireBadgeOuvert(horaires)}
         </div>
 
-        ${contacts.length ? `<div class="popup-commerce-section"><div class="popup-commerce-section-titre">Contact</div><div class="popup-commerce-contacts">${contacts.join("")}</div></div>` : ""}
+        ${contacts.length ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Contact</div><div class="popup-fiche-contacts">${contacts.join("")}</div></div>` : ""}
 
-        ${lignesHoraires ? `<div class="popup-commerce-section"><div class="popup-commerce-section-titre">Horaires</div>${lignesHoraires}</div>` : ""}
+        ${lignesHoraires ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Horaires</div>${lignesHoraires}</div>` : ""}
+    </div>`;
+}
+
+/* Banque (agence) ou distributeur automatique (DAB) : même flux OSM,
+   distingué par le champ "type". Terracotta pour les DAB, pour éviter
+   que tout le SIG tourne autour du même bleu institutionnel. */
+function construirePopupBanque(props) {
+    const estDab = props.type === "atm";
+    const style = estDab
+        ? { icon: "fa-solid fa-money-bill-wave", color: PALETTE.terracotta, tag: "Distributeur (DAB)" }
+        : { icon: "fa-solid fa-building-columns", color: PALETTE.ardoise, tag: "Banque" };
+    const nom = premierChampValide(props, ["name", "brand", "operator"]) || style.tag;
+    const horaires = parserHorairesOsm(props.opening_hours);
+    const contacts = construireContacts(props);
+    const lignesHoraires = construireLignesHoraires(horaires);
+    const operateur = props.operator && props.operator !== nom ? props.operator : null;
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${style.color}"><i class="${style.icon}"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${style.color}">${echapperHtml(style.tag)}</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${props.com_nom ? `<div class="popup-fiche-adresse">${echapperHtml(props.com_nom)}</div>` : ""}
+                ${operateur ? `<div class="popup-fiche-puce" style="color:${style.color}"><i class="fa-solid fa-building"></i>Opéré par ${echapperHtml(operateur)}</div>` : ""}
+                ${!estDab && props.has_atm ? `<div class="popup-fiche-puce" style="color:${PALETTE.terracotta}"><i class="fa-solid fa-money-bill-wave"></i>Distributeur sur place</div>` : ""}
+            </div>
+            ${construireBadgeOuvert(horaires)}
+        </div>
+
+        ${contacts.length ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Contact</div><div class="popup-fiche-contacts">${contacts.join("")}</div></div>` : ""}
+
+        ${lignesHoraires ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Horaires</div>${lignesHoraires}</div>` : ""}
+    </div>`;
+}
+
+/* Mairie (ou mairie déléguée) : horaires en texte libre plutôt que
+   syntaxe OSM (parserHorairesMairie), et liste du conseil municipal
+   repliée par défaut (<details>) pour ne pas alourdir la fiche. */
+function construirePopupMairie(props) {
+    const tag = props.amenity || "Mairie";
+    const nom = premierChampValide(props, ["name"]) || tag;
+    const horaires = parserHorairesMairie(props.opening_hours);
+    const contacts = construireContacts(props, { tel: "contact_phone", email: "contact_email", site: "contact_website" });
+    const lignesHoraires = construireLignesHoraires(horaires);
+    const elus = construireElus(props.elus);
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.riviere}"><i class="fa-solid fa-landmark"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.riviere}">${echapperHtml(tag)}</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${props.commune ? `<div class="popup-fiche-adresse">${echapperHtml(props.commune)}</div>` : ""}
+            </div>
+            ${construireBadgeOuvert(horaires)}
+        </div>
+
+        ${contacts.length ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Contact</div><div class="popup-fiche-contacts">${contacts.join("")}</div></div>` : ""}
+
+        ${lignesHoraires ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Horaires</div>${lignesHoraires}</div>` : ""}
+
+        ${elus ? `<div class="popup-fiche-section">${elus}</div>` : ""}
+    </div>`;
+}
+
+/* Boîte aux lettres La Poste : juste les heures de levée (dernier
+   passage du facteur), en semaine et le samedi — pas d'autre info
+   utile sur cette couche, donc pas de badge ouvert/fermé ici. */
+function extraireHeureLevee(valeur) {
+    if (!valeur) return null;
+    const m = String(valeur).match(/(\d{2}):(\d{2})/);
+    return m ? `${m[1]}:${m[2]}` : null;
+}
+
+function construirePopupBal(props) {
+    const numero = props.VA_NO_VOIE ? `${props.VA_NO_VOIE} ` : "";
+    const voie = capitaliserMots(props.LB_VOIE_EXT);
+    const nom = (numero + voie).trim() || "Boîte aux lettres";
+    const adresse = [props.CO_POSTAL, capitaliserMots(props.LB_COM)].filter(Boolean).join(" · ");
+    const semaine = extraireHeureLevee(props.HDL_SEMAINE_EXTRA);
+    const samedi = extraireHeureLevee(props.HDL_SAMEDI_EXTRA);
+
+    const lignes = [
+        semaine ? `<div class="popup-fiche-jour"><span>Du lundi au vendredi</span><strong>${echapperHtml(semaine)}</strong></div>` : "",
+        samedi ? `<div class="popup-fiche-jour"><span>Le samedi</span><strong>${echapperHtml(samedi)}</strong></div>` : ""
+    ].join("");
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${PALETTE.feuille}"><i class="fa-solid fa-envelope"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${PALETTE.feuille}">Boîte aux lettres</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${adresse ? `<div class="popup-fiche-adresse">${echapperHtml(adresse)}</div>` : ""}
+            </div>
+        </div>
+
+        ${lignes ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Levée du courrier</div>${lignes}</div>` : ""}
     </div>`;
 }
 
@@ -256,6 +443,9 @@ function construirePopup(feature, layerConf) {
     const props = feature.properties || {};
     if (layerConf.id === "carburants") return construirePopupCarburant(props);
     if (layerConf.id === "commerces") return construirePopupCommerce(props);
+    if (layerConf.id === "banques") return construirePopupBanque(props);
+    if (layerConf.id === "mairies") return construirePopupMairie(props);
+    if (layerConf.id === "bal") return construirePopupBal(props);
 
     const titre = premierChampValide(props, layerConf.titleFields || []) || layerConf.label;
     const sousInfos = (layerConf.subtitleFields || []).map(c => props[c]).filter(v => v !== undefined && v !== null && v !== "" && v !== "NULL");

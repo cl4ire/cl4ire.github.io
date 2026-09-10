@@ -95,9 +95,17 @@ volumes ou de données à ne récupérer qu'à la demande.
 
 ## Popups détaillées
 
-Deux couches ont une fiche popup dédiée dans `js/popup.js` plutôt que la
-popup générique (champs bruts affichés tels quels) : carburants et
-commerces. `construirePopup` aiguille sur `layerConf.id`.
+Plusieurs couches ont une fiche popup dédiée dans `js/popup.js` plutôt que
+la popup générique (champs bruts affichés tels quels) : carburants,
+commerces, banques & DAB, mairies et boîtes aux lettres. `construirePopup`
+aiguille sur `layerConf.id`. Les quatre dernières partagent la même base
+visuelle (classes CSS `.popup-fiche-*`) et les mêmes briques JS
+(`construireContacts`, `construireLignesHoraires`, `construireBadgeOuvert`)
+pour rester cohérentes entre elles sans dupliquer le balisage — seules
+l'icône, la couleur et les champs source changent d'une couche à l'autre.
+Couleurs volontairement variées (pas que du bleu) : ardoise pour les
+agences bancaires, terracotta pour les DAB, feuille pour les boîtes aux
+lettres, bleu rivière conservé pour les mairies (identité "institution").
 
 - **Commerces** (`construirePopupCommerce`) — catégorie reprise de
   `categorieCommerce`/`TYPES_COMMERCES` (icône + couleur), badge "Ouvert"/
@@ -111,6 +119,35 @@ commerces. `construirePopup` aiguille sur `layerConf.id`.
   plusieurs semaines...) — largement suffisant pour les données locales.
   Chaque section (Contact/Horaires) ne s'affiche que si la donnée existe,
   pour rester propre sur les fiches incomplètes.
+- **Banques & DAB** (`construirePopupBanque`) — même flux OSM que les
+  commerces (`type: "bank"` ou `"atm"`), donc mêmes horaires/badge. Icône
+  et couleur diffèrent selon le type (agence vs distributeur) ; une agence
+  qui a un DAB sur place (`has_atm`) l'indique par une puce dédiée, et un
+  DAB isolé affiche l'enseigne qui l'opère (`operator`) s'il n'a pas de
+  nom propre.
+- **Mairies** (`construirePopupMairie`) — même principe horaires/contact,
+  mais adapté aux champs mairies (`contact_phone`/`contact_email`/
+  `contact_website`, horaires en texte libre français plutôt qu'en syntaxe
+  OSM : `parserHorairesMairie` reconnaît les lignes du type "Le Mardi : de
+  09h00 à 12h00" et les ramène à la même structure interne que les
+  horaires OSM pour réutiliser le même code d'affichage/badge). Le champ
+  `elus` (liste des membres du conseil municipal, un par ligne
+  "NOM Prénom (Rôle)") est affiché dans un `<details>` replié par défaut
+  (`construireElus`/`parserElus`) pour ne pas allonger la fiche — extrait
+  par un motif plutôt qu'un simple découpage ligne à ligne, car les
+  exports observés contiennent des doublons et parfois des lignes recollées
+  sans saut de ligne ; les entrées cassées sont ignorées plutôt
+  qu'affichées telles quelles, et les doublons dédupliqués par nom.
+- **Boîtes aux lettres** (`construirePopupBal`) — la seule information
+  utile ici est l'heure de la dernière levée (en semaine et le samedi,
+  champs `HDL_SEMAINE_EXTRA`/`HDL_SAMEDI_EXTRA`, format `THH:MM:SS+00:00`
+  réduit à `HH:MM`) : pas de badge ouvert/fermé, pas de contact.
+
+Au passage, `couches/commerces/banques.geojson` contenait un problème
+d'encodage (UTF-8 doublement encodé : `"CrÃ©dit Mutuel"` au lieu de
+`"Crédit Mutuel"`) qui aurait rendu la nouvelle fiche moche sur les noms
+accentués — corrigé en réencodant le fichier (le seul touché : les autres
+couches testées n'ont pas ce problème).
 
 ## Recherche foncière ("Explorer le foncier")
 
