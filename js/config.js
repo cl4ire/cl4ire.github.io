@@ -315,20 +315,30 @@ function geojsonDepuisFluxODS(data) {
 }
 
 /* =========================================================
-   CONSIGNES / CASIERS COLIS (Mondial Relay, Amazon Locker, Vinted Go...)
-   Pas de jeu de données dédié publié par un seul opérateur : ces
-   points sont en revanche cartographiés dans OpenStreetMap sous un tag
-   commun (amenity=parcel_locker, avec brand/operator/network selon
-   l'enseigne), interrogeable en direct via Overpass — même principe de
-   couche "flux" que Vigieau/OLD/carburants (voir plus haut), pas de
-   fichier dans le dépôt. Couverture qui dépend entièrement de ce que
-   les contributeurs OSM ont déjà cartographié localement : les réseaux
-   très récents ou en forte expansion (Vinted Go, largement hébergé
-   dans des commerces existants) peuvent être sous-représentés par
-   rapport à la réalité du terrain, contrairement à Mondial Relay ou
-   Amazon Locker, plus anciens et mieux couverts. Pas de solution
-   miracle à ça : c'est la limite du crowdsourcing, à signaler plutôt
-   qu'à cacher (voir le bandeau "Ce qui reste à faire" du README).
+   POINTS RELAIS & CASIERS COLIS (Mondial Relay, Amazon Locker, Vinted
+   Go...)
+   Pas de jeu de données dédié publié par un seul opérateur : ces points
+   sont en revanche cartographiés dans OpenStreetMap, interrogeable en
+   direct via Overpass — même principe de couche "flux" que Vigieau/OLD/
+   carburants (voir plus haut), pas de fichier dans le dépôt.
+
+   DEUX tags OSM différents selon le type de point, pas un seul : au
+   départ seul amenity=parcel_locker était interrogé, ce qui ne
+   remontait quasiment aucun Mondial Relay (2 sur tout le territoire) -
+   parce que la grande majorité des points Mondial Relay ne sont PAS des
+   casiers automatiques, ce sont des "Points Relais" hébergés dans des
+   commerces existants (tabac, presse, épicerie...), tagués sur le
+   commerce lui-même via post_office=post_partner (+ post_office:brand/
+   post_office:service_provider pour l'enseigne), un schéma OSM distinct
+   et bien documenté pour ce cas précis. Amazon Locker et Vinted Go sont
+   en revanche presque toujours de vrais casiers automatiques
+   (amenity=parcel_locker). La requête interroge donc les deux à la
+   fois : couverture qui dépend entièrement de ce que les contributeurs
+   OSM ont déjà cartographié localement, les réseaux très récents ou en
+   forte expansion (Vinted Go) pouvant rester sous-représentés par
+   rapport à la réalité du terrain. Pas de solution miracle à ça : c'est
+   la limite du crowdsourcing, à signaler plutôt qu'à cacher (voir le
+   bandeau "Ce qui reste à faire" du README).
    ========================================================= */
 
 /* Rectangle englobant la comcom Loir-Lucé-Bercé (bbox de
@@ -340,9 +350,17 @@ function geojsonDepuisFluxODS(data) {
    bordure de territoire. */
 const BBOX_TERRITOIRE = { sud: 47.60, ouest: 0.30, nord: 47.92, est: 0.72 };
 
+/* "out center" plutôt que "out body" : nécessaire pour post_partner, qui
+   peut être tagué sur un "way" (contour de bâtiment) et pas seulement un
+   node - un node porte déjà lat/lon directement avec "out center" (même
+   résultat qu'"out body" dans ce cas), donc un seul mode de sortie
+   suffit pour les deux familles de points. */
 const REQUETE_OVERPASS_LOCKERS =
-    `[out:json][timeout:25];node["amenity"="parcel_locker"]` +
-    `(${BBOX_TERRITOIRE.sud},${BBOX_TERRITOIRE.ouest},${BBOX_TERRITOIRE.nord},${BBOX_TERRITOIRE.est});out body;`;
+    `[out:json][timeout:25];` +
+    `(node["amenity"="parcel_locker"](${BBOX_TERRITOIRE.sud},${BBOX_TERRITOIRE.ouest},${BBOX_TERRITOIRE.nord},${BBOX_TERRITOIRE.est});` +
+    `node["post_office"="post_partner"](${BBOX_TERRITOIRE.sud},${BBOX_TERRITOIRE.ouest},${BBOX_TERRITOIRE.nord},${BBOX_TERRITOIRE.est});` +
+    `way["post_office"="post_partner"](${BBOX_TERRITOIRE.sud},${BBOX_TERRITOIRE.ouest},${BBOX_TERRITOIRE.nord},${BBOX_TERRITOIRE.est}););` +
+    `out center;`;
 
 /* L'instance publique principale (overpass-api.de) est fréquemment
    surchargée et répond parfois 504 aux heures de pointe (constaté en
@@ -376,24 +394,27 @@ function fetchOverpassLockers() {
 }
 
 /* Réponse Overpass (JSON natif de l'API, pas du GeoJSON) : un tableau
-   "elements", chaque nœud portant directement lat/lon (pas besoin de
-   "out geom", réservé aux ways/relations) et ses tags OSM bruts. */
+   "elements". Un node porte directement lat/lon ; un way (post_partner
+   sur un contour de bâtiment) porte un champ "center" à la place grâce
+   à "out center" dans la requête - les deux formes sont donc gérées ici
+   plutôt que de supposer que tout est un node. */
 function geojsonDepuisOverpass(data) {
     const elements = (data && data.elements) || [];
     return {
         type: "FeatureCollection",
         features: elements
-            .filter(el => el.type === "node" && typeof el.lat === "number" && typeof el.lon === "number")
-            .map(el => ({
-                type: "Feature",
-                geometry: { type: "Point", coordinates: [el.lon, el.lat] },
-                properties: el.tags || {}
-            }))
+            .map(el => {
+                const lat = typeof el.lat === "number" ? el.lat : (el.center && el.center.lat);
+                const lon = typeof el.lon === "number" ? el.lon : (el.center && el.center.lon);
+                if (typeof lat !== "number" || typeof lon !== "number") return null;
+                return { type: "Feature", geometry: { type: "Point", coordinates: [lon, lat] }, properties: el.tags || {} };
+            })
+            .filter(Boolean)
     };
 }
 
 const TYPES_LOCKERS = [
-    { id: "mondialrelay", label: "Mondial Relay", color: PALETTE.riviere, motifs: ["mondial relay", "mondialrelay"] },
+    { id: "mondialrelay", label: "Mondial Relay", color: PALETTE.riviere, motifs: ["mondial relay", "mondialrelay", "point relais"] },
     { id: "amazon", label: "Amazon Locker", color: "#FF9900", motifs: ["amazon"] },
     { id: "vintedgo", label: "Vinted Go", color: "#09B1BA", motifs: ["vinted"] },
     { id: "inpost", label: "InPost", color: "#FFC700", motifs: ["inpost"] },
@@ -401,21 +422,40 @@ const TYPES_LOCKERS = [
     { id: "colissimo", label: "Colissimo / La Poste", color: PALETTE.foret, motifs: ["colissimo", "la poste", "laposte"] },
     { id: "relaiscolis", label: "Relais Colis / Pickup", color: PALETTE.terracotta, motifs: ["relais colis", "pickup"] },
     { id: "dpd", label: "DPD Pickup", color: "#DC0032", motifs: ["dpd"] },
-    { id: "ups", label: "UPS Access Point", color: "#351C15", motifs: ["ups"] }
+    { id: "ups", label: "UPS Access Point", color: "#351C15", motifs: ["ups"] },
+    { id: "hermes", label: "Hermes / Evri", color: "#6E2585", motifs: ["hermes", "evri"] }
 ];
 const TYPE_LOCKER_DEFAUT = { id: "autre", label: "Autre opérateur", color: PALETTE.ardoise };
 
-/* Enseigne reconnue par mots-clés (brand/operator/network/name) plutôt
-   que par une liste de valeurs exactes : OSM ne normalise pas
-   parfaitement ces champs (variantes de casse/orthographe selon le
-   contributeur), un simple "contient" reste robuste à ça. */
+/* Enseigne reconnue par mots-clés plutôt que par une liste de valeurs
+   exactes : OSM ne normalise pas parfaitement ces champs (variantes de
+   casse/orthographe selon le contributeur), un simple "contient" reste
+   robuste à ça. Cherche à la fois dans les champs d'un vrai casier
+   (brand/operator/network/name, amenity=parcel_locker) et dans ceux
+   d'un point relais hébergé en commerce (post_office:brand/
+   post_office:service_provider, post_office=post_partner). */
 function categorieLocker(props) {
-    const texte = [props.brand, props.operator, props.network, props.name].filter(Boolean).join(" ").toLowerCase();
+    const texte = [
+        props.brand, props.operator, props.network, props.name,
+        props["post_office:brand"], props["post_office:service_provider"]
+    ].filter(Boolean).join(" ").toLowerCase();
     return TYPES_LOCKERS.find(cat => cat.motifs.some(m => texte.includes(m))) || TYPE_LOCKER_DEFAUT;
 }
 
+/* Icône différente selon le type de point : un vrai casier automatique
+   (amenity=parcel_locker) vs un point relais hébergé dans un commerce
+   existant (post_office=post_partner) — deux services assez différents
+   pour l'usager (une machine en libre-service vs. un dépôt/retrait
+   auprès d'un commerçant), au-delà de la seule couleur d'enseigne. */
+function estPointRelaisCommerce(props) {
+    return props.post_office === "post_partner";
+}
 function iconeLocker(feature) {
-    return { icon: "fa-solid fa-box", color: categorieLocker(feature.properties || {}).color };
+    const props = feature.properties || {};
+    return {
+        icon: estPointRelaisCommerce(props) ? "fa-solid fa-store" : "fa-solid fa-box",
+        color: categorieLocker(props).color
+    };
 }
 
 /* =========================================================
@@ -456,7 +496,7 @@ const LAYERS = [
         subtitleFields: ["com_nom", "opening_hours"]
     },
     {
-        id: "lockers", group: "services", label: "Consignes & casiers colis",
+        id: "lockers", group: "services", label: "Points relais & casiers colis",
         /* Flux Overpass (OpenStreetMap), voir la section dédiée plus haut
            dans ce fichier pour le détail (bbox, limites de couverture,
            repli sur plusieurs miroirs). */

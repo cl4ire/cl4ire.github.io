@@ -399,16 +399,28 @@ coquille observée `"ye"` au lieu de `"yes"` sur un enregistrement réel ;
 **Mixte** du Val de Loir" (une coquille, sur les deux syndicats gérant le
 territoire — SYVALORM et Syndicat Mixte du Val de Loir).
 
-## Consignes & casiers colis (Mondial Relay, Amazon Locker, Vinted Go...)
+## Points relais & casiers colis (Mondial Relay, Amazon Locker, Vinted Go...)
 
 Nouvelle couche `lockers` (groupe Services), en flux comme
 Vigieau/OLD/carburants : il n'existe pas de jeu de données dédié publié
 par un seul opérateur regroupant toutes les enseignes, mais ces points
-sont cartographiés dans OpenStreetMap sous un tag commun
-(`amenity=parcel_locker`, avec `brand`/`operator`/`network` selon
-l'enseigne), interrogeable en direct via
+sont cartographiés dans OpenStreetMap, interrogeable en direct via
 [Overpass](https://overpass-api.de/) — pas de fichier dans le dépôt,
 comme les autres couches "flux" du site.
+
+**Deux tags OSM différents interrogés, pas un seul.** Au départ, seul
+`amenity=parcel_locker` (un vrai casier automatique) était interrogé —
+ce qui ne remontait presque aucun point Mondial Relay (2 sur tout le
+territoire), signalé en conditions réelles. En cause : la grande
+majorité des points Mondial Relay ne sont **pas** des casiers, ce sont
+des "Points Relais" hébergés dans des commerces existants (tabac,
+presse, épicerie...), tagués sur le commerce lui-même via
+`post_office=post_partner` (+ `post_office:brand`/
+`post_office:service_provider` pour l'enseigne) — un schéma OSM à part,
+bien documenté, complètement différent d'`amenity=parcel_locker`. Amazon
+Locker et Vinted Go, eux, sont presque toujours de vrais casiers
+automatiques. La requête (`REQUETE_OVERPASS_LOCKERS`) interroge donc les
+deux à la fois :
 
 - `BBOX_TERRITOIRE` (dans `config.js`) : rectangle englobant la comcom,
   dérivé de la boîte englobante de `couches/epci.geojson` (le polygone
@@ -416,8 +428,10 @@ comme les autres couches "flux" du site.
   filtre Overpass `poly:` précis — un simple rectangle, élargi d'~1 km,
   suffit très largement pour un territoire de cette taille).
 - `geojsonDepuisOverpass` convertit la réponse Overpass (JSON natif de
-  l'API — un tableau `elements`, pas du GeoJSON) en GeoJSON standard
-  pour réutiliser le même pipeline de chargement que les autres couches.
+  l'API — un tableau `elements`, pas du GeoJSON) en GeoJSON standard :
+  gère à la fois les nodes (lat/lon directs) et les ways (un point
+  relais peut être tagué sur le contour d'un bâtiment plutôt qu'un
+  simple point — `out center` dans la requête fournit alors un centre).
 - `fetchOverpassLockers` (`config.js`) réessaie sur plusieurs miroirs
   Overpass publics l'un après l'autre (`MIROIRS_OVERPASS`) plutôt qu'un
   seul serveur fixe : l'instance principale (overpass-api.de) répond
@@ -428,29 +442,32 @@ comme les autres couches "flux" du site.
   logique de récupération (retries, miroirs...) à la place du
   fetch/transform standard, réutilisable par d'autres couches si besoin.
 - `categorieLocker`/`TYPES_LOCKERS` reconnaissent l'enseigne par
-  mots-clés sur `brand`/`operator`/`network`/`name` (Mondial Relay,
+  mots-clés, aussi bien sur les champs d'un casier
+  (`brand`/`operator`/`network`/`name`) que sur ceux d'un point relais
+  (`post_office:brand`/`post_office:service_provider`) : Mondial Relay,
   Amazon Locker, Vinted Go, InPost, Chronopost, Colissimo, Relais Colis/
-  Pickup, DPD, UPS Access Point, avec un repli "Autre opérateur"),
-  chacune avec sa propre couleur de marqueur — même mécanisme que les
-  catégories de commerces. Popup dédiée (`construirePopupLocker`) :
-  enseigne, adresse (reconstruite depuis les champs `addr:*` OSM),
-  horaires (beaucoup sont en `24/7`) et contact, en tolérant les deux
-  conventions de balisage OSM pour le téléphone/site
-  (`phone`/`website` et `contact:phone`/`contact:website`).
+  Pickup, DPD, UPS Access Point, Hermes/Evri, avec un repli "Autre
+  opérateur" — chacune avec sa propre couleur de marqueur, même
+  mécanisme que les catégories de commerces. `estPointRelaisCommerce`
+  distingue en plus les deux types de point pour l'icône (casier vs
+  magasin) et pour un repère visuel dans la popup dédiée
+  (`construirePopupLocker`) : enseigne, adresse (reconstruite depuis les
+  champs `addr:*` OSM), horaires (beaucoup de casiers sont en `24/7`) et
+  contact, en tolérant les deux conventions de balisage OSM pour le
+  téléphone/site (`phone`/`website` et `contact:phone`/
+  `contact:website`).
 
 **Limite à avoir en tête** : la couverture dépend entièrement de ce que
-les contributeurs OpenStreetMap ont déjà cartographié localement. Les
-réseaux anciens et très cartographiés (Mondial Relay, Amazon Locker)
-devraient bien remonter ; les réseaux récents ou en forte expansion
-(Vinted Go en particulier, souvent hébergé dans des commerces déjà
-existants comme des supermarchés ou des laveries plutôt que dans un
-local dédié) peuvent être sous-représentés par rapport à la réalité du
-terrain, sans qu'il y ait de moyen fiable de le détecter automatiquement
-depuis le site. Pas de solution miracle à ça, c'est la limite du
-crowdsourcing — si des casiers manquent visiblement dans une commune du
-territoire, la meilleure remédiation est de les ajouter à OpenStreetMap
-directement (ils remonteront alors automatiquement ici, sans rien changer
-au site).
+les contributeurs OpenStreetMap ont déjà cartographié localement, pour
+les deux familles de tags. Les réseaux anciens et très cartographiés
+(Mondial Relay, Amazon Locker) devraient bien remonter ; les réseaux
+récents ou en forte expansion (Vinted Go en particulier) peuvent rester
+sous-représentés par rapport à la réalité du terrain, sans qu'il y ait de
+moyen fiable de le détecter automatiquement depuis le site. Pas de
+solution miracle à ça, c'est la limite du crowdsourcing — si des points
+manquent visiblement dans une commune du territoire, la meilleure
+remédiation est de les ajouter à OpenStreetMap directement (ils
+remonteront alors automatiquement ici, sans rien changer au site).
 
 ## Ce qui reste à faire
 
