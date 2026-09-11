@@ -1101,16 +1101,23 @@ const LAYERS = [
     },
     {
         id: "fontaines", group: "services", label: "Points d'eau potable",
+        /* sansPopup : données OSM presque toujours trop pauvres pour une
+           fiche (souvent juste le tag "amenity=drinking_water", rien
+           d'autre) - décidé avec l'utilisatrice, voir README. */
         fetchPersonnalise: () => fetchOverpassCombinePourCouche("fontaines"), transform: geojsonDepuisElementsOverpass,
         type: "point", icon: "fa-solid fa-droplet", color: PALETTE.riviere,
+        sansPopup: true,
         lazy: true, searchable: true, cluster: true,
         titleFields: ["name"],
         subtitleFields: []
     },
     {
         id: "parkings", group: "services", label: "Parkings publics",
+        /* sansPopup : voir fontaines ci-dessus, même raison (capacité/
+           accès rarement renseignés sur ce territoire). */
         fetchPersonnalise: () => fetchOverpassCombinePourCouche("parkings"), transform: geojsonDepuisElementsOverpass,
         type: "point", icon: "fa-solid fa-square-parking", color: PALETTE.ardoise,
+        sansPopup: true,
         lazy: true, searchable: true, cluster: true,
         titleFields: ["name"],
         subtitleFields: ["capacity", "fee"]
@@ -1118,9 +1125,12 @@ const LAYERS = [
     {
         id: "antennes", group: "services", label: "Antennes-relais mobiles",
         /* Pivot depuis l'idée initiale de couche WMS ARCEP (couverture
-           mobile) - voir plus haut dans ce fichier pour le détail. */
+           mobile) - voir plus haut dans ce fichier pour le détail.
+           sansPopup : voir fontaines ci-dessus, l'opérateur est souvent
+           absent des données OSM. */
         fetchPersonnalise: () => fetchOverpassCombinePourCouche("antennes"), transform: geojsonDepuisElementsOverpass,
         type: "point", icon: "fa-solid fa-tower-cell", color: PALETTE.ardoise,
+        sansPopup: true,
         lazy: true, searchable: true, cluster: true,
         titleFields: ["operator", "ref"],
         subtitleFields: ["operator"]

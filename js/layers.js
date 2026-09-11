@@ -130,7 +130,18 @@ function construireCoucheDonnees(data, layerConf) {
         },
 
         onEachFeature: function (feature, layer) {
-            layer.bindPopup(construirePopup(feature, layerConf));
+            /* sansPopup : quelques couches dont les données OSM sont
+               presque toujours trop pauvres pour justifier une fiche
+               (juste un point d'intérêt à repérer sur la carte, sans
+               rien à raconter dessus la plupart du temps) - décidé avec
+               l'utilisatrice plutôt que de garder une popup qui
+               n'affiche quasi jamais que son titre générique. Le
+               marqueur reste cliquable normalement pour tout le reste
+               (recherche, "près de chez moi", clusters) : seul le
+               popup.bindPopup est sauté, pas l'indexation. */
+            if (!layerConf.sansPopup) {
+                layer.bindPopup(construirePopup(feature, layerConf));
+            }
             /* La fiche parcelle a besoin de couches encore en différé
                (mutations/DPE/PLUi/RGA) : plutôt que de les charger à la
                construction de CHAQUE parcelle visible (donc à chaque

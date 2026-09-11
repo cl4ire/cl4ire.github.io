@@ -919,6 +919,30 @@ relation avec beaucoup de way membres peut légitimement prendre plus de
 temps qu'un simple nœud/way, surtout sur un serveur public déjà sous
 charge.
 
+## Couches sans popup (`sansPopup`)
+
+Retour direct de l'utilisatrice : sur ce territoire, certaines couches
+n'ont presque jamais rien à raconter au-delà de leur titre générique -
+les données OSM correspondantes sont trop souvent réduites au strict
+tag minimum. Plutôt que de garder une fiche qui n'affiche quasi jamais
+que "Point d'eau potable" ou "Parking" sans la moindre information
+utile, trois couches sont passées en `sansPopup: true` (`config.js`) :
+**parkings**, **points d'eau potable**, **antennes-relais mobiles**.
+Le marqueur reste affiché et cliquable pour le survol/la recherche/le
+zoom cluster comme n'importe quelle autre couche (`ajouterAuIndex`
+n'est pas concerné) - seul `onEachFeature` (`layers.js`) saute l'appel
+à `layer.bindPopup(...)` pour ces couches, donc cliquer dessus n'ouvre
+simplement rien. Les fonctions `construirePopupFontaine`/
+`construirePopupParking`/`construirePopupAntenne` devenues inutilisées
+ont été supprimées plutôt que laissées en code mort.
+
+D'autres couches au contenu parfois tout aussi pauvre (toilettes
+publiques, petit patrimoine rural) ont volontairement été **gardées**
+avec leur fiche complète : décision explicite de l'utilisatrice de ne
+pas toutes les simplifier au même niveau, ces deux-là restant plus
+souvent renseignées en pratique (horaires/accessibilité pour les
+toilettes, au moins un nom pour le petit patrimoine).
+
 ## Ce qui reste à faire
 
 - Le fichier DVF étant volumineux même en différé, envisager de le
