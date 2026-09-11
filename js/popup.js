@@ -910,20 +910,6 @@ function construirePopupToilettes(props) {
     </div>`;
 }
 
-function construirePopupFontaine(props) {
-    const potable = props.drinking_water !== "no";
-    return `<div class="popup-fiche">
-        <div class="popup-fiche-entete">
-            <div class="popup-fiche-icon" style="background:${PALETTE.ardoise}"><i class="fa-solid fa-droplet"></i></div>
-            <div class="popup-fiche-titre-wrap">
-                <div class="popup-fiche-tag" style="color:${PALETTE.ardoise}">Point d'eau potable</div>
-                <div class="popup-fiche-titre">${echapperHtml(props.name || "Fontaine")}</div>
-            </div>
-        </div>
-        ${!potable ? `<div class="popup-fiche-section"><div class="popup-fiche-precision">Eau non garantie potable à cet endroit.</div></div>` : ""}
-    </div>`;
-}
-
 /* =========================================================
    FRANCE SERVICES — extrait statique filtré sur le territoire (voir
    config.js), champs français directement issus du CSV national ANCT
@@ -1763,32 +1749,13 @@ function construirePopupGenerique(feature, layerConf) {
     </div>`;
 }
 
-/* Parkings publics, vente directe à la ferme, antennes-relais mobiles,
-   petit patrimoine rural (voir config.js pour les flux Overpass/la
-   catégorisation) - dernier lot de couches, mêmes aides déjà en place
-   (adresseOsm/contactsOsm, parserHorairesOsm...). */
-const LABELS_ACCES_PARKING = { yes: "Accès libre", public: "Accès public", customers: "Réservé clientèle", private: "Accès privé" };
-function construirePopupParking(props) {
-    const nom = premierChampValide(props, ["name"]) || "Parking";
-    const infos = [
-        LABELS_ACCES_PARKING[props.access] || null,
-        props.capacity ? `${props.capacity} places` : null,
-        props.fee === "yes" ? "Payant" : (props.fee === "no" ? "Gratuit" : null),
-        props.covered === "yes" ? "Couvert" : null
-    ].filter(Boolean);
-
-    return `<div class="popup-fiche">
-        <div class="popup-fiche-entete">
-            <div class="popup-fiche-icon" style="background:${PALETTE.ardoise}"><i class="fa-solid fa-square-parking"></i></div>
-            <div class="popup-fiche-titre-wrap">
-                <div class="popup-fiche-tag" style="color:${PALETTE.ardoise}">Parking</div>
-                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
-            </div>
-        </div>
-        ${infos.length ? `<div class="popup-fiche-section"><div class="popup-fiche-ligne">${infos.map(echapperHtml).join(" · ")}</div></div>` : ""}
-    </div>`;
-}
-
+/* Vente directe à la ferme, petit patrimoine rural (voir config.js pour
+   les flux Overpass/la catégorisation) - mêmes aides déjà en place
+   (adresseOsm/contactsOsm, parserHorairesOsm...). Parkings/points d'eau
+   potable/antennes-relais n'ont volontairement pas de fiche dédiée :
+   voir sansPopup dans config.js (données OSM trop pauvres la plupart du
+   temps sur ce territoire pour justifier une popup, décidé avec
+   l'utilisatrice - le marqueur seul suffit). */
 function construirePopupVenteFerme(props) {
     const nom = premierChampValide(props, ["name"]) || "Vente directe à la ferme";
     const adresse = adresseOsm(props);
@@ -1808,25 +1775,6 @@ function construirePopupVenteFerme(props) {
         </div>
         ${contacts.length ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Contact</div><div class="popup-fiche-contacts">${contacts.join("")}</div></div>` : ""}
         ${lignesHoraires ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Horaires</div>${lignesHoraires}</div>` : ""}
-    </div>`;
-}
-
-function construirePopupAntenne(props) {
-    const nom = props.operator || "Antenne-relais mobile";
-    const infos = [
-        props.height ? `Hauteur ${props.height} m` : null,
-        props.ref ? `Réf. ${props.ref}` : null
-    ].filter(Boolean);
-
-    return `<div class="popup-fiche">
-        <div class="popup-fiche-entete">
-            <div class="popup-fiche-icon" style="background:${PALETTE.ardoise}"><i class="fa-solid fa-tower-cell"></i></div>
-            <div class="popup-fiche-titre-wrap">
-                <div class="popup-fiche-tag" style="color:${PALETTE.ardoise}">Antenne-relais mobile</div>
-                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
-            </div>
-        </div>
-        ${infos.length ? `<div class="popup-fiche-section"><div class="popup-fiche-ligne">${infos.map(echapperHtml).join(" · ")}</div></div>` : ""}
     </div>`;
 }
 
@@ -1873,13 +1821,10 @@ function construirePopup(feature, layerConf) {
     else if (layerConf.id === "franceServices") html = construirePopupFranceServices(props);
     else if (layerConf.id === "ehpad") html = construirePopupEhpad(props);
     else if (layerConf.id === "toilettes") html = construirePopupToilettes(props);
-    else if (layerConf.id === "fontaines") html = construirePopupFontaine(props);
     else if (layerConf.id === "velo") html = construirePopupVelo(props);
     else if (layerConf.id === "catnat") html = construirePopupCatnat(props);
     else if (layerConf.id === "pointsRemarquablesBerce") html = construirePopupPointRemarquableBerce(props);
-    else if (layerConf.id === "parkings") html = construirePopupParking(props);
     else if (layerConf.id === "venteFerme") html = construirePopupVenteFerme(props);
-    else if (layerConf.id === "antennes") html = construirePopupAntenne(props);
     else if (layerConf.id === "patrimoineRural") html = construirePopupPatrimoineRural(props);
     else if (layerConf.id === "irve") html = construirePopupIrve(props);
     else if (layerConf.id === "airecovoiturage") html = construirePopupCovoiturage(props);

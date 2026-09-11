@@ -54,7 +54,15 @@ function construirePanneauCouches(map) {
             if (conf.lazy) {
                 const badge = document.createElement("span");
                 badge.className = "layer-lazy-badge";
-                badge.title = "Chargée à la demande (fichier volumineux)";
+                /* Deux raisons possibles d'être "lazy", pas la même infobulle :
+                   un fichier local volumineux (cadastre, DPE...) vs une couche
+                   en flux qui interroge une source distante en direct
+                   (Overpass, Géorisques...) à chaque activation - signalé en
+                   conditions réelles que ces dernières peuvent mettre du
+                   temps, préciser pourquoi plutôt que de laisser deviner. */
+                badge.title = conf.fetchPersonnalise
+                    ? "Chargée à la demande : interroge des données en direct, peut prendre quelques secondes"
+                    : "Chargée à la demande (fichier volumineux)";
                 badge.textContent = "●";
                 texte.appendChild(badge);
             }
