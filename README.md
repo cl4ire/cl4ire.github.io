@@ -858,6 +858,67 @@ une trace uniquement dans la conversation) :
   marché de producteurs d'un marché classique (même tag
   `amenity=marketplace` pour les deux), donc rien à ajouter de plus ici.
 
+## Une seule requête Overpass pour 16 couches (fiabilité)
+
+Signalé en conditions réelles : les couches en flux Overpass "avaient du
+mal" (erreurs fréquentes en cochant les cases). Cause la plus probable :
+avec une quinzaine de couches ajoutées progressivement, chacune avec sa
+**propre** requête (voir les sections précédentes, qui décrivent
+l'architecture d'origine — "chaque couche ne fournit que sa propre
+requête Overpass et sa propre clé de cache"), cocher plusieurs cases
+revenait à déclencher autant de requêtes séparées vers le même service
+public gratuit, chacune avec son propre risque d'échec (surcharge du
+serveur, 429...). Le service public Overpass demande explicitement à
+ses gros consommateurs de grouper leurs requêtes plutôt que d'en
+multiplier de petites.
+
+**Fusion en une seule requête combinée** (`REQUETE_OVERPASS_POINTS_COMBINES`,
+`config.js`) pour les 16 couches "points simples" (nœuds/ways, `out
+center;`) : médecins, vétérinaires, dentistes, pompiers, gendarmerie,
+EHPAD, toilettes, fontaines, bibliothèques, offices de tourisme, aires
+de camping-car, points remarquables de la forêt de Bercé, parkings,
+vente directe à la ferme, petit patrimoine rural, antennes-relais.
+`fetchOverpassPointsCombines` (un seul `creerFetchOverpass`, donc un
+seul cache `localStorage`) récupère tout en une fois ;
+`classifierElementCombine` répartit chaque élément de la réponse vers
+la bonne couche par ses tags (familles de tags disjointes entre
+couches, un élément ne peut correspondre qu'à une seule catégorie) ;
+`fetchOverpassCombinePourCouche(coucheId)` est le point d'entrée
+`fetchPersonnalise` que chaque couche utilise, filtrant la réponse
+combinée sur son seul id. Résultat : cocher les 16 couches ne déclenche
+plus qu'**une seule** requête réseau (la première fois, ensuite le
+cache), pas 16 — un point de défaillance à surveiller plutôt que 16.
+
+Restent volontairement à part (mode de sortie ou logique différents,
+pas mélangeables dans la requête combinée) :
+- **Itinéraires cyclables et randonnées** (`route=bicycle`/`route=hiking`,
+  relations avec `out geom;` — géométrie de ligne complète, pas un
+  simple point `out center;`).
+- **Casiers colis** (`lockers`) — logique déjà stabilisée (miroirs, cache,
+  fichier manuel de complément), laissée telle quelle pour ne pas
+  perturber quelque chose qui fonctionne déjà en conditions réelles.
+- **Historique des catastrophes naturelles** (`catnat`) — API Géorisques,
+  pas Overpass du tout.
+
+**Correctif de fond associé, pas seulement la fusion** : la mutualisation
+d'une requête entre plusieurs couches a révélé un vrai bug de
+concurrence dans `creerFetchOverpass` — plusieurs couches cochées "en
+même temps" (ou en succession rapide) déclenchaient chacune sa propre
+requête réseau malgré la requête partagée, car chacune voyait "pas
+encore de cache" avant que la première requête n'ait eu le temps
+d'aboutir et de l'écrire. Corrigé avec une variable `requeteEnCours`
+(la requête en vol est partagée entre appels concurrents, pas seulement
+le résultat mis en cache après coup) — bénéficie aussi, en creux, aux
+couches déjà existantes qui n'utilisaient pas la requête combinée
+(lockers, vélo, randonnées) : même protection contre un double
+déclenchement accidentel.
+
+Timeout Overpass relevé de 25s à 40s sur toutes les requêtes restantes
+(vélo, randonnées, requête combinée) : une requête plus large ou une
+relation avec beaucoup de way membres peut légitimement prendre plus de
+temps qu'un simple nœud/way, surtout sur un serveur public déjà sous
+charge.
+
 ## Ce qui reste à faire
 
 - Le fichier DVF étant volumineux même en différé, envisager de le

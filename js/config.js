@@ -566,9 +566,20 @@ function creerFetchOverpass(requete, cacheCle) {
             // silencieux : le cache est un confort, pas un besoin
         }
     }
+    /* Requête en cours, partagée entre appels concurrents : indispensable
+       depuis que plusieurs couches différentes (ex. médecins, toilettes,
+       parkings...) peuvent s'appuyer sur LA MÊME requête combinée
+       (fetchOverpassPointsCombines) - sans ça, cocher plusieurs couches
+       à la suite déclenchait une requête réseau séparée pour chacune
+       (chacune voyant "pas encore de cache" avant que la première ait
+       eu le temps de l'écrire), annulant tout l'intérêt de la
+       mutualisation. Remise à null une fois la requête terminée (succès
+       ou échec) pour ne pas rejouer indéfiniment une erreur passée. */
+    let requeteEnCours = null;
     return function fetchOverpass() {
         const enCache = lireCache();
         if (enCache) return Promise.resolve(enCache);
+        if (requeteEnCours) return requeteEnCours;
         const essayer = index => {
             if (index >= MIROIRS_OVERPASS.length) {
                 return Promise.reject(new Error("Tous les miroirs Overpass ont échoué (dernier testé : " + MIROIRS_OVERPASS[MIROIRS_OVERPASS.length - 1] + ")"));
@@ -584,7 +595,10 @@ function creerFetchOverpass(requete, cacheCle) {
                     return essayer(index + 1);
                 });
         };
-        return essayer(0).then(donnees => { ecrireCache(donnees); return donnees; });
+        requeteEnCours = essayer(0)
+            .then(donnees => { ecrireCache(donnees); requeteEnCours = null; return donnees; })
+            .catch(err => { requeteEnCours = null; throw err; });
+        return requeteEnCours;
     };
 }
 
@@ -603,115 +617,106 @@ function geojsonDepuisElementsOverpass(data) {
     };
 }
 
-/* healthcare=doctor en plus d'amenity=doctors : les deux tags coexistent
-   dans la donnée réelle selon le contributeur, Overpass dédoublonne de
-   lui-même les nœuds/ways qui portent les deux. */
-const REQUETE_OVERPASS_MEDECINS =
-    `[out:json][timeout:25];` +
-    `(node["amenity"="doctors"](${BBOX_OVERPASS});` +
-    `way["amenity"="doctors"](${BBOX_OVERPASS});` +
-    `node["healthcare"="doctor"](${BBOX_OVERPASS});` +
-    `way["healthcare"="doctor"](${BBOX_OVERPASS}););` +
-    `out center;`;
-const REQUETE_OVERPASS_VETERINAIRES =
-    `[out:json][timeout:25];` +
-    `(node["amenity"="veterinary"](${BBOX_OVERPASS});` +
-    `way["amenity"="veterinary"](${BBOX_OVERPASS}););` +
-    `out center;`;
-const REQUETE_OVERPASS_DENTISTES =
-    `[out:json][timeout:25];` +
-    `(node["amenity"="dentist"](${BBOX_OVERPASS});` +
-    `way["amenity"="dentist"](${BBOX_OVERPASS}););` +
-    `out center;`;
-const REQUETE_OVERPASS_POMPIERS =
-    `[out:json][timeout:25];` +
-    `(node["amenity"="fire_station"](${BBOX_OVERPASS});` +
-    `way["amenity"="fire_station"](${BBOX_OVERPASS}););` +
-    `out center;`;
-const REQUETE_OVERPASS_GENDARMERIE =
-    `[out:json][timeout:25];` +
-    `(node["amenity"="police"](${BBOX_OVERPASS});` +
-    `way["amenity"="police"](${BBOX_OVERPASS}););` +
-    `out center;`;
-const REQUETE_OVERPASS_EHPAD =
-    `[out:json][timeout:25];` +
-    `(node["amenity"="social_facility"]["social_facility"="nursing_home"](${BBOX_OVERPASS});` +
-    `way["amenity"="social_facility"]["social_facility"="nursing_home"](${BBOX_OVERPASS}););` +
-    `out center;`;
-const REQUETE_OVERPASS_TOILETTES =
-    `[out:json][timeout:25];` +
-    `(node["amenity"="toilets"](${BBOX_OVERPASS});` +
-    `way["amenity"="toilets"](${BBOX_OVERPASS}););` +
-    `out center;`;
-const REQUETE_OVERPASS_FONTAINES =
-    `[out:json][timeout:25];` +
-    `(node["amenity"="drinking_water"](${BBOX_OVERPASS}););` +
-    `out center;`;
 /* Itinéraires cyclables balisés (ex. "Le Loir à Vélo") : tagués comme des
    RELATIONS OSM (route=bicycle), pas de simples nœuds/ways - "out geom;"
    plutôt que "out center;" pour récupérer la géométrie complète de
    chaque way membre (nécessaire pour tracer une ligne, pas juste un
-   point), voir geojsonDepuisRoutesVelo. */
+   point), voir geojsonDepuisRoutesVelo. Timeout relevé à 40s (contre 25s
+   initialement) : signalé en conditions réelles que les requêtes
+   Overpass du site avaient du mal à aboutir, une relation avec beaucoup
+   de way membres peut prendre plus de temps qu'un simple nœud/way. */
 const REQUETE_OVERPASS_VELO =
-    `[out:json][timeout:25];` +
+    `[out:json][timeout:40];` +
     `relation["route"="bicycle"](${BBOX_OVERPASS});` +
     `out geom;`;
-const REQUETE_OVERPASS_BIBLIOTHEQUES =
-    `[out:json][timeout:25];` +
-    `(node["amenity"="library"](${BBOX_OVERPASS});` +
-    `way["amenity"="library"](${BBOX_OVERPASS}););` +
-    `out center;`;
-/* office=tourism : balisage actuel. tourism=information + information=office :
-   ancien schéma, encore présent sur des points jamais mis à jour. */
-const REQUETE_OVERPASS_OFFICES_TOURISME =
-    `[out:json][timeout:25];` +
-    `(node["office"="tourism"](${BBOX_OVERPASS});` +
-    `way["office"="tourism"](${BBOX_OVERPASS});` +
-    `node["tourism"="information"]["information"="office"](${BBOX_OVERPASS});` +
-    `way["tourism"="information"]["information"="office"](${BBOX_OVERPASS}););` +
-    `out center;`;
-const REQUETE_OVERPASS_CAMPINGCAR =
-    `[out:json][timeout:25];` +
-    `(node["tourism"="caravan_site"](${BBOX_OVERPASS});` +
-    `way["tourism"="caravan_site"](${BBOX_OVERPASS}););` +
-    `out center;`;
 /* Sentiers de randonnée balisés : relations OSM route=hiking, comme
    route=bicycle pour les itinéraires cyclables (out geom;). */
 const REQUETE_OVERPASS_RANDONNEES =
-    `[out:json][timeout:25];` +
+    `[out:json][timeout:40];` +
     `relation["route"="hiking"](${BBOX_OVERPASS});` +
     `out geom;`;
-/* Points remarquables de la forêt de Bercé (arbres nommés, sources,
-   attractions touristiques) : trois familles de tags bien distinctes,
-   pas une seule - un arbre remarquable (natural=tree + name, ex. le
-   Chêne Boppe), une source (natural=spring), un point d'intérêt plus
-   général (tourism=attraction + name, ex. une fontaine aménagée qui
-   n'est pas forcément taguée comme une source). */
-const REQUETE_OVERPASS_POINTS_BERCE =
-    `[out:json][timeout:25];` +
-    `(node["natural"="tree"]["name"](${BBOX_OVERPASS});` +
+const fetchOverpassVelo = creerFetchOverpass(REQUETE_OVERPASS_VELO, "geoberce-cache-velo");
+const fetchOverpassRandonnees = creerFetchOverpass(REQUETE_OVERPASS_RANDONNEES, "geoberce-cache-randonnees");
+
+/* =========================================================
+   REQUÊTE OVERPASS UNIQUE POUR TOUTES LES COUCHES "POINTS SIMPLES"
+   (nœuds/ways, "out center;") — signalé en conditions réelles que les
+   couches Overpass avaient "du mal" (erreurs fréquentes) : avec une
+   quinzaine de couches en flux, chacune avec sa propre requête, cocher
+   plusieurs cases revenait à déclencher autant de requêtes séparées
+   vers le même service public gratuit, chacune avec son propre risque
+   d'échec (surcharge du serveur, 429...). Une seule requête combinée,
+   mise en cache une seule fois pour toutes ces couches, réduit
+   drastiquement le nombre d'allers-retours réseau : cocher 15 couches
+   ne déclenche plus qu'UNE requête réseau (la première fois), pas 15 -
+   et une requête qui échoue n'a plus qu'un seul point de défaillance à
+   corriger plutôt que 15 à surveiller séparément. `classifierElementCombine`
+   répartit ensuite chaque élément de la réponse vers la bonne couche
+   par ses tags (familles de tags disjointes entre couches, un élément
+   ne peut correspondre qu'à une seule catégorie). Les couches à
+   relations (vélo/randonnées, "out geom;") restent séparées : mode de
+   sortie différent, pas mélangeable avec "out center;" dans une même
+   requête. Casiers colis (lockers) et historique des catastrophes
+   naturelles (catnat, API Géorisques, pas Overpass) restent aussi à
+   part : lockers a sa propre logique déjà stabilisée, catnat n'utilise
+   pas Overpass du tout. */
+const REQUETE_OVERPASS_POINTS_COMBINES =
+    `[out:json][timeout:40];` +
+    `(` +
+    // Médecins (healthcare=doctor en plus d'amenity=doctors : les deux tags
+    // coexistent selon le contributeur, Overpass dédoublonne de lui-même).
+    `node["amenity"="doctors"](${BBOX_OVERPASS});` +
+    `way["amenity"="doctors"](${BBOX_OVERPASS});` +
+    `node["healthcare"="doctor"](${BBOX_OVERPASS});` +
+    `way["healthcare"="doctor"](${BBOX_OVERPASS});` +
+    // Vétérinaires
+    `node["amenity"="veterinary"](${BBOX_OVERPASS});` +
+    `way["amenity"="veterinary"](${BBOX_OVERPASS});` +
+    // Dentistes
+    `node["amenity"="dentist"](${BBOX_OVERPASS});` +
+    `way["amenity"="dentist"](${BBOX_OVERPASS});` +
+    // Casernes de pompiers
+    `node["amenity"="fire_station"](${BBOX_OVERPASS});` +
+    `way["amenity"="fire_station"](${BBOX_OVERPASS});` +
+    // Gendarmerie & police
+    `node["amenity"="police"](${BBOX_OVERPASS});` +
+    `way["amenity"="police"](${BBOX_OVERPASS});` +
+    // EHPAD & maisons de retraite
+    `node["amenity"="social_facility"]["social_facility"="nursing_home"](${BBOX_OVERPASS});` +
+    `way["amenity"="social_facility"]["social_facility"="nursing_home"](${BBOX_OVERPASS});` +
+    // Toilettes publiques
+    `node["amenity"="toilets"](${BBOX_OVERPASS});` +
+    `way["amenity"="toilets"](${BBOX_OVERPASS});` +
+    // Points d'eau potable
+    `node["amenity"="drinking_water"](${BBOX_OVERPASS});` +
+    // Bibliothèques & médiathèques
+    `node["amenity"="library"](${BBOX_OVERPASS});` +
+    `way["amenity"="library"](${BBOX_OVERPASS});` +
+    // Offices de tourisme (office=tourism : balisage actuel ; tourism=information
+    // + information=office : ancien schéma, encore présent sur des points
+    // jamais mis à jour).
+    `node["office"="tourism"](${BBOX_OVERPASS});` +
+    `way["office"="tourism"](${BBOX_OVERPASS});` +
+    `node["tourism"="information"]["information"="office"](${BBOX_OVERPASS});` +
+    `way["tourism"="information"]["information"="office"](${BBOX_OVERPASS});` +
+    // Aires de camping-car
+    `node["tourism"="caravan_site"](${BBOX_OVERPASS});` +
+    `way["tourism"="caravan_site"](${BBOX_OVERPASS});` +
+    // Points remarquables de la forêt de Bercé (arbre nommé, source,
+    // attraction touristique nommée)
+    `node["natural"="tree"]["name"](${BBOX_OVERPASS});` +
     `node["natural"="spring"](${BBOX_OVERPASS});` +
     `way["natural"="spring"](${BBOX_OVERPASS});` +
-    `node["tourism"="attraction"]["name"](${BBOX_OVERPASS}););` +
-    `out center;`;
-const REQUETE_OVERPASS_PARKINGS =
-    `[out:json][timeout:25];` +
-    `(node["amenity"="parking"](${BBOX_OVERPASS});` +
-    `way["amenity"="parking"](${BBOX_OVERPASS}););` +
-    `out center;`;
-const REQUETE_OVERPASS_VENTE_FERME =
-    `[out:json][timeout:25];` +
-    `(node["shop"="farm"](${BBOX_OVERPASS});` +
-    `way["shop"="farm"](${BBOX_OVERPASS}););` +
-    `out center;`;
-/* Petit patrimoine rural sur tout le territoire (pas seulement la forêt
-   de Bercé) : croix de chemin, lavoirs, moulins (deux tags concurrents
-   selon le contributeur : man_made=watermill ou historic=mill), fontaines
-   anciennes/monumentales (amenity=fountain, différent de
-   amenity=drinking_water déjà couvert par la couche "fontaines"). */
-const REQUETE_OVERPASS_PATRIMOINE_RURAL =
-    `[out:json][timeout:25];` +
-    `(node["historic"="wayside_cross"](${BBOX_OVERPASS});` +
+    `node["tourism"="attraction"]["name"](${BBOX_OVERPASS});` +
+    // Parkings publics
+    `node["amenity"="parking"](${BBOX_OVERPASS});` +
+    `way["amenity"="parking"](${BBOX_OVERPASS});` +
+    // Vente directe à la ferme
+    `node["shop"="farm"](${BBOX_OVERPASS});` +
+    `way["shop"="farm"](${BBOX_OVERPASS});` +
+    // Petit patrimoine rural (croix, lavoirs, moulins - deux tags
+    // concurrents selon le contributeur -, fontaines anciennes)
+    `node["historic"="wayside_cross"](${BBOX_OVERPASS});` +
     `way["historic"="wayside_cross"](${BBOX_OVERPASS});` +
     `node["man_made"="wash_house"](${BBOX_OVERPASS});` +
     `way["man_made"="wash_house"](${BBOX_OVERPASS});` +
@@ -720,38 +725,62 @@ const REQUETE_OVERPASS_PATRIMOINE_RURAL =
     `node["historic"="mill"](${BBOX_OVERPASS});` +
     `way["historic"="mill"](${BBOX_OVERPASS});` +
     `node["amenity"="fountain"](${BBOX_OVERPASS});` +
-    `way["amenity"="fountain"](${BBOX_OVERPASS}););` +
-    `out center;`;
-/* Antennes-relais mobiles : PIVOT depuis l'idée initiale de couche WMS
-   ARCEP (couverture mobile théorique) - contrairement à la couche OLD/
-   débroussaillement, aucun nom de couche WMS concret trouvé en recherche
-   pour ce flux précis (juste l'existence d'un service WMS "Téléphonie
-   mobile", sans détail exploitable) : deviner un nom au hasard aurait
-   plus de chances de donner une couche vide sans piste de correction
-   qu'un vrai résultat, contrairement à OLD où un nom de couche
-   documenté existait. Repli sur OpenStreetMap (man_made=mast avec
-   tower:type=communication ou communication:mobile_phone=yes) : pas
-   une carte de couverture théorique, mais un signal concret et fiable
-   (position des pylônes/antennes), même mécanique que toutes les autres
-   couches Overpass du site. */
-const REQUETE_OVERPASS_ANTENNES =
-    `[out:json][timeout:25];` +
-    `(node["man_made"="mast"]["tower:type"="communication"](${BBOX_OVERPASS});` +
+    `way["amenity"="fountain"](${BBOX_OVERPASS});` +
+    // Antennes-relais mobiles (pivot depuis l'idée initiale de couche WMS
+    // ARCEP - voir README pour le détail)
+    `node["man_made"="mast"]["tower:type"="communication"](${BBOX_OVERPASS});` +
     `node["man_made"="mast"]["communication:mobile_phone"="yes"](${BBOX_OVERPASS});` +
-    `node["man_made"="tower"]["tower:type"="communication"](${BBOX_OVERPASS}););` +
+    `node["man_made"="tower"]["tower:type"="communication"](${BBOX_OVERPASS});` +
+    `);` +
     `out center;`;
+const fetchOverpassPointsCombines = creerFetchOverpass(REQUETE_OVERPASS_POINTS_COMBINES, "geoberce-cache-points-combines");
 
-const fetchOverpassMedecins = creerFetchOverpass(REQUETE_OVERPASS_MEDECINS, "geoberce-cache-medecins");
-const fetchOverpassVeterinaires = creerFetchOverpass(REQUETE_OVERPASS_VETERINAIRES, "geoberce-cache-veterinaires");
-const fetchOverpassBibliotheques = creerFetchOverpass(REQUETE_OVERPASS_BIBLIOTHEQUES, "geoberce-cache-bibliotheques");
-const fetchOverpassOfficesTourisme = creerFetchOverpass(REQUETE_OVERPASS_OFFICES_TOURISME, "geoberce-cache-officestourisme");
-const fetchOverpassCampingCar = creerFetchOverpass(REQUETE_OVERPASS_CAMPINGCAR, "geoberce-cache-campingcar");
-const fetchOverpassRandonnees = creerFetchOverpass(REQUETE_OVERPASS_RANDONNEES, "geoberce-cache-randonnees");
-const fetchOverpassPointsBerce = creerFetchOverpass(REQUETE_OVERPASS_POINTS_BERCE, "geoberce-cache-points-berce");
-const fetchOverpassParkings = creerFetchOverpass(REQUETE_OVERPASS_PARKINGS, "geoberce-cache-parkings");
-const fetchOverpassVenteFerme = creerFetchOverpass(REQUETE_OVERPASS_VENTE_FERME, "geoberce-cache-ventefermes");
-const fetchOverpassPatrimoineRural = creerFetchOverpass(REQUETE_OVERPASS_PATRIMOINE_RURAL, "geoberce-cache-patrimoinerural");
-const fetchOverpassAntennes = creerFetchOverpass(REQUETE_OVERPASS_ANTENNES, "geoberce-cache-antennes");
+/* Répartit un élément de la réponse combinée vers l'id de couche
+   correspondant, par ses tags - mêmes conditions que chacune des
+   requêtes individuelles d'origine, familles de tags disjointes entre
+   couches donc pas d'ambiguïté possible. */
+function classifierElementCombine(tags) {
+    if (!tags) return null;
+    if (tags.amenity === "doctors" || tags.healthcare === "doctor") return "medecins";
+    if (tags.amenity === "veterinary") return "veterinaires";
+    if (tags.amenity === "dentist") return "dentistes";
+    if (tags.amenity === "fire_station") return "pompiers";
+    if (tags.amenity === "police") return "gendarmerie";
+    if (tags.amenity === "social_facility" && tags.social_facility === "nursing_home") return "ehpad";
+    if (tags.amenity === "toilets") return "toilettes";
+    if (tags.amenity === "drinking_water") return "fontaines";
+    if (tags.amenity === "library") return "bibliotheques";
+    if (tags.office === "tourism" || (tags.tourism === "information" && tags.information === "office")) return "officesTourisme";
+    if (tags.tourism === "caravan_site") return "campingcar";
+    if ((tags.natural === "tree" && tags.name) || tags.natural === "spring" || (tags.tourism === "attraction" && tags.name)) return "pointsRemarquablesBerce";
+    if (tags.amenity === "parking") return "parkings";
+    if (tags.shop === "farm") return "venteFerme";
+    if (tags.historic === "wayside_cross" || tags.man_made === "wash_house" || tags.man_made === "watermill" || tags.historic === "mill" || tags.amenity === "fountain") return "patrimoineRural";
+    if ((tags.man_made === "mast" && (tags["tower:type"] === "communication" || tags["communication:mobile_phone"] === "yes")) || (tags.man_made === "tower" && tags["tower:type"] === "communication")) return "antennes";
+    return null;
+}
+
+/* Point d'extension `fetchPersonnalise` pour une couche donnée : réutilise
+   la requête combinée (un seul appel réseau/cache pour toutes ces
+   couches) et ne garde que les éléments qui lui correspondent. */
+function fetchOverpassCombinePourCouche(coucheId) {
+    return fetchOverpassPointsCombines().then(data => {
+        const elements = (data && data.elements) || [];
+        return { elements: elements.filter(el => classifierElementCombine(el.tags) === coucheId) };
+    });
+}
+
+function categoriePatrimoineRural(props) {
+    if (props.historic === "wayside_cross") return { id: "croix", label: "Croix de chemin", icon: "fa-solid fa-cross", color: PALETTE.ardoise };
+    if (props.man_made === "wash_house") return { id: "lavoir", label: "Lavoir", icon: "fa-solid fa-water", color: PALETTE.riviere };
+    if (props.man_made === "watermill" || props.historic === "mill") return { id: "moulin", label: "Moulin", icon: "fa-solid fa-industry", color: PALETTE.terracotta };
+    if (props.amenity === "fountain") return { id: "fontaine", label: "Fontaine", icon: "fa-solid fa-droplet", color: PALETTE.riviere };
+    return { id: "autre", label: "Petit patrimoine", icon: "fa-solid fa-landmark", color: "#7F7E7B" };
+}
+function iconePatrimoineRural(feature) {
+    const cat = categoriePatrimoineRural(feature.properties || {});
+    return { icon: cat.icon, color: cat.color };
+}
 
 function categoriePatrimoineRural(props) {
     if (props.historic === "wayside_cross") return { id: "croix", label: "Croix de chemin", icon: "fa-solid fa-cross", color: PALETTE.ardoise };
@@ -834,7 +863,7 @@ function fetchPointsBerceManuels() {
         .catch(() => ({ type: "FeatureCollection", features: [] }));
 }
 function fetchPointsBerce() {
-    return Promise.all([fetchOverpassPointsBerce(), fetchPointsBerceManuels()])
+    return Promise.all([fetchOverpassCombinePourCouche("pointsRemarquablesBerce"), fetchPointsBerceManuels()])
         .then(([overpass, manuels]) => ({ overpass, manuels }));
 }
 function geojsonDepuisPointsBerce(data) {
@@ -851,13 +880,6 @@ function iconePointRemarquableBerce(feature) {
     const cat = categoriePointRemarquableBerce(feature.properties || {});
     return { icon: cat.icon, color: cat.color };
 }
-const fetchOverpassDentistes = creerFetchOverpass(REQUETE_OVERPASS_DENTISTES, "geoberce-cache-dentistes");
-const fetchOverpassPompiers = creerFetchOverpass(REQUETE_OVERPASS_POMPIERS, "geoberce-cache-pompiers");
-const fetchOverpassGendarmerie = creerFetchOverpass(REQUETE_OVERPASS_GENDARMERIE, "geoberce-cache-gendarmerie");
-const fetchOverpassEhpad = creerFetchOverpass(REQUETE_OVERPASS_EHPAD, "geoberce-cache-ehpad");
-const fetchOverpassToilettes = creerFetchOverpass(REQUETE_OVERPASS_TOILETTES, "geoberce-cache-toilettes");
-const fetchOverpassFontaines = creerFetchOverpass(REQUETE_OVERPASS_FONTAINES, "geoberce-cache-fontaines");
-const fetchOverpassVelo = creerFetchOverpass(REQUETE_OVERPASS_VELO, "geoberce-cache-velo");
 
 /* Relations OSM (out geom;) -> une Feature MultiLineString par relation,
    une ligne par way membre (seuls les membres "way" avec une géométrie
@@ -1050,7 +1072,7 @@ const LAYERS = [
     {
         id: "bibliotheques", group: "services", label: "Bibliothèques & médiathèques",
         /* Flux Overpass (OpenStreetMap), voir plus haut dans ce fichier. */
-        fetchPersonnalise: fetchOverpassBibliotheques, transform: geojsonDepuisElementsOverpass,
+        fetchPersonnalise: () => fetchOverpassCombinePourCouche("bibliotheques"), transform: geojsonDepuisElementsOverpass,
         type: "point", icon: "fa-solid fa-book", color: PALETTE.foret,
         lazy: true, searchable: true, cluster: true,
         titleFields: ["name"],
@@ -1071,7 +1093,7 @@ const LAYERS = [
     },
     {
         id: "toilettes", group: "services", label: "Toilettes publiques",
-        fetchPersonnalise: fetchOverpassToilettes, transform: geojsonDepuisElementsOverpass,
+        fetchPersonnalise: () => fetchOverpassCombinePourCouche("toilettes"), transform: geojsonDepuisElementsOverpass,
         type: "point", icon: "fa-solid fa-restroom", color: PALETTE.ardoise,
         lazy: true, searchable: true, cluster: true,
         titleFields: ["name"],
@@ -1079,15 +1101,15 @@ const LAYERS = [
     },
     {
         id: "fontaines", group: "services", label: "Points d'eau potable",
-        fetchPersonnalise: fetchOverpassFontaines, transform: geojsonDepuisElementsOverpass,
-        type: "point", icon: "fa-solid fa-droplet", color: PALETTE.ardoise,
+        fetchPersonnalise: () => fetchOverpassCombinePourCouche("fontaines"), transform: geojsonDepuisElementsOverpass,
+        type: "point", icon: "fa-solid fa-droplet", color: PALETTE.riviere,
         lazy: true, searchable: true, cluster: true,
         titleFields: ["name"],
         subtitleFields: []
     },
     {
         id: "parkings", group: "services", label: "Parkings publics",
-        fetchPersonnalise: fetchOverpassParkings, transform: geojsonDepuisElementsOverpass,
+        fetchPersonnalise: () => fetchOverpassCombinePourCouche("parkings"), transform: geojsonDepuisElementsOverpass,
         type: "point", icon: "fa-solid fa-square-parking", color: PALETTE.ardoise,
         lazy: true, searchable: true, cluster: true,
         titleFields: ["name"],
@@ -1097,7 +1119,7 @@ const LAYERS = [
         id: "antennes", group: "services", label: "Antennes-relais mobiles",
         /* Pivot depuis l'idée initiale de couche WMS ARCEP (couverture
            mobile) - voir plus haut dans ce fichier pour le détail. */
-        fetchPersonnalise: fetchOverpassAntennes, transform: geojsonDepuisElementsOverpass,
+        fetchPersonnalise: () => fetchOverpassCombinePourCouche("antennes"), transform: geojsonDepuisElementsOverpass,
         type: "point", icon: "fa-solid fa-tower-cell", color: PALETTE.ardoise,
         lazy: true, searchable: true, cluster: true,
         titleFields: ["operator", "ref"],
@@ -1143,7 +1165,7 @@ const LAYERS = [
     },
     {
         id: "venteFerme", group: "commerces", label: "Vente directe à la ferme",
-        fetchPersonnalise: fetchOverpassVenteFerme, transform: geojsonDepuisElementsOverpass,
+        fetchPersonnalise: () => fetchOverpassCombinePourCouche("venteFerme"), transform: geojsonDepuisElementsOverpass,
         type: "point", icon: "fa-solid fa-tractor", color: PALETTE.feuille,
         lazy: true, searchable: true, cluster: true,
         titleFields: ["name"],
@@ -1189,7 +1211,7 @@ const LAYERS = [
         id: "medecins", group: "securite", label: "Médecins",
         /* Flux Overpass (OpenStreetMap), voir plus haut dans ce fichier.
            Complétude dépendante d'OSM, même limite que les casiers colis. */
-        fetchPersonnalise: fetchOverpassMedecins, transform: geojsonDepuisElementsOverpass,
+        fetchPersonnalise: () => fetchOverpassCombinePourCouche("medecins"), transform: geojsonDepuisElementsOverpass,
         type: "point", icon: "fa-solid fa-user-doctor", color: "#AD4826",
         lazy: true, searchable: true, cluster: true,
         titleFields: ["name"],
@@ -1197,7 +1219,7 @@ const LAYERS = [
     },
     {
         id: "veterinaires", group: "securite", label: "Vétérinaires",
-        fetchPersonnalise: fetchOverpassVeterinaires, transform: geojsonDepuisElementsOverpass,
+        fetchPersonnalise: () => fetchOverpassCombinePourCouche("veterinaires"), transform: geojsonDepuisElementsOverpass,
         type: "point", icon: "fa-solid fa-paw", color: "#AD4826",
         lazy: true, searchable: true, cluster: true,
         titleFields: ["name", "brand"],
@@ -1205,7 +1227,7 @@ const LAYERS = [
     },
     {
         id: "dentistes", group: "securite", label: "Dentistes",
-        fetchPersonnalise: fetchOverpassDentistes, transform: geojsonDepuisElementsOverpass,
+        fetchPersonnalise: () => fetchOverpassCombinePourCouche("dentistes"), transform: geojsonDepuisElementsOverpass,
         type: "point", icon: "fa-solid fa-tooth", color: "#AD4826",
         lazy: true, searchable: true, cluster: true,
         titleFields: ["name"],
@@ -1213,7 +1235,7 @@ const LAYERS = [
     },
     {
         id: "pompiers", group: "securite", label: "Casernes de pompiers",
-        fetchPersonnalise: fetchOverpassPompiers, transform: geojsonDepuisElementsOverpass,
+        fetchPersonnalise: () => fetchOverpassCombinePourCouche("pompiers"), transform: geojsonDepuisElementsOverpass,
         type: "point", icon: "fa-solid fa-fire", color: "#AD4826",
         lazy: true, searchable: true, cluster: true,
         titleFields: ["name"],
@@ -1221,7 +1243,7 @@ const LAYERS = [
     },
     {
         id: "gendarmerie", group: "securite", label: "Gendarmerie & police",
-        fetchPersonnalise: fetchOverpassGendarmerie, transform: geojsonDepuisElementsOverpass,
+        fetchPersonnalise: () => fetchOverpassCombinePourCouche("gendarmerie"), transform: geojsonDepuisElementsOverpass,
         type: "point", icon: "fa-solid fa-shield-halved", color: "#AD4826",
         lazy: true, searchable: true, cluster: true,
         titleFields: ["name"],
@@ -1229,7 +1251,7 @@ const LAYERS = [
     },
     {
         id: "ehpad", group: "securite", label: "EHPAD & maisons de retraite",
-        fetchPersonnalise: fetchOverpassEhpad, transform: geojsonDepuisElementsOverpass,
+        fetchPersonnalise: () => fetchOverpassCombinePourCouche("ehpad"), transform: geojsonDepuisElementsOverpass,
         type: "point", icon: "fa-solid fa-person-cane", color: "#AD4826",
         lazy: true, searchable: true, cluster: true,
         titleFields: ["name", "operator"],
@@ -1251,7 +1273,7 @@ const LAYERS = [
            tout le territoire, contrairement à pointsRemarquablesBerce
            qui reste spécifique à la forêt (sites ONF nommés). Voir plus
            haut dans ce fichier pour le détail des tags par catégorie. */
-        fetchPersonnalise: fetchOverpassPatrimoineRural, transform: geojsonDepuisElementsOverpass,
+        fetchPersonnalise: () => fetchOverpassCombinePourCouche("patrimoineRural"), transform: geojsonDepuisElementsOverpass,
         type: "point", icon: "fa-solid fa-landmark", color: "#7F7E7B",
         iconePourFeature: iconePatrimoineRural,
         lazy: true, searchable: true, cluster: true,
@@ -1286,7 +1308,7 @@ const LAYERS = [
     {
         id: "officesTourisme", group: "tourisme", label: "Offices de tourisme",
         /* Flux Overpass (OpenStreetMap), voir plus haut dans ce fichier. */
-        fetchPersonnalise: fetchOverpassOfficesTourisme, transform: geojsonDepuisElementsOverpass,
+        fetchPersonnalise: () => fetchOverpassCombinePourCouche("officesTourisme"), transform: geojsonDepuisElementsOverpass,
         type: "point", icon: "fa-solid fa-map-location-dot", color: PALETTE.riviere,
         lazy: true, searchable: true, cluster: true,
         titleFields: ["name"],
@@ -1294,7 +1316,7 @@ const LAYERS = [
     },
     {
         id: "campingcar", group: "tourisme", label: "Aires de camping-car",
-        fetchPersonnalise: fetchOverpassCampingCar, transform: geojsonDepuisElementsOverpass,
+        fetchPersonnalise: () => fetchOverpassCombinePourCouche("campingcar"), transform: geojsonDepuisElementsOverpass,
         type: "point", icon: "fa-solid fa-caravan", color: PALETTE.terracotta,
         lazy: true, searchable: true, cluster: true,
         titleFields: ["name"],

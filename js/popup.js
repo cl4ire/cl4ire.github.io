@@ -914,9 +914,9 @@ function construirePopupFontaine(props) {
     const potable = props.drinking_water !== "no";
     return `<div class="popup-fiche">
         <div class="popup-fiche-entete">
-            <div class="popup-fiche-icon" style="background:${PALETTE.ardoise}"><i class="fa-solid fa-droplet"></i></div>
+            <div class="popup-fiche-icon" style="background:${PALETTE.riviere}"><i class="fa-solid fa-droplet"></i></div>
             <div class="popup-fiche-titre-wrap">
-                <div class="popup-fiche-tag" style="color:${PALETTE.ardoise}">Point d'eau potable</div>
+                <div class="popup-fiche-tag" style="color:${PALETTE.riviere}">Point d'eau potable</div>
                 <div class="popup-fiche-titre">${echapperHtml(props.name || "Fontaine")}</div>
             </div>
         </div>
