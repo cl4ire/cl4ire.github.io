@@ -125,8 +125,17 @@ function lancerRechercheProximite(map, raccourci) {
             afficherMessageResultats(raccourci.label, "Recherche des résultats les plus proches...");
 
             Promise.all(raccourci.layerIds.map(id => chargerEtAfficherCouche(map, id))).then(() => {
+                /* `filtre` (optionnel) : restreint une couche à une seule
+                   sous-catégorie plutôt qu'à la couche entière - ex. "la
+                   boulangerie la plus proche" ne doit chercher que parmi
+                   les commerces de type "bakery", pas tous les commerces.
+                   item.layer.feature : Leaflet attache automatiquement le
+                   Feature GeoJSON d'origine à chaque layer d'un L.geoJSON,
+                   donc ses propriétés brutes restent accessibles ici sans
+                   rien stocker de plus dans l'index de recherche. */
                 const resultats = window.indexRecherche
                     .filter(item => raccourci.layerIds.includes(item.layerId))
+                    .filter(item => !raccourci.filtre || raccourci.filtre(item))
                     .map(item => ({ ...item, distance: origine.distanceTo(item.latlng) }))
                     .sort((a, b) => a.distance - b.distance)
                     .slice(0, 15);
