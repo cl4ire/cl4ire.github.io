@@ -1008,6 +1008,32 @@ pas toutes les simplifier au même niveau, ces deux-là restant plus
 souvent renseignées en pratique (horaires/accessibilité pour les
 toilettes, au moins un nom pour le petit patrimoine).
 
+## Raccourcis "près de chez moi" : besoins concrets + filtre par sous-catégorie
+
+Retour direct : les raccourcis de la page d'accueil (`RACCOURCIS`,
+`config.js`) reflétaient plutôt ce qui existait techniquement dans le
+SIG que de vrais besoins du quotidien. Recomposés autour de questions
+qu'une personne se pose vraiment ("où est-ce que je dépose mon
+courrier ?", "la boulangerie la plus proche ?") plutôt que des noms de
+couches : boîtes aux lettres, boulangerie, pharmacie, stations essence,
+médecin, points relais/casiers colis, commerces, écoles,
+défibrillateurs. Retiré : "Assistante maternelle" (utile, mais à un
+public bien plus restreint que les autres raccourcis).
+
+Nouveauté nécessaire pour "boulangerie"/"pharmacie" : ces deux
+catégories ne sont pas des couches à part, ce sont des sous-types de la
+couche `commerces` (champ `type`, valeurs OSM `bakery`/`pharmacy`) —
+jusqu'ici, un raccourci "près de chez moi" ne pouvait cibler qu'une
+couche entière (`layerIds`), pas un sous-ensemble. Champ optionnel
+`filtre` ajouté aux entrées de `RACCOURCIS` : une fonction qui reçoit
+un élément de l'index de recherche et renvoie vrai/faux, appliquée en
+plus du filtre par couche dans `lancerRechercheProximite`
+(`js/proximite.js`). `item.layer.feature` donne accès aux propriétés
+brutes du point (Leaflet attache automatiquement le Feature GeoJSON
+d'origine à chaque layer d'un `L.geoJSON`) sans rien stocker de plus
+dans l'index de recherche lui-même — mécanisme générique, réutilisable
+pour n'importe quel autre sous-type futur (ex. "boucherie", "coiffeur"...).
+
 ## Ce qui reste à faire
 
 - Le fichier DVF étant volumineux même en différé, envisager de le

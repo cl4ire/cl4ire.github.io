@@ -1487,21 +1487,43 @@ const THEMES = [
    Pas de couleur ici : elle est reprise de la couche visée
    (LAYERS[...].color) pour rester cohérente avec le reste du site.
    ========================================================= */
+/* Choisis pour coller à des besoins concrets du quotidien plutôt qu'à
+   ce qui se trouvait être disponible techniquement - "où déposer mon
+   courrier"/"la boulangerie la plus proche" parlent à tout le monde,
+   contrairement par exemple à "Assistante maternelle" (utile, mais à un
+   public bien plus restreint) qui n'a donc plus sa place ici. */
 const RACCOURCIS = [
+    {
+        label: "Où déposer mon courrier ?",
+        icon: "fa-solid fa-envelope",
+        layerIds: ["bal"]
+    },
+    {
+        label: "La boulangerie la plus proche",
+        icon: "fa-solid fa-bread-slice",
+        layerIds: ["commerces"],
+        filtre: item => item.layer.feature && item.layer.feature.properties.type === "bakery"
+    },
+    {
+        label: "La pharmacie la plus proche",
+        icon: "fa-solid fa-prescription-bottle-medical",
+        layerIds: ["commerces"],
+        filtre: item => item.layer.feature && item.layer.feature.properties.type === "pharmacy"
+    },
     {
         label: "Stations essence près de chez moi",
         icon: "fa-solid fa-gas-pump",
         layerIds: ["carburants"]
     },
     {
-        label: "Assistante maternelle près de chez moi",
-        icon: "fa-solid fa-baby",
-        layerIds: ["petiteEnfance"]
+        label: "Le médecin le plus proche",
+        icon: "fa-solid fa-user-doctor",
+        layerIds: ["medecins"]
     },
     {
-        label: "Écoles près de chez moi",
-        icon: "fa-solid fa-graduation-cap",
-        layerIds: ["education"]
+        label: "Point relais / casier colis le plus proche",
+        icon: "fa-solid fa-box",
+        layerIds: ["lockers"]
     },
     {
         label: "Commerces près de chez moi",
@@ -1509,13 +1531,13 @@ const RACCOURCIS = [
         layerIds: ["commerces"]
     },
     {
+        label: "Écoles près de chez moi",
+        icon: "fa-solid fa-graduation-cap",
+        layerIds: ["education"]
+    },
+    {
         label: "Défibrillateurs près de chez moi",
         icon: "fa-solid fa-heart-pulse",
         layerIds: ["dae"]
-    },
-    {
-        label: "Bornes de recharge près de chez moi",
-        icon: "fa-solid fa-charging-station",
-        layerIds: ["irve"]
     }
 ];
