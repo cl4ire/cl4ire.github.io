@@ -93,11 +93,49 @@ function grouperParChamp(features, champ) {
 
 /* ---------- Chargement + enrichissement (une seule fois) ---------- */
 
+/* Couche "bâtiments" du bundler cadastre-etalab (même service que
+   URL_CADASTRE_EPCI, juste un autre nom de flux dans les 8 proposés :
+   sections, feuilles, lieux-dits, parcelles, subdivisions fiscales,
+   préfixes, communes, bâtiments) : contours réels des constructions,
+   contrairement aux parcelles qui ne donnent qu'un contour de terrain.
+   Sert uniquement au calcul ci-dessous ("cette parcelle est-elle bâtie ?"),
+   pas une couche affichée sur la carte - pas de LAYERS/panel pour ça,
+   juste une donnée de travail chargée à la demande, comme les indices
+   DVF/DPE. Nom de flux et schéma de géométrie (polygone de contour la
+   plupart du temps sur ce jeu de données, mais pas vérifiable en
+   conditions réelles depuis cet environnement, accès réseau restreint
+   pendant le développement - voir README) : dégrade silencieusement
+   vers un tableau vide en cas d'échec, auquel cas "à proximité" retombe
+   sur le seul critère de zone PLUi constructible (comportement
+   précédent), pas de fiche cassée. */
+const URL_BATIMENTS_EPCI = "https://cadastre.data.gouv.fr/bundler/cadastre-etalab/epcis/200070373/geojson/batiments";
+let batimentsCharges = null;
+function chargerBatiments() {
+    if (batimentsCharges) return Promise.resolve(batimentsCharges);
+    return fetch(URL_BATIMENTS_EPCI)
+        .then(r => r.json())
+        .then(data => { batimentsCharges = extraireFeatures(data); return batimentsCharges; })
+        .catch(() => { batimentsCharges = []; return batimentsCharges; });
+}
+/* Point représentatif d'un bâtiment pour un test point-dans-parcelle :
+   la plupart des jeux de données de bâtiments cadastraux sont des
+   polygones de contour (centroïde), mais au cas où celui-ci serait
+   fourni en simples points, les deux formes sont gérées plutôt que de
+   supposer une seule géométrie. */
+function pointBatiment(b) {
+    const geom = b && b.geometry;
+    if (!geom) return null;
+    return geom.type === "Point" ? geom.coordinates : centroideFeature(b);
+}
+
 function chargerDonneesFoncieres() {
-    return Promise.all(COUCHES_RECHERCHE.map(id => new Promise(resolve => {
-        const conf = LAYERS.find(l => l.id === id);
-        chargerCouche(conf, resolve, resolve);
-    })));
+    return Promise.all([
+        ...COUCHES_RECHERCHE.map(id => new Promise(resolve => {
+            const conf = LAYERS.find(l => l.id === id);
+            chargerCouche(conf, resolve, resolve);
+        })),
+        chargerBatiments()
+    ]);
 }
 
 /* Index pré-calculés une seule fois pour tout un lot de parcelles
@@ -110,12 +148,40 @@ function chargerDonneesFoncieres() {
    seule parcelle, ex. popup au clic), infosParcelle reconstruit ces
    index à la volée si on ne les lui fournit pas : le coût est le même
    qu'une seule itération du lot, donc négligeable pour un clic isolé. */
-function construireIndicesFonciers() {
+/* Réduit la couche "bâtiments" (potentiellement volumineuse à l'échelle
+   de l'EPCI) à celle d'une boîte englobante avant le test point-dans-
+   polygone par parcelle - même principe que featuresDansVue (layers.js)
+   mais sur l'emprise du lot de parcelles concerné plutôt que sur la vue
+   de la carte, pour rester utilisable aussi bien en lot (recherche par
+   critères) qu'au clic sur une seule parcelle. */
+function bboxUnion(features) {
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    features.forEach(f => {
+        const b = bboxFeature(f);
+        if (!b) return;
+        if (b[0] < minX) minX = b[0];
+        if (b[1] < minY) minY = b[1];
+        if (b[2] > maxX) maxX = b[2];
+        if (b[3] > maxY) maxY = b[3];
+    });
+    return Number.isFinite(minX) ? [minX, minY, maxX, maxY] : null;
+}
+function batimentsDansBbox(bbox) {
+    if (!bbox) return batimentsCharges || [];
+    const [minX, minY, maxX, maxY] = bbox;
+    return (batimentsCharges || []).filter(b => {
+        const bb = bboxFeature(b);
+        return bb && bb[0] <= maxX && bb[2] >= minX && bb[1] <= maxY && bb[3] >= minY;
+    });
+}
+
+function construireIndicesFonciers(featuresPourBbox) {
     const mutations = donneesBrutes["mutations"] || [];
     const dpePoints = donneesBrutes["dpe"] || [];
     const dvfParReference = {};
     mutations.forEach(f => { dvfParReference[f.properties.reference_parcelle] = f; });
-    return { dvfParReference, dpeParCommune: grouperParChamp(dpePoints, "code_insee") };
+    const bbox = featuresPourBbox && featuresPourBbox.length ? bboxUnion(featuresPourBbox) : null;
+    return { dvfParReference, dpeParCommune: grouperParChamp(dpePoints, "code_insee"), batiments: batimentsDansBbox(bbox) };
 }
 
 /* Couches déjà chargées au démarrage (lazy: false dans config.js), donc
@@ -159,7 +225,7 @@ function plusProche(centre, layerId) {
    nombre de bâtiments/surface bâtie compterait aussi ceux des parcelles
    voisines vendues dans le même acte. */
 function infosParcelle(feature, indices) {
-    const { dvfParReference, dpeParCommune } = indices || construireIndicesFonciers();
+    const { dvfParReference, dpeParCommune, batiments } = indices || construireIndicesFonciers([feature]);
     const zonesPLUi = donneesBrutes["zonagePLUi"] || [];
     const zonesRGA = donneesBrutes["rga"] || [];
     const p = feature.properties;
@@ -179,13 +245,33 @@ function infosParcelle(feature, indices) {
     const typezonePLUi = plui ? plui.properties.typezone : null;
     const nbBatiments = ventes[0] ? ventes[0].nbBatiments : null;
 
+    /* Une parcelle est-elle bâtie ? Signalé en conditions réelles que le
+       seul critère précédent (nbBatiments, issu de la dernière mutation
+       DVF connue) ratait de vraies maisons sur des parcelles classées en
+       zone agricole (typiquement un corps de ferme jamais revendu depuis
+       la mise en place du DVF) : ce signal ne couvre que les parcelles
+       déjà vendues, pas la totalité du bâti existant. Remplacé/complété
+       ici par un vrai test géométrique contre la couche "bâtiments" du
+       cadastre (voir chargerBatiments plus haut) : le centre d'AU MOINS
+       UN bâtiment tombe-t-il dans cette parcelle, indépendamment de son
+       zonage PLUi et de son historique de vente. */
+    const aUnBatiment = (batiments || []).some(b => {
+        const pt = pointBatiment(b);
+        return pt && pointDansFeature(pt, feature);
+    });
+
     /* "À proximité" n'a de sens que pour un terrain à bâtir ou une
        parcelle qui porte déjà une maison (voir ZONES_PLUI_CONSTRUCTIBLES
        plus haut) : sur une parcelle agricole/naturelle sans bâti, ni
        personne ne s'en sert, ni la recherche par critères qui n'affiche
        jamais ce champ — inutile de calculer la distance aux équipements
-       les plus proches (le plus coûteux de ce qui précède) à chaque fois. */
-    const proximite = (ZONES_PLUI_CONSTRUCTIBLES.includes(typezonePLUi) || nbBatiments)
+       les plus proches (le plus coûteux de ce qui précède) à chaque fois.
+       nbBatiments gardé en plus de aUnBatiment (pas à la place) : filet
+       de sécurité si jamais le chargement de la couche "bâtiments" a
+       échoué (dégradation silencieuse vers un tableau vide, voir
+       chargerBatiments), pas de perte par rapport au comportement
+       précédent dans ce cas. */
+    const proximite = (ZONES_PLUI_CONSTRUCTIBLES.includes(typezonePLUi) || aUnBatiment || nbBatiments)
         ? CATEGORIES_PROXIMITE
             .map(cat => {
                 const distance = plusProche(centre, cat.layerId);
@@ -215,7 +301,7 @@ function infosParcelle(feature, indices) {
    ensemble compact utile au filtrage (voir correspond()), calculé via
    infosParcelle ci-dessus. */
 function enrichirParcelles(parcelles) {
-    const indices = construireIndicesFonciers();
+    const indices = construireIndicesFonciers(parcelles);
     parcelles.forEach(parcelle => {
         const infos = infosParcelle(parcelle, indices);
         const derniereVente = infos.ventes[0] || null;
@@ -396,6 +482,7 @@ function construireFormulaire() {
                 </label>
             </div>
 
+            <button type="button" id="rf-ici" class="rf-bouton-secondaire" hidden>Rechercher ici</button>
             <div id="rf-statut" class="rf-statut">Chargement des données...</div>
 
             <div class="rf-actions">
@@ -432,6 +519,17 @@ function reinitialiserFormulaire() {
     mettreAJourStatut();
 }
 
+/* Un seul écouteur "moveend" enregistré une fois pour toutes (pas à
+   chaque ouverture du panneau, sinon ça s'empilerait à chaque
+   réouverture) : la recherche ne porte que sur les parcelles visibles au
+   moment de l'enrichissement (voir plus haut) - si l'utilisatrice déplace
+   la carte pendant que le panneau reste ouvert, ce résultat devient
+   silencieusement obsolète sans ce bouton. N'agit que si le panneau
+   recherche est actuellement affiché (vérifié à chaque déclenchement via
+   `hidden`, pas seulement à l'enregistrement) : un déplacement de carte
+   ailleurs dans le site n'a aucun rapport avec la recherche foncière. */
+let ecouteurDeplacementRechercheBranche = false;
+
 function ouvrirRecherche(map) {
     fermerAccueil();
     ouvrirVuePanneau("recherche-view");
@@ -449,11 +547,33 @@ function ouvrirRecherche(map) {
     });
     document.getElementById("rf-vider").addEventListener("click", () => viderSelectionCarte(map));
     document.getElementById("rf-reset").addEventListener("click", reinitialiserFormulaire);
+    document.getElementById("rf-ici").addEventListener("click", () => rechercherIci(map));
 
+    if (!ecouteurDeplacementRechercheBranche) {
+        ecouteurDeplacementRechercheBranche = true;
+        map.on("moveend", () => {
+            const vue = document.getElementById("recherche-view");
+            const bouton = document.getElementById("rf-ici");
+            if (vue && !vue.hidden && bouton) bouton.hidden = false;
+        });
+    }
+
+    chargerEtEnrichirVueActuelle(map);
+}
+
+/* Charge (si besoin, chargerDonneesFoncieres est idempotente) et
+   enrichit les parcelles de la vue actuelle - factorisé entre l'ouverture
+   du panneau et le bouton "Rechercher ici", même logique dans les deux
+   cas. */
+function chargerEtEnrichirVueActuelle(map) {
     const statut = document.getElementById("rf-statut");
+    const bouton = document.getElementById("rf-ici");
     const zoomMin = zoomMinCadastre();
+    if (bouton) bouton.hidden = true;
+
     if (map.getZoom() < zoomMin) {
         statut.textContent = `Zoomez sur une zone du territoire (niveau ${zoomMin} ou plus) pour lancer une recherche : elle ne porte que sur les parcelles affichées à l'écran.`;
+        document.getElementById("rf-appliquer").disabled = true;
         return;
     }
 
@@ -463,4 +583,8 @@ function ouvrirRecherche(map) {
         document.getElementById("rf-appliquer").disabled = false;
         mettreAJourStatut();
     });
+}
+
+function rechercherIci(map) {
+    chargerEtEnrichirVueActuelle(map);
 }

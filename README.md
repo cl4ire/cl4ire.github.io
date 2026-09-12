@@ -328,6 +328,71 @@ plusieurs références) — le nombre de bâtiments/surface bâtie affichés ne
 retient désormais que les lots dont le champ `parcelle` correspond
 exactement à celle affichée.
 
+### "Rechercher ici" (recherche foncière après un déplacement de carte)
+
+Signalé en conditions réelles : le panneau reste ouvert après une
+première recherche (voir plus haut), mais si l'utilisatrice déplace la
+carte pendant que le panneau reste affiché, les résultats enrichis
+(`resultatsEnrichis`) restent silencieusement basés sur l'**ancienne**
+vue - aucun signal ne prévenait qu'il fallait rouvrir/relancer la
+recherche pour la nouvelle zone. Bouton **"Rechercher ici"** ajouté
+(`rf-ici`), masqué par défaut, affiché dès que la carte bouge (`moveend`)
+tant que le panneau recherche est ouvert (vérifié via son attribut
+`hidden`, pas seulement à l'enregistrement de l'écouteur — un seul
+écouteur enregistré une fois pour toutes, pas à chaque ouverture du
+panneau). Cliquer dessus relance le même chargement/enrichissement que
+l'ouverture initiale du panneau (`chargerEtEnrichirVueActuelle`,
+factorisée entre les deux usages) sur la nouvelle vue, puis masque à
+nouveau le bouton.
+
+### "À proximité" : détection du bâti par géométrie, pas par l'historique DVF
+
+Signalé en conditions réelles : la fiche parcelle n'affichait "à
+proximité" (école/commerce/mairie les plus proches) que pour un terrain
+constructible (zone PLUi U/AUc) ou une parcelle ayant `nbBatiments > 0`
+— ce dernier signal venant uniquement de la **dernière mutation DVF
+connue** (voir plus haut), donc absent pour toute parcelle avec une
+maison jamais revendue depuis la mise en place du DVF. Cas réel
+rencontré : un corps de ferme en zone agricole (A), jamais vendu,
+n'affichait donc jamais "à proximité" alors qu'il y a bien une maison
+dessus.
+
+Corrigé en interrogeant une **vraie donnée de bâti** plutôt que
+l'historique des ventes : la couche "bâtiments" du même bundler
+cadastre-etalab que les parcelles (`URL_BATIMENTS_EPCI`, un des 8 flux
+du jeu de données Etalab — sections, feuilles, lieux-dits, parcelles,
+subdivisions fiscales, préfixes, communes, **bâtiments**), chargée à la
+demande (`chargerBatiments`, `js/recherche.js`) en parallèle des 5
+couches déjà utilisées par la recherche foncière. `aUnBatiment` teste
+si le centre d'au moins un bâtiment tombe dans la parcelle
+(`pointDansFeature`, déjà utilisé pour PLUi/RGA), **indépendamment du
+zonage PLUi et de l'historique de vente** — remplace donc le critère
+"agricole = jamais de maison" par un vrai test géométrique. `nbBatiments`
+(DVF) reste néanmoins vérifié EN PLUS (pas à la place) dans la condition
+finale : filet de sécurité si le chargement de la couche bâtiments
+échoue (dégrade silencieusement vers un tableau vide, voir
+`chargerBatiments`), pour ne rien perdre par rapport au comportement
+précédent dans ce cas précis.
+
+⚠️ **Comme pour d'autres flux ajoutés cette session, le nom exact de ce
+flux ("batiments") et la forme de sa géométrie (polygone de contour
+supposé, avec repli sur un point si jamais fourni ainsi) n'ont pas pu
+être vérifiés en conditions réelles** (accès réseau restreint pendant
+le développement, `cadastre.data.gouv.fr` bloqué). Dégrade silencieusement
+vers l'ancien comportement (zone PLUi seule) en cas d'échec de
+chargement, mais un test en conditions réelles reste à faire : cocher
+qu'une parcelle agricole connue pour avoir une maison affiche bien
+"à proximité" une fois ce correctif en ligne.
+
+Pour rester rapide même sur un lot de plusieurs centaines de parcelles
+visibles (pas seulement une seule au clic) : `bboxUnion`/`batimentsDansBbox`
+réduisent d'abord la couche bâtiments (potentiellement volumineuse à
+l'échelle de l'EPCI) à la seule emprise du lot de parcelles concerné,
+avant le test point-dans-polygone parcelle par parcelle — même principe
+que `featuresDansVue` (layers.js) mais sur l'emprise d'un lot de
+features plutôt que sur la vue de la carte, pour rester utilisable
+aussi bien en lot qu'au clic sur une seule parcelle.
+
 ## Couches DPE et mutations (DVF) : code couleur + popups dédiées
 
 La fiche parcelle fait maintenant apparaître l'essentiel des mutations et
@@ -978,6 +1043,14 @@ toilettes, au moins un nom pour le petit patrimoine).
   section dédiée plus haut) dès qu'elles sont connues — fichier
   actuellement vide, ces trois sites n'apparaîtront sur la carte qu'une
   fois leurs coordonnées renseignées (ou trouvées sur OpenStreetMap).
+- **Couche "bâtiments" (`URL_BATIMENTS_EPCI`, détection du bâti pour "à
+  proximité") : À VÉRIFIER EN CONDITIONS RÉELLES**, voir la section
+  dédiée plus haut — nom de flux et schéma de géométrie non confirmés
+  (accès réseau restreint pendant le développement). Vérifier qu'une
+  parcelle agricole connue pour avoir une maison affiche bien "à
+  proximité" dans sa fiche ; si ce n'est jamais le cas, inspecter la
+  réponse réseau réelle de `URL_BATIMENTS_EPCI` et ajuster
+  `pointBatiment`/le nom du flux dans `js/recherche.js` en conséquence.
 
 ## Déploiement
 
