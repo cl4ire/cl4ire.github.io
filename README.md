@@ -466,6 +466,15 @@ territoire — SYVALORM et Syndicat Mixte du Val de Loir).
 
 ## Points relais & casiers colis (Mondial Relay, Amazon Locker, Vinted Go...)
 
+> **Mise à jour** : cette couche a depuis été convertie en fichier
+> statique (`couches/services/lockers_osm.geojson`), pour les raisons
+> détaillées dans "Couches converties en fichiers statiques" plus bas.
+> La section ci-dessous décrit l'architecture Overpass **d'origine**,
+> gardée pour l'historique des tags/schémas OSM identifiés (toujours
+> valables pour comprendre les données) ; `fetchOverpassLockers`,
+> `MIROIRS_OVERPASS`, `geojsonDepuisOverpass` et le cache
+> `localStorage` qu'elle décrit n'existent plus dans le code.
+
 Nouvelle couche `lockers` (groupe Services), en flux comme
 Vigieau/OLD/carburants : il n'existe pas de jeu de données dédié publié
 par un seul opérateur regroupant toutes les enseignes, mais ces points
@@ -622,6 +631,18 @@ suite). Pour ajouter un point :
 
 ## Médecins, vétérinaires, bibliothèques, offices de tourisme, aires de camping-car
 
+> **Mise à jour** : `medecins`, `veterinaires` et `dentistes` ont depuis
+> été **supprimées** (0 à 3 résultats réels sur le territoire une fois
+> filtré précisément — voir "Couches converties en fichiers statiques"
+> plus bas pour les chiffres et la décision) ; `bibliotheques`,
+> `officesTourisme` et `campingcar` ont été converties en fichiers
+> statiques mais gardées. La section ci-dessous décrit l'architecture
+> Overpass **d'origine** de ces cinq couches, gardée pour l'historique
+> des tags OSM identifiés ; `creerFetchOverpass`/
+> `geojsonDepuisElementsOverpass` qu'elle décrit n'existent plus dans le
+> code, et les fiches Doctolib/vétérinaire/dentiste ont été retirées de
+> `js/popup.js`.
+
 Cinq nouvelles couches en flux Overpass (OpenStreetMap), sur le même principe
 que les points relais/casiers colis ci-dessus : `medecins` et `veterinaires`
 (groupe Sécurité & santé), `bibliotheques` (groupe Services & mairie),
@@ -773,6 +794,13 @@ intégrées comme couches, faute de source de données ouverte exploitable :
 
 ## EHPAD, toilettes publiques, points d'eau, itinéraires cyclables, historique des catastrophes naturelles
 
+> **Mise à jour** : `ehpad`, `toilettes`, `fontaines` (points d'eau) et
+> `velo` ont depuis été converties en fichiers statiques (voir "Couches
+> converties en fichiers statiques" plus bas) — seule `catnat` reste un
+> vrai flux en direct, non concernée par cette conversion. La section
+> ci-dessous décrit l'architecture Overpass **d'origine** des couches
+> converties, gardée pour l'historique des tags OSM identifiés.
+
 Cinq couches supplémentaires, suite au brainstorming avec l'utilisatrice
 sur "quelles autres données seraient intéressantes" :
 
@@ -831,6 +859,16 @@ sur "quelles autres données seraient intéressantes" :
 
 ## Tous les sentiers de randonnée + points remarquables de la forêt de Bercé
 
+> **Mise à jour** : `randonnees` et `pointsRemarquablesBerce` ont depuis
+> été converties en fichiers statiques fusionnés avec leurs fichiers
+> manuels respectifs (voir "Couches converties en fichiers statiques"
+> plus bas) — le principe "flux + fichier local" décrit ci-dessous reste
+> valable, seul le "flux" est maintenant lui aussi un fichier figé plutôt
+> qu'une requête Overpass en direct. `fetchRandonnees`/
+> `geojsonDepuisRandonnees`/`fetchPointsBerce`/`geojsonDepuisPointsBerce`
+> qu'elle décrit n'existent plus dans le code, remplacées par la fonction
+> générique `fusionnerFeatureCollections`.
+
 Deux demandes de l'utilisatrice à la suite du brainstorming précédent.
 
 **Randonnées** — la couche `randonnees` ne contenait qu'un seul tracé
@@ -869,6 +907,14 @@ coordonnées de ces trois sites sont connues, ou dès qu'un signalement
 similaire est fait sur un autre point remarquable.
 
 ## Parkings, vente directe à la ferme, antennes-relais, petit patrimoine rural
+
+> **Mise à jour** : `venteFerme` a depuis été **supprimée** (0 résultat
+> réel une fois filtré précisément sur le territoire — voir "Couches
+> converties en fichiers statiques" plus bas) ; `parkings`, `antennes`
+> et `patrimoineRural` ont été converties en fichiers statiques mais
+> gardées (respectivement 247, 33 et 35 résultats réels, largement
+> suffisant). `construirePopupVenteFerme` a été retirée de
+> `js/popup.js`.
 
 Quatre couches supplémentaires, suite à une nouvelle liste de pistes de
 l'utilisatrice (couverture mobile, permis de construire, temps réel
@@ -923,66 +969,173 @@ une trace uniquement dans la conversation) :
   marché de producteurs d'un marché classique (même tag
   `amenity=marketplace` pour les deux), donc rien à ajouter de plus ici.
 
-## Une seule requête Overpass pour 16 couches (fiabilité)
+## Historique : de "une requête Overpass par couche" à "une requête combinée"
 
 Signalé en conditions réelles : les couches en flux Overpass "avaient du
 mal" (erreurs fréquentes en cochant les cases). Cause la plus probable :
 avec une quinzaine de couches ajoutées progressivement, chacune avec sa
-**propre** requête (voir les sections précédentes, qui décrivent
-l'architecture d'origine — "chaque couche ne fournit que sa propre
-requête Overpass et sa propre clé de cache"), cocher plusieurs cases
-revenait à déclencher autant de requêtes séparées vers le même service
-public gratuit, chacune avec son propre risque d'échec (surcharge du
-serveur, 429...). Le service public Overpass demande explicitement à
-ses gros consommateurs de grouper leurs requêtes plutôt que d'en
-multiplier de petites.
+**propre** requête, cocher plusieurs cases revenait à déclencher autant de
+requêtes séparées vers le même service public gratuit, chacune avec son
+propre risque d'échec (surcharge du serveur, 429...). Le service public
+Overpass demande explicitement à ses gros consommateurs de grouper leurs
+requêtes plutôt que d'en multiplier de petites.
 
-**Fusion en une seule requête combinée** (`REQUETE_OVERPASS_POINTS_COMBINES`,
-`config.js`) pour les 16 couches "points simples" (nœuds/ways, `out
-center;`) : médecins, vétérinaires, dentistes, pompiers, gendarmerie,
-EHPAD, toilettes, fontaines, bibliothèques, offices de tourisme, aires
-de camping-car, points remarquables de la forêt de Bercé, parkings,
-vente directe à la ferme, petit patrimoine rural, antennes-relais.
-`fetchOverpassPointsCombines` (un seul `creerFetchOverpass`, donc un
-seul cache `localStorage`) récupère tout en une fois ;
-`classifierElementCombine` répartit chaque élément de la réponse vers
-la bonne couche par ses tags (familles de tags disjointes entre
-couches, un élément ne peut correspondre qu'à une seule catégorie) ;
-`fetchOverpassCombinePourCouche(coucheId)` est le point d'entrée
-`fetchPersonnalise` que chaque couche utilise, filtrant la réponse
-combinée sur son seul id. Résultat : cocher les 16 couches ne déclenche
-plus qu'**une seule** requête réseau (la première fois, ensuite le
-cache), pas 16 — un point de défaillance à surveiller plutôt que 16.
+Une première fusion en une seule requête combinée (16 couches "points
+simples" derrière un seul appel réseau + cache) a nettement réduit le
+nombre de requêtes, et a aussi révélé un vrai bug de concurrence corrigé
+au passage (plusieurs couches cochées "en même temps" déclenchaient
+chacune sa propre requête réseau malgré la requête partagée, car chacune
+voyait "pas encore de cache" avant que la première requête n'ait eu le
+temps d'aboutir et de l'écrire). Cette étape intermédiaire a ensuite été
+**remplacée entièrement** par la conversion en fichiers statiques
+décrite dans la section suivante, qui règle le problème à la racine
+(plus de requête réseau du tout à l'affichage) plutôt que de seulement
+le rendre moins fréquent — tout le code Overpass "en direct"
+(`creerFetchOverpass`, `MIROIRS_OVERPASS`, les requêtes combinées, la
+classification par tags...) a été retiré du dépôt à cette occasion.
 
-Restent volontairement à part (mode de sortie ou logique différents,
-pas mélangeables dans la requête combinée) :
-- **Itinéraires cyclables et randonnées** (`route=bicycle`/`route=hiking`,
-  relations avec `out geom;` — géométrie de ligne complète, pas un
-  simple point `out center;`).
-- **Casiers colis** (`lockers`) — logique déjà stabilisée (miroirs, cache,
-  fichier manuel de complément), laissée telle quelle pour ne pas
-  perturber quelque chose qui fonctionne déjà en conditions réelles.
-- **Historique des catastrophes naturelles** (`catnat`) — API Géorisques,
-  pas Overpass du tout.
+## Couches converties en fichiers statiques (performance + précision territoriale)
 
-**Correctif de fond associé, pas seulement la fusion** : la mutualisation
-d'une requête entre plusieurs couches a révélé un vrai bug de
-concurrence dans `creerFetchOverpass` — plusieurs couches cochées "en
-même temps" (ou en succession rapide) déclenchaient chacune sa propre
-requête réseau malgré la requête partagée, car chacune voyait "pas
-encore de cache" avant que la première requête n'ait eu le temps
-d'aboutir et de l'écrire. Corrigé avec une variable `requeteEnCours`
-(la requête en vol est partagée entre appels concurrents, pas seulement
-le résultat mis en cache après coup) — bénéficie aussi, en creux, aux
-couches déjà existantes qui n'utilisaient pas la requête combinée
-(lockers, vélo, randonnées) : même protection contre un double
-déclenchement accidentel.
+Retour direct de l'utilisatrice, après avoir testé le site en conditions
+réelles : les couches en flux Overpass mettaient du temps à charger,
+renvoyaient souvent une erreur, et surtout **dépassaient le territoire
+Loir-Lucé-Bercé** — remarqué en comparant l'étendue réelle affichée à
+celle des 24 communes de la comcom. Cause exacte du débordement :
+`BBOX_TERRITOIRE`/`BBOX_OVERPASS` filtrait par un simple **rectangle**
+englobant (le vrai polygone du territoire, `couches/epci.geojson`, fait
+plus de 4000 sommets — bien trop pour un filtre Overpass `poly:`
+précis), donc tout point OSM dans ce rectangle mais hors du polygone
+réel (communes limitrophes) remontait quand même. Plutôt que de
+continuer à interroger Overpass en direct à chaque chargement, en
+espérant qu'il réponde et en acceptant ce débordement, la donnée a été
+**extraite une fois puis figée en fichiers statiques**, filtrés avec
+précision sur le vrai polygone.
 
-Timeout Overpass relevé de 25s à 40s sur toutes les requêtes restantes
-(vélo, randonnées, requête combinée) : une requête plus large ou une
-relation avec beaucoup de way membres peut légitimement prendre plus de
-temps qu'un simple nœud/way, surtout sur un serveur public déjà sous
-charge.
+**Méthode** : deux requêtes Overpass QL (toutes les catégories de points
+en une seule requête `out center;`, plus une requête séparée sur les
+relations `route=bicycle`/`route=hiking` en `out geom;`) exécutées côté
+utilisatrice sur [overpass-turbo.eu](https://overpass-turbo.eu/) — cette
+étape reste manuelle et ponctuelle, pas un flux : ce site ne peut pas
+joindre directement l'API Overpass depuis son environnement de
+développement, overpass-turbo.eu est resté le seul moyen pratique
+d'obtenir un export. Chaque export GeoJSON a ensuite été retraité par un
+petit script Python (hors dépôt, jetable) qui :
+1. filtre chaque point/ligne par un vrai test point-dans-polygone (ray
+   casting) contre la géométrie de `couches/epci.geojson`, pas contre sa
+   simple boîte englobante ;
+2. répartit les points restants vers la bonne couche par leurs tags OSM
+   (même logique de correspondance que l'ancien `classifierElementCombine`,
+   portée en Python) ;
+3. retire les propriétés méta ajoutées par l'export Overpass Turbo
+   (`@id`, `@geometry`) ;
+4. pour les sentiers/itinéraires, calcule `distance` (somme des
+   distances haversine entre points consécutifs) et `dureeEstim`
+   (`distance / 4`, même convention 4 km/h que le tracé "J1" existant) ;
+5. écrit un fichier `.geojson` par couche dans `couches/<groupe>/`.
+
+**Résultat mesuré sur l'export réel** (12/09/2026) : sur 643 points
+récupérés dans le rectangle englobant, seuls **412 (64%) tombent
+réellement dans le polygone du territoire** — 231 points (36%) étaient
+donc un pur débordement sur les communes limitrophes, confirmant
+directement le problème signalé. Comptages réels par couche après
+filtrage précis :
+
+| Couche | Points réels sur le territoire |
+|---|---|
+| Parkings publics | 247 |
+| Petit patrimoine rural | 35 |
+| Antennes-relais mobiles | 33 |
+| Toilettes publiques | 29 |
+| Points remarquables (forêt de Bercé) | 16 |
+| EHPAD & maisons de retraite | 10 |
+| Casernes de pompiers | 9 |
+| Bibliothèques & médiathèques | 8 |
+| Points d'eau potable | 8 |
+| Itinéraires cyclables (relations) | 8 |
+| Offices de tourisme | 4 |
+| Gendarmerie & police | 4 |
+| Points relais & casiers colis | 4 |
+| Sentiers de randonnée (relations) | 6 |
+| Médecins | 3 |
+| Aires de camping-car | 1 |
+| Vétérinaires | 1 |
+| Dentistes | 0 |
+| Vente directe à la ferme | 0 |
+
+**Trois couches supprimées** : `medecins`, `veterinaires`, `dentistes` —
+ce filtrage précis confirme, avec des chiffres réels, l'impression de
+terrain remontée par l'utilisatrice ("la couche médecin est super vide
+en vrai") : 3, 1 et 0 résultats sur l'ensemble du territoire, bien trop
+peu pour qu'une couche dédiée ait un intérêt. **Une quatrième** couche
+supprimée pour la même raison, quoique jamais mise en avant côté
+utilisatrice : `venteFerme` (vente directe à la ferme), 0 résultat réel —
+le seul point vu en flux Overpass n'existait que dans la zone de
+débordement, hors du vrai territoire. Les fonctions de popup dédiées
+(`construirePopupMedecin` et ses aides Doctolib, `construirePopupVeterinaire`,
+`construirePopupDentiste`, `construirePopupVenteFerme`) et l'entrée
+"Le médecin le plus proche" des raccourcis d'accueil (`RACCOURCIS`) ont
+été retirées avec les couches.
+
+**Deux résultats à l'inverse de l'intuition, gardés malgré tout** :
+- **EHPAD & maisons de retraite** : 10 résultats réels — l'utilisatrice
+  avait demandé à vérifier cette couche en même temps que
+  médecins/vétérinaires/dentistes, en craignant qu'elle soit vide de la
+  même façon ; ce n'est **pas** le cas, la couche est bien fournie sur ce
+  territoire et reste donc en place sans changement.
+- **Aires de camping-car** : un seul résultat réel, mais gardée quand
+  même — contrairement à médecins/vétérinaires/dentistes, une seule aire
+  de camping-car sur une comcom rurale de cette taille est un résultat
+  plausible en soi, pas un signe de trou de couverture OSM à corriger
+  (une commune ne va pas avoir dix aires de camping-car).
+
+**Couches conservées avec un fichier de complément manuel** — même
+principe qu'avant (flux + fichier local), sauf que le "flux" est
+maintenant lui aussi un fichier statique : `layers.js` accepte `file`
+comme un tableau d'URL (une par fichier), `transform` reçoit alors le
+tableau des réponses. Une nouvelle fonction générique,
+`fusionnerFeatureCollections` (`config.js`), remplace les anciennes
+fonctions de fusion dédiées (`geojsonDepuisOverpass`,
+`geojsonDepuisRandonnees`, `geojsonDepuisPointsBerce`) — un simple
+`flatMap` sur les deux `FeatureCollection` :
+- **Points relais & casiers colis** (`lockers`) :
+  `couches/services/lockers_osm.geojson` (4 points figés) +
+  `couches/services/lockers_manuels.geojson` (toujours modifiable à la
+  main, voir la section dédiée plus haut — l'utilisatrice y ajoute
+  elle-même les casiers Mondial Relay pas encore couverts).
+- **Randonnées** (`randonnees`) : `couches/tourisme/randonnees_osm.geojson`
+  (6 tracés OSM figés, avec distance/durée calculées) +
+  `couches/tourisme/randonnees.geojson` (le tracé "J1" digitalisé à la
+  main, toujours présent, gardé systématiquement même si son tracé
+  recoupe en partie un circuit OSM voisin repéré dans cet export —
+  "Circuit de Carnuta à Bercé" — sans certitude que ce soit le même
+  itinéraire sous un autre identifiant).
+- **Points remarquables de la forêt de Bercé** (`pointsRemarquablesBerce`) :
+  `couches/tourisme/pointsRemarquablesBerce_osm.geojson` (16 points OSM
+  figés) + `couches/tourisme/pointsRemarquablesBerce_manuels.geojson`
+  (toujours vide — coordonnées du Chêne Boppe/Fontaine de la
+  Coudre/Source de l'Hermitière toujours à renseigner, voir "Ce qui
+  reste à faire").
+
+**Conséquence pratique** : toutes ces couches sont désormais de simples
+fichiers `.geojson` du dépôt comme la grande majorité des autres couches
+du site (aucune requête réseau à l'affichage, aucun risque d'erreur
+Overpass, plus de débordement territorial possible) — et, les fichiers
+étant petits, elles sont passées de `lazy: true` à `lazy: false` :
+chargées au démarrage comme les autres couches légères, sans le badge
+"chargée à la demande" qui n'a plus lieu d'être.
+
+**Limite à garder en tête, qui ne disparaît pas avec la conversion** :
+la couverture reste celle qu'avaient les contributeurs OpenStreetMap au
+moment de l'extraction (12/09/2026) — figée, donc elle ne se met plus à
+jour automatiquement comme le ferait un vrai flux. Un point ajouté à OSM
+après cette date n'apparaîtra pas ici tout seul ; si un trou de
+couverture est signalé, la remédiation est la même qu'avant (ajouter le
+point sur OpenStreetMap), mais il faudra refaire l'extraction (nouvel
+export overpass-turbo.eu + nouveau passage du script de filtrage) pour
+qu'il apparaisse sur ce site — plus un simple rechargement de page.
+Restent en flux **réellement en direct**, non concernées par cette
+conversion : `catnat` (API Géorisques, pas Overpass) et les couches
+`carburants`/Vigieau/OLD (autres API, voir les sections dédiées).
 
 ## Couches sans popup (`sansPopup`)
 
@@ -1048,12 +1201,16 @@ pour n'importe quel autre sous-type futur (ex. "boucherie", "coiffeur"...).
   Parcellai.re ("terrain de 800 à 1 200 m², un seul bâtiment, zone
   constructible" → liste de candidats), déjà en grande partie couverte par
   les critères actuels de la recherche foncière.
-- Couche `lockers` (consignes/casiers colis) : confirmée fonctionnelle en
-  conditions réelles, avec un repli sur plusieurs miroirs Overpass en cas
-  de 504 du serveur principal (voir plus haut). Si malgré tout rien ne
-  s'affiche en cochant la couche, la console liste chaque miroir essayé
-  (`console.warn`) avant l'erreur finale — de quoi savoir lequel a
-  répondu quoi, plutôt que de deviner.
+- **Rafraîchir les couches converties en fichiers statiques** (voir
+  "Couches converties en fichiers statiques" plus haut) : la donnée
+  OpenStreetMap de ces couches est figée à la date de l'extraction
+  (12/09/2026), elle ne se met plus à jour seule. Si un trou de
+  couverture est signalé sur l'une d'elles, ou simplement pour
+  rafraîchir périodiquement : réexécuter les deux requêtes Overpass QL
+  sur [overpass-turbo.eu](https://overpass-turbo.eu/), exporter chaque
+  résultat en GeoJSON, puis repasser le filtrage point-dans-polygone sur
+  `couches/epci.geojson` avant d'écraser les fichiers `couches/**/*.geojson`
+  concernés.
 - **Couche `catnat` (historique des catastrophes naturelles) : À VÉRIFIER
   EN CONDITIONS RÉELLES**, voir la section dédiée plus haut — la forme
   exacte de la réponse de l'API Géorisques (CATNAT) n'a pas pu être

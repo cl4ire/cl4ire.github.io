@@ -341,155 +341,25 @@ function geojsonDepuisFluxODS(data) {
    bandeau "Ce qui reste à faire" du README).
    ========================================================= */
 
-/* Rectangle englobant la comcom Loir-Lucé-Bercé (bbox de
-   couches/epci.geojson, élargie d'environ 1 km) : le polygone exact du
-   territoire fait plus de 4000 sommets, bien trop pour un filtre
-   Overpass "poly:" ; un simple rectangle suffit très largement pour un
-   territoire de cette taille, quitte à déborder un peu sur les
-   communes limitrophes plutôt que de risquer de rater des casiers en
-   bordure de territoire. */
-const BBOX_TERRITOIRE = { sud: 47.60, ouest: 0.30, nord: 47.92, est: 0.72 };
-
-/* "out center" plutôt que "out body" : nécessaire pour post_partner, qui
-   peut être tagué sur un "way" (contour de bâtiment) et pas seulement un
-   node - un node porte déjà lat/lon directement avec "out center" (même
-   résultat qu'"out body" dans ce cas), donc un seul mode de sortie
-   suffit pour toutes les familles de points interrogées.
-
-   TROIS familles de tags, pas deux : amenity=parcel_locker (casiers
-   automatiques, la norme actuelle) et post_office=post_partner (points
-   relais en commerce, voir plus haut) ne suffisaient toujours pas à
-   faire remonter des casiers pourtant bien réels signalés sur le
-   terrain (ex. près d'un Leclerc) - troisième cas identifié :
-   amenity=vending_machine + vending=parcel_pickup (ou parcel_mail_in),
-   l'ANCIEN schéma de balisage des casiers, officiellement déprécié au
-   profit d'amenity=parcel_locker mais dont la bascule (faite par un bot
-   il y a plusieurs années) n'a pas forcément atteint 100% de la base
-   dans les zones moins actives en contributions. Coûte rien de
-   l'interroger aussi en plus du nouveau schéma plutôt que de perdre des
-   casiers réels juste parce qu'un nœud n'a jamais été migré. */
-const BBOX_OVERPASS = `${BBOX_TERRITOIRE.sud},${BBOX_TERRITOIRE.ouest},${BBOX_TERRITOIRE.nord},${BBOX_TERRITOIRE.est}`;
-const REQUETE_OVERPASS_LOCKERS =
-    `[out:json][timeout:25];` +
-    `(node["amenity"="parcel_locker"](${BBOX_OVERPASS});` +
-    `node["post_office"="post_partner"](${BBOX_OVERPASS});` +
-    `way["post_office"="post_partner"](${BBOX_OVERPASS});` +
-    `node["amenity"="vending_machine"]["vending"~"parcel"](${BBOX_OVERPASS}););` +
-    `out center;`;
-
-/* L'instance publique principale (overpass-api.de) est fréquemment
-   surchargée et répond parfois 504 aux heures de pointe (constaté en
-   conditions réelles) : plutôt que de faire échouer toute la couche sur
-   un simple pic de charge d'UN serveur, on retente sur d'autres miroirs
-   publics avant d'abandonner. Liste volontairement courte (3) pour ne
-   pas faire attendre l'utilisateur trop longtemps si tout est en panne. */
-const MIROIRS_OVERPASS = [
-    "https://overpass-api.de/api/interpreter",
-    "https://overpass.kumi.systems/api/interpreter",
-    "https://overpass.osm.ch/api/interpreter"
-];
-
-/* Cache la réponse Overpass dans localStorage entre deux rechargements
-   de page (pas seulement en mémoire le temps d'une session : chargerCouche
-   évite déjà les doublons de requête TANT QUE la page reste ouverte, ça
-   ne protège pas contre quelqu'un qui recharge la page plusieurs fois de
-   suite en train de tester). Deux raisons : Overpass, service public
-   gratuit, demande explicitement à ses consommateurs de mettre en cache
-   plutôt que de le solliciter en boucle pour la même requête - et,
-   plus concrètement, c'est aussi ce qui a déclenché le 429 (Too Many
-   Requests) rapporté après plusieurs tests successifs. 6h : la présence
-   d'un casier/point relais ne change pas assez vite pour justifier plus
-   frais que ça. */
-const CACHE_LOCKERS_CLE = "geoberce-cache-lockers";
-const CACHE_LOCKERS_DUREE_MS = 6 * 60 * 60 * 1000;
-
-function lireCacheLockers() {
-    try {
-        const brut = localStorage.getItem(CACHE_LOCKERS_CLE);
-        if (!brut) return null;
-        const { horodatage, donnees } = JSON.parse(brut);
-        if (!horodatage || Date.now() - horodatage > CACHE_LOCKERS_DUREE_MS) return null;
-        return donnees;
-    } catch (_) {
-        return null; // quota dépassé, navigation privée... : pas grave, on retombe sur le réseau
-    }
-}
-
-function ecrireCacheLockers(donnees) {
-    try {
-        localStorage.setItem(CACHE_LOCKERS_CLE, JSON.stringify({ horodatage: Date.now(), donnees }));
-    } catch (_) {
-        // silencieux : le cache est un confort, pas un besoin
-    }
-}
-
-function recupererOverpassLockers() {
-    const enCache = lireCacheLockers();
-    if (enCache) return Promise.resolve(enCache);
-
-    const essayer = index => {
-        if (index >= MIROIRS_OVERPASS.length) {
-            return Promise.reject(new Error("Tous les miroirs Overpass ont échoué (dernier testé : " + MIROIRS_OVERPASS[MIROIRS_OVERPASS.length - 1] + ")"));
-        }
-        const url = MIROIRS_OVERPASS[index] + "?data=" + encodeURIComponent(REQUETE_OVERPASS_LOCKERS);
-        return fetch(url)
-            .then(r => {
-                if (!r.ok) throw new Error("Erreur HTTP " + r.status + " sur " + url);
-                return r.json();
-            })
-            .catch(err => {
-                console.warn("Miroir Overpass indisponible (" + MIROIRS_OVERPASS[index] + ") :", err);
-                return essayer(index + 1);
-            });
-    };
-    return essayer(0).then(donnees => { ecrireCacheLockers(donnees); return donnees; });
-}
-
-/* Casiers/points relais connus sur le terrain mais pas encore
-   cartographiés dans OpenStreetMap - donc invisibles pour Overpass, quel
-   que soit le tag interrogé (constaté en conditions réelles : certains
-   casiers bien réels n'existent tout simplement pas dans OSM). Un petit
-   fichier local en COMPLÉMENT, pas en remplacement : la vraie base reste
-   OSM/Overpass (seule solution qui profite aussi à tous les autres
-   usages d'OSM, pas seulement ce site), ce fichier ne sert qu'à combler
-   des trous ponctuels signalés en attendant leur ajout là-bas. Toujours
-   récupéré en direct sans cache : un fichier local statique ne coûte
-   rien à refetch, contrairement à Overpass, et on veut qu'un ajout dans
-   ce fichier soit visible tout de suite plutôt que d'attendre 6h. Mêmes
-   noms de champs qu'un flux Overpass (brand/opening_hours/addr:*...),
-   voir le README pour le détail : ainsi categorieLocker/iconeLocker/
-   construirePopupLocker fonctionnent sans aucune distinction entre les
-   deux origines. */
-function fetchLockersManuels() {
-    return fetch("couches/services/lockers_manuels.geojson")
-        .then(r => r.ok ? r.json() : { type: "FeatureCollection", features: [] })
-        .catch(() => ({ type: "FeatureCollection", features: [] }));
-}
-
-function fetchOverpassLockers() {
-    return Promise.all([recupererOverpassLockers(), fetchLockersManuels()])
-        .then(([overpass, manuels]) => ({ overpass, manuels }));
-}
-
-/* data.overpass : réponse Overpass (JSON natif de l'API, pas du GeoJSON)
-   - un tableau "elements". Un node porte directement lat/lon ; un way
-   (post_partner sur un contour de bâtiment) porte un champ "center" à la
-   place grâce à "out center" dans la requête - les deux formes sont donc
-   gérées ici plutôt que de supposer que tout est un node.
-   data.manuels : déjà un vrai GeoJSON (voir fetchLockersManuels), ajouté
-   tel quel aux features issues d'Overpass. */
-function geojsonDepuisOverpass(data) {
-    const elements = (data && data.overpass && data.overpass.elements) || [];
-    const featuresOverpass = elements
-        .map(el => {
-            const lat = typeof el.lat === "number" ? el.lat : (el.center && el.center.lat);
-            const lon = typeof el.lon === "number" ? el.lon : (el.center && el.center.lon);
-            if (typeof lat !== "number" || typeof lon !== "number") return null;
-            return { type: "Feature", geometry: { type: "Point", coordinates: [lon, lat] }, properties: el.tags || {} };
-        })
-        .filter(Boolean);
-    const featuresManuels = (data && data.manuels && data.manuels.features) || [];
-    return { type: "FeatureCollection", features: [...featuresOverpass, ...featuresManuels] };
+/* Anciennement : plusieurs couches (casiers colis, médecins, parkings,
+   sentiers de randonnée...) interrogeaient OpenStreetMap EN DIRECT via
+   Overpass à chaque chargement. Signalé en conditions réelles : requêtes
+   lentes, fréquemment en erreur (service public gratuit, souvent
+   surchargé), et surtout un filtre par simple rectangle englobant (le
+   vrai polygone du territoire fait plus de 4000 sommets, trop pour un
+   filtre Overpass "poly:") qui faisait déborder les résultats sur les
+   communes limitrophes. Remplacé par des extractions ponctuelles,
+   filtrées avec précision sur le vrai polygone de couches/epci.geojson
+   puis figées en fichiers statiques (voir le README, section "Couches
+   converties en fichiers statiques" pour la méthode et les couches
+   abandonnées faute de données suffisantes sur ce territoire). Les
+   couches à compléter manuellement (casiers colis, sentiers de
+   randonnée, points remarquables de la forêt de Bercé) gardent leur
+   fichier local de complément (ex. lockers_manuels.geojson) : voir
+   fusionnerFeatureCollections ci-dessous, appelé via `file` en tableau
+   dans LAYERS plutôt que par une requête réseau dédiée. */
+function fusionnerFeatureCollections(reponses) {
+    return { type: "FeatureCollection", features: reponses.flatMap(r => (r && r.features) || []) };
 }
 
 const TYPES_LOCKERS = [
@@ -537,239 +407,6 @@ function iconeLocker(feature) {
     };
 }
 
-/* =========================================================
-   AUTRES COUCHES EN FLUX OVERPASS (OpenStreetMap) : médecins,
-   vétérinaires, bibliothèques/médiathèques, offices de tourisme, aires
-   de camping-car. Même principe que les casiers colis ci-dessus (bbox
-   du territoire, repli sur plusieurs miroirs, cache localStorage 6h),
-   mais généralisé pour ne pas dupliquer cinq fois la même logique de
-   récupération - seule la requête change d'une couche à l'autre. Pas
-   de fichier manuel de complément ici (contrairement aux casiers) :
-   ce garde-fou n'a de sens que là où un trou de couverture OSM précis
-   a été signalé et confirmé sur le terrain. */
-function creerFetchOverpass(requete, cacheCle) {
-    function lireCache() {
-        try {
-            const brut = localStorage.getItem(cacheCle);
-            if (!brut) return null;
-            const { horodatage, donnees } = JSON.parse(brut);
-            if (!horodatage || Date.now() - horodatage > CACHE_LOCKERS_DUREE_MS) return null;
-            return donnees;
-        } catch (_) {
-            return null; // quota dépassé, navigation privée... : pas grave, on retombe sur le réseau
-        }
-    }
-    function ecrireCache(donnees) {
-        try {
-            localStorage.setItem(cacheCle, JSON.stringify({ horodatage: Date.now(), donnees }));
-        } catch (_) {
-            // silencieux : le cache est un confort, pas un besoin
-        }
-    }
-    /* Requête en cours, partagée entre appels concurrents : indispensable
-       depuis que plusieurs couches différentes (ex. médecins, toilettes,
-       parkings...) peuvent s'appuyer sur LA MÊME requête combinée
-       (fetchOverpassPointsCombines) - sans ça, cocher plusieurs couches
-       à la suite déclenchait une requête réseau séparée pour chacune
-       (chacune voyant "pas encore de cache" avant que la première ait
-       eu le temps de l'écrire), annulant tout l'intérêt de la
-       mutualisation. Remise à null une fois la requête terminée (succès
-       ou échec) pour ne pas rejouer indéfiniment une erreur passée. */
-    let requeteEnCours = null;
-    return function fetchOverpass() {
-        const enCache = lireCache();
-        if (enCache) return Promise.resolve(enCache);
-        if (requeteEnCours) return requeteEnCours;
-        const essayer = index => {
-            if (index >= MIROIRS_OVERPASS.length) {
-                return Promise.reject(new Error("Tous les miroirs Overpass ont échoué (dernier testé : " + MIROIRS_OVERPASS[MIROIRS_OVERPASS.length - 1] + ")"));
-            }
-            const url = MIROIRS_OVERPASS[index] + "?data=" + encodeURIComponent(requete);
-            return fetch(url)
-                .then(r => {
-                    if (!r.ok) throw new Error("Erreur HTTP " + r.status + " sur " + url);
-                    return r.json();
-                })
-                .catch(err => {
-                    console.warn("Miroir Overpass indisponible (" + MIROIRS_OVERPASS[index] + ") :", err);
-                    return essayer(index + 1);
-                });
-        };
-        requeteEnCours = essayer(0)
-            .then(donnees => { ecrireCache(donnees); requeteEnCours = null; return donnees; })
-            .catch(err => { requeteEnCours = null; throw err; });
-        return requeteEnCours;
-    };
-}
-
-/* data.elements (réponse Overpass native) -> GeoJSON, même logique que
-   geojsonDepuisOverpass mais sans fichier manuel de complément. */
-function geojsonDepuisElementsOverpass(data) {
-    const elements = (data && data.elements) || [];
-    return {
-        type: "FeatureCollection",
-        features: elements.map(el => {
-            const lat = typeof el.lat === "number" ? el.lat : (el.center && el.center.lat);
-            const lon = typeof el.lon === "number" ? el.lon : (el.center && el.center.lon);
-            if (typeof lat !== "number" || typeof lon !== "number") return null;
-            return { type: "Feature", geometry: { type: "Point", coordinates: [lon, lat] }, properties: el.tags || {} };
-        }).filter(Boolean)
-    };
-}
-
-/* Itinéraires cyclables balisés (ex. "Le Loir à Vélo") : tagués comme des
-   RELATIONS OSM (route=bicycle), pas de simples nœuds/ways - "out geom;"
-   plutôt que "out center;" pour récupérer la géométrie complète de
-   chaque way membre (nécessaire pour tracer une ligne, pas juste un
-   point), voir geojsonDepuisRoutesVelo. Timeout relevé à 40s (contre 25s
-   initialement) : signalé en conditions réelles que les requêtes
-   Overpass du site avaient du mal à aboutir, une relation avec beaucoup
-   de way membres peut prendre plus de temps qu'un simple nœud/way. */
-const REQUETE_OVERPASS_VELO =
-    `[out:json][timeout:40];` +
-    `relation["route"="bicycle"](${BBOX_OVERPASS});` +
-    `out geom;`;
-/* Sentiers de randonnée balisés : relations OSM route=hiking, comme
-   route=bicycle pour les itinéraires cyclables (out geom;). */
-const REQUETE_OVERPASS_RANDONNEES =
-    `[out:json][timeout:40];` +
-    `relation["route"="hiking"](${BBOX_OVERPASS});` +
-    `out geom;`;
-const fetchOverpassVelo = creerFetchOverpass(REQUETE_OVERPASS_VELO, "geoberce-cache-velo");
-const fetchOverpassRandonnees = creerFetchOverpass(REQUETE_OVERPASS_RANDONNEES, "geoberce-cache-randonnees");
-
-/* =========================================================
-   REQUÊTE OVERPASS UNIQUE POUR TOUTES LES COUCHES "POINTS SIMPLES"
-   (nœuds/ways, "out center;") — signalé en conditions réelles que les
-   couches Overpass avaient "du mal" (erreurs fréquentes) : avec une
-   quinzaine de couches en flux, chacune avec sa propre requête, cocher
-   plusieurs cases revenait à déclencher autant de requêtes séparées
-   vers le même service public gratuit, chacune avec son propre risque
-   d'échec (surcharge du serveur, 429...). Une seule requête combinée,
-   mise en cache une seule fois pour toutes ces couches, réduit
-   drastiquement le nombre d'allers-retours réseau : cocher 15 couches
-   ne déclenche plus qu'UNE requête réseau (la première fois), pas 15 -
-   et une requête qui échoue n'a plus qu'un seul point de défaillance à
-   corriger plutôt que 15 à surveiller séparément. `classifierElementCombine`
-   répartit ensuite chaque élément de la réponse vers la bonne couche
-   par ses tags (familles de tags disjointes entre couches, un élément
-   ne peut correspondre qu'à une seule catégorie). Les couches à
-   relations (vélo/randonnées, "out geom;") restent séparées : mode de
-   sortie différent, pas mélangeable avec "out center;" dans une même
-   requête. Casiers colis (lockers) et historique des catastrophes
-   naturelles (catnat, API Géorisques, pas Overpass) restent aussi à
-   part : lockers a sa propre logique déjà stabilisée, catnat n'utilise
-   pas Overpass du tout. */
-const REQUETE_OVERPASS_POINTS_COMBINES =
-    `[out:json][timeout:40];` +
-    `(` +
-    // Médecins (healthcare=doctor en plus d'amenity=doctors : les deux tags
-    // coexistent selon le contributeur, Overpass dédoublonne de lui-même).
-    `node["amenity"="doctors"](${BBOX_OVERPASS});` +
-    `way["amenity"="doctors"](${BBOX_OVERPASS});` +
-    `node["healthcare"="doctor"](${BBOX_OVERPASS});` +
-    `way["healthcare"="doctor"](${BBOX_OVERPASS});` +
-    // Vétérinaires
-    `node["amenity"="veterinary"](${BBOX_OVERPASS});` +
-    `way["amenity"="veterinary"](${BBOX_OVERPASS});` +
-    // Dentistes
-    `node["amenity"="dentist"](${BBOX_OVERPASS});` +
-    `way["amenity"="dentist"](${BBOX_OVERPASS});` +
-    // Casernes de pompiers
-    `node["amenity"="fire_station"](${BBOX_OVERPASS});` +
-    `way["amenity"="fire_station"](${BBOX_OVERPASS});` +
-    // Gendarmerie & police
-    `node["amenity"="police"](${BBOX_OVERPASS});` +
-    `way["amenity"="police"](${BBOX_OVERPASS});` +
-    // EHPAD & maisons de retraite
-    `node["amenity"="social_facility"]["social_facility"="nursing_home"](${BBOX_OVERPASS});` +
-    `way["amenity"="social_facility"]["social_facility"="nursing_home"](${BBOX_OVERPASS});` +
-    // Toilettes publiques
-    `node["amenity"="toilets"](${BBOX_OVERPASS});` +
-    `way["amenity"="toilets"](${BBOX_OVERPASS});` +
-    // Points d'eau potable
-    `node["amenity"="drinking_water"](${BBOX_OVERPASS});` +
-    // Bibliothèques & médiathèques
-    `node["amenity"="library"](${BBOX_OVERPASS});` +
-    `way["amenity"="library"](${BBOX_OVERPASS});` +
-    // Offices de tourisme (office=tourism : balisage actuel ; tourism=information
-    // + information=office : ancien schéma, encore présent sur des points
-    // jamais mis à jour).
-    `node["office"="tourism"](${BBOX_OVERPASS});` +
-    `way["office"="tourism"](${BBOX_OVERPASS});` +
-    `node["tourism"="information"]["information"="office"](${BBOX_OVERPASS});` +
-    `way["tourism"="information"]["information"="office"](${BBOX_OVERPASS});` +
-    // Aires de camping-car
-    `node["tourism"="caravan_site"](${BBOX_OVERPASS});` +
-    `way["tourism"="caravan_site"](${BBOX_OVERPASS});` +
-    // Points remarquables de la forêt de Bercé (arbre nommé, source,
-    // attraction touristique nommée)
-    `node["natural"="tree"]["name"](${BBOX_OVERPASS});` +
-    `node["natural"="spring"](${BBOX_OVERPASS});` +
-    `way["natural"="spring"](${BBOX_OVERPASS});` +
-    `node["tourism"="attraction"]["name"](${BBOX_OVERPASS});` +
-    // Parkings publics
-    `node["amenity"="parking"](${BBOX_OVERPASS});` +
-    `way["amenity"="parking"](${BBOX_OVERPASS});` +
-    // Vente directe à la ferme
-    `node["shop"="farm"](${BBOX_OVERPASS});` +
-    `way["shop"="farm"](${BBOX_OVERPASS});` +
-    // Petit patrimoine rural (croix, lavoirs, moulins - deux tags
-    // concurrents selon le contributeur -, fontaines anciennes)
-    `node["historic"="wayside_cross"](${BBOX_OVERPASS});` +
-    `way["historic"="wayside_cross"](${BBOX_OVERPASS});` +
-    `node["man_made"="wash_house"](${BBOX_OVERPASS});` +
-    `way["man_made"="wash_house"](${BBOX_OVERPASS});` +
-    `node["man_made"="watermill"](${BBOX_OVERPASS});` +
-    `way["man_made"="watermill"](${BBOX_OVERPASS});` +
-    `node["historic"="mill"](${BBOX_OVERPASS});` +
-    `way["historic"="mill"](${BBOX_OVERPASS});` +
-    `node["amenity"="fountain"](${BBOX_OVERPASS});` +
-    `way["amenity"="fountain"](${BBOX_OVERPASS});` +
-    // Antennes-relais mobiles (pivot depuis l'idée initiale de couche WMS
-    // ARCEP - voir README pour le détail)
-    `node["man_made"="mast"]["tower:type"="communication"](${BBOX_OVERPASS});` +
-    `node["man_made"="mast"]["communication:mobile_phone"="yes"](${BBOX_OVERPASS});` +
-    `node["man_made"="tower"]["tower:type"="communication"](${BBOX_OVERPASS});` +
-    `);` +
-    `out center;`;
-const fetchOverpassPointsCombines = creerFetchOverpass(REQUETE_OVERPASS_POINTS_COMBINES, "geoberce-cache-points-combines");
-
-/* Répartit un élément de la réponse combinée vers l'id de couche
-   correspondant, par ses tags - mêmes conditions que chacune des
-   requêtes individuelles d'origine, familles de tags disjointes entre
-   couches donc pas d'ambiguïté possible. */
-function classifierElementCombine(tags) {
-    if (!tags) return null;
-    if (tags.amenity === "doctors" || tags.healthcare === "doctor") return "medecins";
-    if (tags.amenity === "veterinary") return "veterinaires";
-    if (tags.amenity === "dentist") return "dentistes";
-    if (tags.amenity === "fire_station") return "pompiers";
-    if (tags.amenity === "police") return "gendarmerie";
-    if (tags.amenity === "social_facility" && tags.social_facility === "nursing_home") return "ehpad";
-    if (tags.amenity === "toilets") return "toilettes";
-    if (tags.amenity === "drinking_water") return "fontaines";
-    if (tags.amenity === "library") return "bibliotheques";
-    if (tags.office === "tourism" || (tags.tourism === "information" && tags.information === "office")) return "officesTourisme";
-    if (tags.tourism === "caravan_site") return "campingcar";
-    if ((tags.natural === "tree" && tags.name) || tags.natural === "spring" || (tags.tourism === "attraction" && tags.name)) return "pointsRemarquablesBerce";
-    if (tags.amenity === "parking") return "parkings";
-    if (tags.shop === "farm") return "venteFerme";
-    if (tags.historic === "wayside_cross" || tags.man_made === "wash_house" || tags.man_made === "watermill" || tags.historic === "mill" || tags.amenity === "fountain") return "patrimoineRural";
-    if ((tags.man_made === "mast" && (tags["tower:type"] === "communication" || tags["communication:mobile_phone"] === "yes")) || (tags.man_made === "tower" && tags["tower:type"] === "communication")) return "antennes";
-    return null;
-}
-
-/* Point d'extension `fetchPersonnalise` pour une couche donnée : réutilise
-   la requête combinée (un seul appel réseau/cache pour toutes ces
-   couches) et ne garde que les éléments qui lui correspondent. */
-function fetchOverpassCombinePourCouche(coucheId) {
-    return fetchOverpassPointsCombines().then(data => {
-        const elements = (data && data.elements) || [];
-        return { elements: elements.filter(el => classifierElementCombine(el.tags) === coucheId) };
-    });
-}
-
 function categoriePatrimoineRural(props) {
     if (props.historic === "wayside_cross") return { id: "croix", label: "Croix de chemin", icon: "fa-solid fa-cross", color: PALETTE.ardoise };
     if (props.man_made === "wash_house") return { id: "lavoir", label: "Lavoir", icon: "fa-solid fa-water", color: PALETTE.riviere };
@@ -782,95 +419,6 @@ function iconePatrimoineRural(feature) {
     return { icon: cat.icon, color: cat.color };
 }
 
-function categoriePatrimoineRural(props) {
-    if (props.historic === "wayside_cross") return { id: "croix", label: "Croix de chemin", icon: "fa-solid fa-cross", color: PALETTE.ardoise };
-    if (props.man_made === "wash_house") return { id: "lavoir", label: "Lavoir", icon: "fa-solid fa-water", color: PALETTE.riviere };
-    if (props.man_made === "watermill" || props.historic === "mill") return { id: "moulin", label: "Moulin", icon: "fa-solid fa-industry", color: PALETTE.terracotta };
-    if (props.amenity === "fountain") return { id: "fontaine", label: "Fontaine", icon: "fa-solid fa-droplet", color: PALETTE.riviere };
-    return { id: "autre", label: "Petit patrimoine", icon: "fa-solid fa-landmark", color: "#7F7E7B" };
-}
-function iconePatrimoineRural(feature) {
-    const cat = categoriePatrimoineRural(feature.properties || {});
-    return { icon: cat.icon, color: cat.color };
-}
-
-/* Distance d'une géométrie (somme des distances entre points consécutifs,
-   formule de haversine) - pas de dénivelé disponible depuis Overpass pour
-   affiner l'estimation de durée, donc convention simple reprise du seul
-   tracé existant avant cet ajout (J1 : 4,04 km / 1,01 h, soit tout
-   juste 4 km/h) plutôt que d'inventer une autre référence. */
-function distanceHaversineKm(lat1, lon1, lat2, lon2) {
-    const R = 6371;
-    const toRad = d => (d * Math.PI) / 180;
-    const dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
-    const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-    return R * 2 * Math.asin(Math.sqrt(a));
-}
-function distanceMultiLigneKm(lignes) {
-    let total = 0;
-    lignes.forEach(ligne => {
-        for (let i = 1; i < ligne.length; i++) {
-            const [lon1, lat1] = ligne[i - 1], [lon2, lat2] = ligne[i];
-            total += distanceHaversineKm(lat1, lon1, lat2, lon2);
-        }
-    });
-    return total;
-}
-function arrondi2(n) { return Math.round(n * 100) / 100; }
-
-/* Fusionne les sentiers balisés (Overpass) avec le tracé existant du
-   dépôt (couches/tourisme/randonnees.geojson, "J1") - même principe que
-   les casiers colis (flux + fichier local), sans savoir si ce tracé
-   existant est ou non déjà présent dans OSM sous un autre id : le
-   garder systématiquement plutôt que risquer de le perdre. */
-function fetchRandonnees() {
-    return Promise.all([
-        fetchOverpassRandonnees(),
-        fetch("couches/tourisme/randonnees.geojson").then(r => r.ok ? r.json() : { features: [] }).catch(() => ({ features: [] }))
-    ]).then(([overpass, existant]) => ({ overpass, existant }));
-}
-function geojsonDepuisRandonnees(data) {
-    const elements = (data.overpass && data.overpass.elements) || [];
-    const featuresOverpass = elements.map(rel => {
-        const lignes = (rel.members || [])
-            .filter(m => m.type === "way" && Array.isArray(m.geometry) && m.geometry.length > 1)
-            .map(m => m.geometry.map(pt => [pt.lon, pt.lat]));
-        if (!lignes.length) return null;
-        const distance = arrondi2(distanceMultiLigneKm(lignes));
-        return {
-            type: "Feature",
-            geometry: { type: "MultiLineString", coordinates: lignes },
-            properties: {
-                ...(rel.tags || {}),
-                id: (rel.tags && rel.tags.ref) || String(rel.id),
-                distance,
-                dureeEstim: arrondi2(distance / 4),
-                denivelePo: null, deniveleNe: null, altiMax: null, altiMin: null
-            }
-        };
-    }).filter(Boolean);
-    const featuresExistantes = (data.existant && data.existant.features) || [];
-    return { type: "FeatureCollection", features: [...featuresExistantes, ...featuresOverpass] };
-}
-
-/* Points remarquables de la forêt de Bercé - flux Overpass complété par
-   un fichier local (mêmes limites/mêmes raisons que
-   lockers_manuels.geojson : les sites emblématiques de la forêt,
-   documentés par l'ONF, ne sont pas forcément cartographiés sur OSM). */
-function fetchPointsBerceManuels() {
-    return fetch("couches/tourisme/pointsRemarquablesBerce_manuels.geojson")
-        .then(r => r.ok ? r.json() : { type: "FeatureCollection", features: [] })
-        .catch(() => ({ type: "FeatureCollection", features: [] }));
-}
-function fetchPointsBerce() {
-    return Promise.all([fetchOverpassCombinePourCouche("pointsRemarquablesBerce"), fetchPointsBerceManuels()])
-        .then(([overpass, manuels]) => ({ overpass, manuels }));
-}
-function geojsonDepuisPointsBerce(data) {
-    const base = geojsonDepuisElementsOverpass(data.overpass);
-    const featuresManuels = (data.manuels && data.manuels.features) || [];
-    return { type: "FeatureCollection", features: [...base.features, ...featuresManuels] };
-}
 function categoriePointRemarquableBerce(props) {
     if (props.natural === "tree") return { id: "arbre", label: "Arbre remarquable", icon: "fa-solid fa-tree", color: PALETTE.foret };
     if (props.natural === "spring") return { id: "source", label: "Source", icon: "fa-solid fa-water", color: PALETTE.riviere };
@@ -879,22 +427,6 @@ function categoriePointRemarquableBerce(props) {
 function iconePointRemarquableBerce(feature) {
     const cat = categoriePointRemarquableBerce(feature.properties || {});
     return { icon: cat.icon, color: cat.color };
-}
-
-/* Relations OSM (out geom;) -> une Feature MultiLineString par relation,
-   une ligne par way membre (seuls les membres "way" avec une géométrie
-   comptent - les nœuds isolés éventuels, ex. des points de jalonnement,
-   ne forment pas de ligne et sont ignorés). */
-function geojsonDepuisRoutesVelo(data) {
-    const elements = (data && data.elements) || [];
-    const features = elements.map(rel => {
-        const lignes = (rel.members || [])
-            .filter(m => m.type === "way" && Array.isArray(m.geometry) && m.geometry.length > 1)
-            .map(m => m.geometry.map(pt => [pt.lon, pt.lat]));
-        if (!lignes.length) return null;
-        return { type: "Feature", geometry: { type: "MultiLineString", coordinates: lignes }, properties: rel.tags || {} };
-    }).filter(Boolean);
-    return { type: "FeatureCollection", features };
 }
 
 /* =========================================================
@@ -908,7 +440,7 @@ function geojsonDepuisRoutesVelo(data) {
    commune par commune (code_insee), contrairement à Overpass qui
    accepte un rectangle englobant pour tout le territoire d'un coup :
    forme de requête différente d'une API à l'autre, pas de mutualisation
-   possible avec creerFetchOverpass. Géométrie des communes reprise de
+   possible avec un simple fichier statique. Géométrie des communes reprise de
    couches/communes.geojson (déjà dans le dépôt) plutôt que demandée à
    Géorisques : seuls les événements viennent du flux distant. */
 const CACHE_CATNAT_CLE = "geoberce-cache-catnat";
@@ -1027,13 +559,18 @@ const LAYERS = [
     },
     {
         id: "lockers", group: "services", label: "Points relais & casiers colis",
-        /* Flux Overpass (OpenStreetMap), voir la section dédiée plus haut
-           dans ce fichier pour le détail (bbox, limites de couverture,
-           repli sur plusieurs miroirs). */
-        fetchPersonnalise: fetchOverpassLockers, transform: geojsonDepuisOverpass,
+        /* Extrait statique d'OpenStreetMap (casiers automatiques + points
+           relais en commerce), filtré sur le vrai polygone du territoire -
+           voir le README, section "Couches converties en fichiers
+           statiques". Fusionné avec lockers_manuels.geojson, où
+           l'utilisatrice ajoute elle-même les casiers (ex. Mondial Relay)
+           pas encore cartographiés sur OSM - fusionnerFeatureCollections
+           combine les deux fichiers, `file` accepte un tableau d'URL. */
+        file: ["couches/services/lockers_osm.geojson", "couches/services/lockers_manuels.geojson"],
+        transform: fusionnerFeatureCollections,
         type: "point", icon: "fa-solid fa-box", color: PALETTE.ardoise,
         iconePourFeature: iconeLocker,
-        lazy: true, searchable: true, cluster: true,
+        lazy: false, searchable: true, cluster: true,
         titleFields: ["name", "brand", "ref"],
         subtitleFields: ["brand", "operator"]
     },
@@ -1071,10 +608,12 @@ const LAYERS = [
     },
     {
         id: "bibliotheques", group: "services", label: "Bibliothèques & médiathèques",
-        /* Flux Overpass (OpenStreetMap), voir plus haut dans ce fichier. */
-        fetchPersonnalise: () => fetchOverpassCombinePourCouche("bibliotheques"), transform: geojsonDepuisElementsOverpass,
+        /* Extrait statique d'OpenStreetMap, filtré sur le vrai polygone du
+           territoire - voir le README, section "Couches converties en
+           fichiers statiques". */
+        file: "couches/services/bibliotheques.geojson",
         type: "point", icon: "fa-solid fa-book", color: PALETTE.foret,
-        lazy: true, searchable: true, cluster: true,
+        lazy: false, searchable: true, cluster: true,
         titleFields: ["name"],
         subtitleFields: ["opening_hours"]
     },
@@ -1093,9 +632,11 @@ const LAYERS = [
     },
     {
         id: "toilettes", group: "services", label: "Toilettes publiques",
-        fetchPersonnalise: () => fetchOverpassCombinePourCouche("toilettes"), transform: geojsonDepuisElementsOverpass,
+        /* Extrait statique d'OpenStreetMap, filtré sur le vrai polygone du
+           territoire - voir le README. */
+        file: "couches/services/toilettes.geojson",
         type: "point", icon: "fa-solid fa-restroom", color: PALETTE.ardoise,
-        lazy: true, searchable: true, cluster: true,
+        lazy: false, searchable: true, cluster: true,
         titleFields: ["name"],
         subtitleFields: ["opening_hours"]
     },
@@ -1104,10 +645,10 @@ const LAYERS = [
         /* sansPopup : données OSM presque toujours trop pauvres pour une
            fiche (souvent juste le tag "amenity=drinking_water", rien
            d'autre) - décidé avec l'utilisatrice, voir README. */
-        fetchPersonnalise: () => fetchOverpassCombinePourCouche("fontaines"), transform: geojsonDepuisElementsOverpass,
+        file: "couches/services/fontaines.geojson",
         type: "point", icon: "fa-solid fa-droplet", color: PALETTE.riviere,
         sansPopup: true,
-        lazy: true, searchable: true, cluster: true,
+        lazy: false, searchable: true, cluster: true,
         titleFields: ["name"],
         subtitleFields: []
     },
@@ -1115,23 +656,23 @@ const LAYERS = [
         id: "parkings", group: "services", label: "Parkings publics",
         /* sansPopup : voir fontaines ci-dessus, même raison (capacité/
            accès rarement renseignés sur ce territoire). */
-        fetchPersonnalise: () => fetchOverpassCombinePourCouche("parkings"), transform: geojsonDepuisElementsOverpass,
+        file: "couches/services/parkings.geojson",
         type: "point", icon: "fa-solid fa-square-parking", color: PALETTE.ardoise,
         sansPopup: true,
-        lazy: true, searchable: true, cluster: true,
+        lazy: false, searchable: true, cluster: true,
         titleFields: ["name"],
         subtitleFields: ["capacity", "fee"]
     },
     {
         id: "antennes", group: "services", label: "Antennes-relais mobiles",
         /* Pivot depuis l'idée initiale de couche WMS ARCEP (couverture
-           mobile) - voir plus haut dans ce fichier pour le détail.
+           mobile) - voir le README pour le détail.
            sansPopup : voir fontaines ci-dessus, l'opérateur est souvent
            absent des données OSM. */
-        fetchPersonnalise: () => fetchOverpassCombinePourCouche("antennes"), transform: geojsonDepuisElementsOverpass,
+        file: "couches/services/antennes.geojson",
         type: "point", icon: "fa-solid fa-tower-cell", color: PALETTE.ardoise,
         sansPopup: true,
-        lazy: true, searchable: true, cluster: true,
+        lazy: false, searchable: true, cluster: true,
         titleFields: ["operator", "ref"],
         subtitleFields: ["operator"]
     },
@@ -1173,14 +714,10 @@ const LAYERS = [
         titleFields: ["name", "brand", "com_nom"],
         subtitleFields: ["com_nom", "has_atm"]
     },
-    {
-        id: "venteFerme", group: "commerces", label: "Vente directe à la ferme",
-        fetchPersonnalise: () => fetchOverpassCombinePourCouche("venteFerme"), transform: geojsonDepuisElementsOverpass,
-        type: "point", icon: "fa-solid fa-tractor", color: PALETTE.feuille,
-        lazy: true, searchable: true, cluster: true,
-        titleFields: ["name"],
-        subtitleFields: ["opening_hours"]
-    },
+    /* venteFerme (vente directe à la ferme) supprimée : filtrage précis sur
+       le vrai polygone du territoire (voir README) donne 0 résultat réel -
+       les quelques points vus en flux Overpass n'existaient que dans la
+       zone de débordement du rectangle englobant, hors du territoire. */
 
     /* ---------- MOBILITÉ ---------- */
     {
@@ -1217,53 +754,32 @@ const LAYERS = [
         titleFields: ["c_nom", "c_com_nom"],
         subtitleFields: ["c_adr_num", "c_adr_voie", "c_com_nom"]
     },
-    {
-        id: "medecins", group: "securite", label: "Médecins",
-        /* Flux Overpass (OpenStreetMap), voir plus haut dans ce fichier.
-           Complétude dépendante d'OSM, même limite que les casiers colis. */
-        fetchPersonnalise: () => fetchOverpassCombinePourCouche("medecins"), transform: geojsonDepuisElementsOverpass,
-        type: "point", icon: "fa-solid fa-user-doctor", color: "#AD4826",
-        lazy: true, searchable: true, cluster: true,
-        titleFields: ["name"],
-        subtitleFields: ["healthcare:speciality", "phone"]
-    },
-    {
-        id: "veterinaires", group: "securite", label: "Vétérinaires",
-        fetchPersonnalise: () => fetchOverpassCombinePourCouche("veterinaires"), transform: geojsonDepuisElementsOverpass,
-        type: "point", icon: "fa-solid fa-paw", color: "#AD4826",
-        lazy: true, searchable: true, cluster: true,
-        titleFields: ["name", "brand"],
-        subtitleFields: ["phone", "opening_hours"]
-    },
-    {
-        id: "dentistes", group: "securite", label: "Dentistes",
-        fetchPersonnalise: () => fetchOverpassCombinePourCouche("dentistes"), transform: geojsonDepuisElementsOverpass,
-        type: "point", icon: "fa-solid fa-tooth", color: "#AD4826",
-        lazy: true, searchable: true, cluster: true,
-        titleFields: ["name"],
-        subtitleFields: ["phone", "opening_hours"]
-    },
+    /* medecins, veterinaires, dentistes supprimées : filtrage précis sur le
+       vrai polygone du territoire (voir README, section "Couches converties
+       en fichiers statiques") donne respectivement 3, 1 et 0 résultats
+       réels - beaucoup trop peu pour que la couche ait un intérêt sur ce
+       territoire, confirmant l'impression de terrain remontée. */
     {
         id: "pompiers", group: "securite", label: "Casernes de pompiers",
-        fetchPersonnalise: () => fetchOverpassCombinePourCouche("pompiers"), transform: geojsonDepuisElementsOverpass,
+        file: "couches/securite/pompiers.geojson",
         type: "point", icon: "fa-solid fa-fire", color: "#AD4826",
-        lazy: true, searchable: true, cluster: true,
+        lazy: false, searchable: true, cluster: true,
         titleFields: ["name"],
         subtitleFields: ["operator"]
     },
     {
         id: "gendarmerie", group: "securite", label: "Gendarmerie & police",
-        fetchPersonnalise: () => fetchOverpassCombinePourCouche("gendarmerie"), transform: geojsonDepuisElementsOverpass,
+        file: "couches/securite/gendarmerie.geojson",
         type: "point", icon: "fa-solid fa-shield-halved", color: "#AD4826",
-        lazy: true, searchable: true, cluster: true,
+        lazy: false, searchable: true, cluster: true,
         titleFields: ["name"],
         subtitleFields: ["operator", "phone"]
     },
     {
         id: "ehpad", group: "securite", label: "EHPAD & maisons de retraite",
-        fetchPersonnalise: () => fetchOverpassCombinePourCouche("ehpad"), transform: geojsonDepuisElementsOverpass,
+        file: "couches/securite/ehpad.geojson",
         type: "point", icon: "fa-solid fa-person-cane", color: "#AD4826",
-        lazy: true, searchable: true, cluster: true,
+        lazy: false, searchable: true, cluster: true,
         titleFields: ["name", "operator"],
         subtitleFields: ["operator", "phone"]
     },
@@ -1281,12 +797,13 @@ const LAYERS = [
         id: "patrimoineRural", group: "patrimoine", label: "Petit patrimoine rural",
         /* Croix de chemin, lavoirs, moulins, fontaines anciennes - sur
            tout le territoire, contrairement à pointsRemarquablesBerce
-           qui reste spécifique à la forêt (sites ONF nommés). Voir plus
-           haut dans ce fichier pour le détail des tags par catégorie. */
-        fetchPersonnalise: () => fetchOverpassCombinePourCouche("patrimoineRural"), transform: geojsonDepuisElementsOverpass,
+           qui reste spécifique à la forêt (sites ONF nommés). Extrait
+           statique d'OpenStreetMap, filtré sur le vrai polygone du
+           territoire - voir le README. */
+        file: "couches/patrimoine/patrimoineRural.geojson",
         type: "point", icon: "fa-solid fa-landmark", color: "#7F7E7B",
         iconePourFeature: iconePatrimoineRural,
-        lazy: true, searchable: true, cluster: true,
+        lazy: false, searchable: true, cluster: true,
         titleFields: ["name"],
         subtitleFields: []
     },
@@ -1294,56 +811,68 @@ const LAYERS = [
     /* ---------- TOURISME ---------- */
     {
         id: "randonnees", group: "tourisme", label: "Randonnées",
-        /* Flux Overpass (relations route=hiking) fusionné avec le tracé
-           existant du dépôt (couches/tourisme/randonnees.geojson) - voir
-           plus haut dans ce fichier pour le détail (calcul de distance/
-           durée estimée par géométrie, pas de dénivelé disponible). */
-        fetchPersonnalise: fetchRandonnees, transform: geojsonDepuisRandonnees,
+        /* Extrait statique d'OpenStreetMap (relations route=hiking),
+           filtré sur le vrai polygone du territoire et complété avec
+           distance/durée estimée (voir le README, section "Couches
+           converties en fichiers statiques"), fusionné avec le tracé
+           existant du dépôt (couches/tourisme/randonnees.geojson, "J1")
+           - fusionnerFeatureCollections combine les deux fichiers,
+           gardé systématiquement même si son tracé recoupe en partie
+           un circuit OSM voisin ("Circuit de Carnuta à Bercé") : pas de
+           certitude qu'il s'agisse du même itinéraire sous un autre id. */
+        file: ["couches/tourisme/randonnees_osm.geojson", "couches/tourisme/randonnees.geojson"],
+        transform: fusionnerFeatureCollections,
         type: "line", color: PALETTE.feuille,
-        lazy: true, searchable: false, cluster: false,
+        lazy: false, searchable: false, cluster: false,
         titleFields: ["name", "id"],
         subtitleFields: ["distance", "dureeEstim"]
     },
     {
         id: "velo", group: "tourisme", label: "Itinéraires cyclables",
-        /* Relations OSM (route=bicycle) via Overpass, ex. "Le Loir à
-           Vélo" - voir plus haut dans ce fichier pour le détail
-           (géométrie récupérée avec "out geom;", pas "out center;"). */
-        fetchPersonnalise: fetchOverpassVelo, transform: geojsonDepuisRoutesVelo,
+        /* Extrait statique d'OpenStreetMap (relations route=bicycle, ex.
+           "Le Loir à Vélo"), filtré sur le vrai polygone du territoire -
+           voir le README. */
+        file: "couches/tourisme/velo.geojson",
         type: "line", color: PALETTE.terracotta,
-        lazy: true, searchable: false, cluster: false,
+        lazy: false, searchable: false, cluster: false,
         titleFields: ["name", "ref"],
         subtitleFields: ["network"]
     },
     {
         id: "officesTourisme", group: "tourisme", label: "Offices de tourisme",
-        /* Flux Overpass (OpenStreetMap), voir plus haut dans ce fichier. */
-        fetchPersonnalise: () => fetchOverpassCombinePourCouche("officesTourisme"), transform: geojsonDepuisElementsOverpass,
+        /* Extrait statique d'OpenStreetMap, filtré sur le vrai polygone du
+           territoire - voir le README. */
+        file: "couches/tourisme/officesTourisme.geojson",
         type: "point", icon: "fa-solid fa-map-location-dot", color: PALETTE.riviere,
-        lazy: true, searchable: true, cluster: true,
+        lazy: false, searchable: true, cluster: true,
         titleFields: ["name"],
         subtitleFields: ["opening_hours", "phone"]
     },
     {
         id: "campingcar", group: "tourisme", label: "Aires de camping-car",
-        fetchPersonnalise: () => fetchOverpassCombinePourCouche("campingcar"), transform: geojsonDepuisElementsOverpass,
+        /* Un seul résultat réel sur le territoire (voir le README) : gardée
+           malgré tout, une aire de camping-car par comcom rurale de cette
+           taille est plausible et ne traduit pas un trou de couverture OSM
+           comme pour médecins/vétérinaires/dentistes. */
+        file: "couches/tourisme/campingcar.geojson",
         type: "point", icon: "fa-solid fa-caravan", color: PALETTE.terracotta,
-        lazy: true, searchable: true, cluster: true,
+        lazy: false, searchable: true, cluster: true,
         titleFields: ["name"],
         subtitleFields: ["capacity", "fee"]
     },
     {
         id: "pointsRemarquablesBerce", group: "tourisme", label: "Points remarquables (forêt de Bercé)",
-        /* Flux Overpass (arbres nommés, sources, attractions), complété
-           par un fichier local pour les sites emblématiques (Chêne
-           Boppe, Fontaine de la Coudre, Source de l'Hermitière...)
+        /* Extrait statique d'OpenStreetMap (arbres nommés, sources,
+           attractions), filtré sur le vrai polygone du territoire,
+           complété par un fichier local pour les sites emblématiques
+           (Chêne Boppe, Fontaine de la Coudre, Source de l'Hermitière...)
            documentés par l'ONF mais pas forcément cartographiés sur OSM
-           - voir la section dédiée du README, même principe que
-           lockers_manuels.geojson. */
-        fetchPersonnalise: fetchPointsBerce, transform: geojsonDepuisPointsBerce,
+           - voir le README, même principe que lockers_manuels.geojson. */
+        file: ["couches/tourisme/pointsRemarquablesBerce_osm.geojson", "couches/tourisme/pointsRemarquablesBerce_manuels.geojson"],
+        transform: fusionnerFeatureCollections,
         type: "point", icon: "fa-solid fa-tree", color: PALETTE.foret,
         iconePourFeature: iconePointRemarquableBerce,
-        lazy: true, searchable: true, cluster: true,
+        lazy: false, searchable: true, cluster: true,
         titleFields: ["name"],
         subtitleFields: []
     },
@@ -1514,11 +1043,6 @@ const RACCOURCIS = [
         label: "Stations essence près de chez moi",
         icon: "fa-solid fa-gas-pump",
         layerIds: ["carburants"]
-    },
-    {
-        label: "Le médecin le plus proche",
-        icon: "fa-solid fa-user-doctor",
-        layerIds: ["medecins"]
     },
     {
         label: "Point relais / casier colis le plus proche",
