@@ -1401,26 +1401,117 @@ function construirePopupDae(props) {
     </div>`;
 }
 
-/* Monuments protégés : "copyright" est un pavé légal systématique (pas
-   une info sur l'édifice) volontairement jamais affiché ; la
-   description peut faire plusieurs milliers de caractères, tronquée. */
+/* Monuments protégés (base Mérimée, ministère de la Culture) : source
+   de données inhabituellement riche par rapport aux autres couches OSM/
+   flux publics du site (~90 champs par édifice), mais très inégalement
+   renseignée d'un édifice à l'autre - vérifié sur les 41 édifices réels
+   du territoire avant de choisir quels champs afficher : description_de
+   _l_edifice (2/41 renseignés) et historique (12/41) restent minoritaires
+   mais assez informatifs quand présents pour valoir une section dédiée ;
+   à l'inverse, matériaux/état de conservation/éléments remarquables
+   (0/41 partout) ne sont pas montrés, une section vide n'apportant rien.
+   "copyright" est un pavé légal systématique (pas une info sur
+   l'édifice) volontairement jamais affiché. */
+
+/* "classé MH" est une protection plus forte et plus rare qu'"inscrit MH"
+   (droit du patrimoine français) : distingués par la couleur du badge
+   plutôt qu'une même couleur "info" indifférenciée. */
+function couleurProtectionMH(typologie) {
+    return typologie && /class/i.test(typologie) ? "#AD4826" : "#7F7E7B";
+}
+
+/* "2020/07/03 : inscrit MH" (parfois avec espace insécable avant ":")
+   -> "03/07/2020 — Inscrit MH". Repli sur le texte brut si le format ne
+   correspond pas à ce schéma (pas garanti à 100% sur toute la base
+   nationale, mais vérifié sur les 41 édifices réels du territoire). */
+function formaterDateProtectionMH(texte) {
+    if (!texte) return null;
+    const m = String(texte).match(/^(\d{4})\/(\d{2})\/(\d{2})\s*:\s*(.+)$/);
+    if (!m) return capitaliserPremiere(texte);
+    const [, annee, mois, jour, reste] = m;
+    return `${jour}/${mois}/${annee} — ${capitaliserPremiere(reste.trim())}`;
+}
+
+/* "19e siècle;19e siècle" (doublon constaté sur plusieurs édifices réels
+   du territoire, campagne principale = campagne secondaire dans la
+   source) -> "19e siècle" : dédoublonné avant affichage plutôt que
+   répété tel quel, sans quoi ça ressemble à une coquille du site. */
+function listeSiecles(texte) {
+    if (!texte) return null;
+    const valeurs = [...new Set(String(texte).split(";").map(v => v.trim()).filter(Boolean))];
+    return valeurs.join(", ") || null;
+}
+
+/* Contrairement à lien_vers_la_base_archiv_mh (toujours une seule URL),
+   lien_vers_la_base_palissy porte souvent PLUSIEURS URLs jointes par
+   ";" (un lien par objet mobilier protégé rattaché à l'édifice - jusqu'à
+   21 sur un seul édifice du territoire) : les concaténer en un seul
+   <a href> casserait le lien. Affiche au plus 3 liens cliquables, le
+   reste en simple texte plutôt que de faire exploser la hauteur de la
+   fiche pour un édifice à la liste inhabituellement longue. */
+function liensPalissy(champ) {
+    if (!champ) return [];
+    const urls = [...new Set(String(champ).split(";").map(u => u.trim()).filter(Boolean))];
+    const max = 3;
+    const visibles = urls.slice(0, max);
+    const liens = visibles.map((url, i) =>
+        `<a class="popup-fiche-contact" href="${echapperHtml(url)}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-palette"></i>${urls.length > 1 ? `Objet protégé n°${i + 1}` : "Objets & décors"} (base Palissy)</a>`
+    );
+    const reste = urls.length - visibles.length;
+    if (reste > 0) {
+        liens.push(`<div class="popup-fiche-precision">+ ${reste} autre${reste > 1 ? "s" : ""} objet${reste > 1 ? "s" : ""} protégé${reste > 1 ? "s" : ""} référencé${reste > 1 ? "s" : ""} sur la base Palissy</div>`);
+    }
+    return liens;
+}
+
 function construirePopupMonument(props) {
-    const nom = premierChampValide(props, ["denomination_de_l_edifice", "autre_appellation_de_l_edifice"]) || "Monument protégé";
-    const protection = props.nature_de_la_protection ? capitaliserPremiere(props.nature_de_la_protection) : null;
-    const description = tronquerTexte(props.description_de_l_edifice, 320);
+    const nom = premierChampValide(props, ["titre_editorial_de_la_notice", "denomination_de_l_edifice", "autre_appellation_de_l_edifice"]) || "Monument protégé";
+    const typeEdifice = props.denomination_de_l_edifice ? capitaliserPremiere(props.denomination_de_l_edifice) : null;
+    const protectionTexte = premierChampValide(props, ["typologie_de_la_protection", "nature_de_la_protection"]);
+    const protection = protectionTexte ? capitaliserPremiere(protectionTexte) : null;
+    const couleurBadge = couleurProtectionMH(protectionTexte);
+    const lieu = [props.lieudit, props.adresse_forme_index].filter(Boolean).join(", ");
+
+    const infos = [
+        props.domaine ? capitaliserPremiere(props.domaine) : null,
+        listeSiecles(props.format_abrege_du_siecle_de_construction || props.siecle_de_la_campagne_principale_de_construction),
+        props.statut_juridique_de_l_edifice ? capitaliserPremiere(props.statut_juridique_de_l_edifice) : null
+    ].filter(Boolean);
+
+    const description = tronquerTexte(props.description_de_l_edifice, 380);
+    const historique = tronquerTexte(props.historique, 380);
+    const dateProtection = formaterDateProtectionMH(props.date_et_typologie_de_la_protection);
+    const precisionProtection = tronquerTexte(props.precision_de_la_protection, 260);
+
+    const liens = [];
+    if (props.lien_vers_la_base_archiv_mh) {
+        liens.push(`<a class="popup-fiche-contact" href="${echapperHtml(props.lien_vers_la_base_archiv_mh)}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-book-open"></i>Notice complète (base Mérimée)</a>`);
+    }
+    liens.push(...liensPalissy(props.lien_vers_la_base_palissy));
 
     return `<div class="popup-fiche">
         <div class="popup-fiche-entete">
             <div class="popup-fiche-icon" style="background:#7F7E7B"><i class="fa-solid fa-monument"></i></div>
             <div class="popup-fiche-titre-wrap">
-                <div class="popup-fiche-tag" style="color:#7F7E7B">Monument historique</div>
-                <div class="popup-fiche-titre">${echapperHtml(capitaliserPremiere(nom))}</div>
-                ${props.commune_forme_index ? `<div class="popup-fiche-adresse">${echapperHtml(props.commune_forme_index)}</div>` : ""}
+                <div class="popup-fiche-tag" style="color:#7F7E7B">${echapperHtml(typeEdifice || "Monument historique")}</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                ${(lieu || props.commune_forme_index) ? `<div class="popup-fiche-adresse">${echapperHtml([lieu, props.commune_forme_index].filter(Boolean).join(" · "))}</div>` : ""}
             </div>
-            ${protection ? `<span class="popup-fiche-badge info">${echapperHtml(protection)}</span>` : ""}
+            ${protection ? `<span class="popup-fiche-badge info" style="color:${couleurBadge};background:${couleurBadge}1A">${echapperHtml(protection)}</span>` : ""}
         </div>
-        ${description ? `<div class="popup-fiche-section"><div class="popup-fiche-precision">${echapperHtml(description)}</div></div>` : ""}
-        ${props.reference ? `<div class="popup-fiche-section"><div class="popup-fiche-precision">Référence Mérimée : ${echapperHtml(props.reference)}</div></div>` : ""}
+        ${infos.length ? `<div class="popup-fiche-section"><div class="popup-fiche-ligne">${infos.map(echapperHtml).join(" · ")}</div></div>` : ""}
+        ${description ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Description</div><div class="popup-fiche-precision">${echapperHtml(description)}</div></div>` : ""}
+        ${historique ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Historique</div><div class="popup-fiche-precision">${echapperHtml(historique)}</div></div>` : ""}
+        ${dateProtection || precisionProtection ? `<div class="popup-fiche-section">
+            <div class="popup-fiche-section-titre">Protection</div>
+            ${dateProtection ? `<div class="popup-fiche-ligne">${echapperHtml(dateProtection)}</div>` : ""}
+            ${precisionProtection ? `<div class="popup-fiche-precision">${echapperHtml(precisionProtection)}</div>` : ""}
+        </div>` : ""}
+        ${liens.length ? `<div class="popup-fiche-section"><div class="popup-fiche-contacts">${liens.join("")}</div></div>` : ""}
+        ${(props.cadastre || props.reference) ? `<div class="popup-fiche-section"><div class="popup-fiche-precision">${[
+            props.cadastre ? `Référence cadastrale : ${echapperHtml(props.cadastre)}` : null,
+            props.reference ? `Référence Mérimée : ${echapperHtml(props.reference)}` : null
+        ].filter(Boolean).join(" · ")}</div></div>` : ""}
     </div>`;
 }
 

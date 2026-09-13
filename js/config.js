@@ -408,7 +408,7 @@ function iconeLocker(feature) {
 }
 
 function categoriePatrimoineRural(props) {
-    if (props.historic === "wayside_cross") return { id: "croix", label: "Croix de chemin", icon: "fa-solid fa-cross", color: PALETTE.ardoise };
+    if (props.historic === "wayside_cross") return { id: "croix", label: "Calvaire", icon: "fa-solid fa-cross", color: PALETTE.ardoise };
     if (props.man_made === "wash_house") return { id: "lavoir", label: "Lavoir", icon: "fa-solid fa-water", color: PALETTE.riviere };
     if (props.man_made === "watermill" || props.historic === "mill") return { id: "moulin", label: "Moulin", icon: "fa-solid fa-industry", color: PALETTE.terracotta };
     if (props.amenity === "fountain") return { id: "fontaine", label: "Fontaine", icon: "fa-solid fa-droplet", color: PALETTE.riviere };
@@ -790,12 +790,12 @@ const LAYERS = [
         file: "couches/patrimoine/immeublesProteges.geojson", type: "point",
         icon: "fa-solid fa-monument", color: "#7F7E7B",
         lazy: false, searchable: true, cluster: true,
-        titleFields: ["denomination_de_l_edifice", "autre_appellation_de_l_edifice"],
-        subtitleFields: ["commune_forme_index", "datation_de_l_edifice"]
+        titleFields: ["titre_editorial_de_la_notice", "denomination_de_l_edifice", "autre_appellation_de_l_edifice"],
+        subtitleFields: ["commune_forme_index", "typologie_de_la_protection"]
     },
     {
         id: "patrimoineRural", group: "patrimoine", label: "Petit patrimoine rural",
-        /* Croix de chemin, lavoirs, moulins, fontaines anciennes - sur
+        /* Calvaires, lavoirs, moulins, fontaines anciennes - sur
            tout le territoire, contrairement à pointsRemarquablesBerce
            qui reste spécifique à la forêt (sites ONF nommés). Extrait
            statique d'OpenStreetMap, filtré sur le vrai polygone du

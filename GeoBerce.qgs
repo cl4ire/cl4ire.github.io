@@ -17,64 +17,64 @@
 </projectCrs>
 <layer-tree-group>
 <layer-tree-group expanded="1" checked="Qt::Checked" name="Référence / fond de carte">
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="epci_56b0ca86" name="Territoire (limite EPCI)" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="communes_0783711b" name="Communes (limites administratives)" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="epci_42f646a8" name="Territoire (limite EPCI)" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="communes_8797a56f" name="Communes (limites administratives)" providerKey="ogr"/>
 </layer-tree-group>
 <layer-tree-group expanded="1" checked="Qt::Checked" name="Services &amp; mairie">
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="mairies_8a36e6bb" name="Mairies" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="bal_36e96ac0" name="Boîtes aux lettres" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="dechets_7322716c" name="Déchèteries / tri" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="lockers_osm_003e62bd" name="Points relais &amp; casiers colis (OSM, figés)" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="lockers_manuels_fad7fc73" name="Points relais &amp; casiers colis (à compléter à la main)" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="irve_01922bc3" name="Bornes de recharge" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="marches_b8df3e77" name="Marchés" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="airesJeu_5b85092f" name="Aires de jeux" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="equipementSportif_722e06c7" name="Équipements sportifs" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="bibliotheques_c516cb2a" name="Bibliothèques &amp; médiathèques" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="franceServices_8f2cdd1f" name="France Services" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="toilettes_82066be9" name="Toilettes publiques" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="fontaines_7cb3f5cb" name="Points d'eau potable" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="parkings_57ddae07" name="Parkings publics" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="antennes_2fff19a0" name="Antennes-relais mobiles" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="mairies_eb5b2fa9" name="Mairies" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="bal_c5253d73" name="Boîtes aux lettres" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="dechets_2e307236" name="Déchèteries / tri" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="lockers_osm_1acadc6d" name="Points relais &amp; casiers colis (OSM, figés)" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="lockers_manuels_2518c51a" name="Points relais &amp; casiers colis (à compléter à la main)" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="irve_25065cfe" name="Bornes de recharge" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="marches_6b1d1474" name="Marchés" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="airesJeu_3d29f30d" name="Aires de jeux" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="equipementSportif_87769185" name="Équipements sportifs" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="bibliotheques_e7afad12" name="Bibliothèques &amp; médiathèques" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="franceServices_2c3a5653" name="France Services" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="toilettes_c2728b7e" name="Toilettes publiques" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="fontaines_93e92264" name="Points d'eau potable" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="parkings_af7588e3" name="Parkings publics" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="antennes_6a4b6b19" name="Antennes-relais mobiles" providerKey="ogr"/>
 </layer-tree-group>
 <layer-tree-group expanded="1" checked="Qt::Checked" name="Famille">
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="petiteEnfance_2ed30700" name="Petite enfance" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="education_e3ca5cd8" name="Écoles" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="petiteEnfance_57172647" name="Petite enfance" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="education_a0dc1971" name="Écoles" providerKey="ogr"/>
 </layer-tree-group>
 <layer-tree-group expanded="1" checked="Qt::Checked" name="Commerces">
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="commerces_ece41591" name="Commerces" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="banques_34c22623" name="Banques &amp; DAB" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="commerces_41763072" name="Commerces" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="banques_191aec30" name="Banques &amp; DAB" providerKey="ogr"/>
 </layer-tree-group>
 <layer-tree-group expanded="1" checked="Qt::Checked" name="Mobilité">
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="arretsALEOP_c77afb19" name="Arrêts de bus (ALÉOP)" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="reseauALEOP_26a7158c" name="Lignes ALÉOP" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="airecovoiturage_4959cfc7" name="Aires de covoiturage" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="arretsALEOP_0ada1996" name="Arrêts de bus (ALÉOP)" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="reseauALEOP_b5e0e266" name="Lignes ALÉOP" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="airecovoiturage_8cf349e5" name="Aires de covoiturage" providerKey="ogr"/>
 </layer-tree-group>
 <layer-tree-group expanded="1" checked="Qt::Checked" name="Sécurité &amp; santé">
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="dae_e724c0c5" name="Défibrillateurs" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="pompiers_8b1f2244" name="Casernes de pompiers" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="gendarmerie_fea0cba3" name="Gendarmerie &amp; police" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="ehpad_1d432e47" name="EHPAD &amp; maisons de retraite" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="dae_5d219946" name="Défibrillateurs" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="pompiers_1122787e" name="Casernes de pompiers" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="gendarmerie_721d076d" name="Gendarmerie &amp; police" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="ehpad_a4002d5f" name="EHPAD &amp; maisons de retraite" providerKey="ogr"/>
 </layer-tree-group>
 <layer-tree-group expanded="1" checked="Qt::Checked" name="Patrimoine">
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="immeublesProteges_5a095619" name="Monuments protégés" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="patrimoineRural_144d0525" name="Petit patrimoine rural" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="immeublesProteges_cd98373a" name="Monuments protégés" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="patrimoineRural_8ea17806" name="Petit patrimoine rural" providerKey="ogr"/>
 </layer-tree-group>
 <layer-tree-group expanded="1" checked="Qt::Checked" name="Nature &amp; rando">
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="randonnees_osm_e3a352ad" name="Sentiers de randonnée (OSM, figés)" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="randonnees_j1_a70673d0" name="Sentiers de randonnée (tracés maison, ex. J1)" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="velo_bf1b94d9" name="Itinéraires cyclables" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="officesTourisme_117ea825" name="Offices de tourisme" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="campingcar_47ad9233" name="Aires de camping-car" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="berce_osm_92fbd846" name="Points remarquables forêt de Bercé (OSM, figés)" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="berce_manuels_81bebac6" name="Points remarquables forêt de Bercé (à compléter à la main)" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="randonnees_osm_89c29ea8" name="Sentiers de randonnée (OSM, figés)" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="randonnees_j1_fae3b71c" name="Sentiers de randonnée (tracés maison, ex. J1)" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="velo_c8a36eb9" name="Itinéraires cyclables" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="officesTourisme_bd9dd9fa" name="Offices de tourisme" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="campingcar_a3ce5a68" name="Aires de camping-car" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="berce_osm_2cb5a6f7" name="Points remarquables forêt de Bercé (OSM, figés)" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="berce_manuels_a1d36a39" name="Points remarquables forêt de Bercé (à compléter à la main)" providerKey="ogr"/>
 </layer-tree-group>
 <layer-tree-group expanded="1" checked="Qt::Checked" name="Habitat &amp; urbanisme">
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="prixImmobilier_1d332db9" name="Prix immobilier par commune" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="dpe_e0b960bc" name="Diagnostics énergétiques (DPE)" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="zonagePLUi_4258e217" name="Zonage PLUi" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="rga_295a499a" name="Retrait-gonflement des argiles" providerKey="ogr"/>
-<layer-tree-layer expanded="1" checked="Qt::Checked" id="mutations_2c26f851" name="Mutations immobilières (DVF)" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="prixImmobilier_de07e187" name="Prix immobilier par commune" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="dpe_869cb877" name="Diagnostics énergétiques (DPE)" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="zonagePLUi_0ee808e3" name="Zonage PLUi" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="rga_a4ce3e9f" name="Retrait-gonflement des argiles" providerKey="ogr"/>
+<layer-tree-layer expanded="1" checked="Qt::Checked" id="mutations_984c367d" name="Mutations immobilières (DVF)" providerKey="ogr"/>
 </layer-tree-group>
 </layer-tree-group>
 <mapcanvas name="theMapCanvas" annotationsVisible="1">
@@ -115,7 +115,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>epci_56b0ca86</id>
+<id>epci_42f646a8</id>
 <datasource>./couches/epci.geojson</datasource>
 <keywordList>
 <value></value>
@@ -125,7 +125,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="fill" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{f9d38e60-4c9d-40ae-996b-583eb2101a54}">
+<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{c77f40c4-19ee-4484-92e3-c4dcec065d33}">
 <Option type="Map">
 <Option value="95,94,90,0" type="QString" name="color"/>
 <Option value="42,42,40,255" type="QString" name="outline_color"/>
@@ -159,7 +159,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>communes_0783711b</id>
+<id>communes_8797a56f</id>
 <datasource>./couches/communes.geojson</datasource>
 <keywordList>
 <value></value>
@@ -169,7 +169,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="fill" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{5961d604-ed9d-43ad-8d27-051e9ff1f080}">
+<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{7c553b77-90b4-4361-989a-6b8b2d199f68}">
 <Option type="Map">
 <Option value="184,192,189,0" type="QString" name="color"/>
 <Option value="138,137,133,255" type="QString" name="outline_color"/>
@@ -203,7 +203,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>mairies_8a36e6bb</id>
+<id>mairies_eb5b2fa9</id>
 <datasource>./couches/services/mairies.geojson</datasource>
 <keywordList>
 <value></value>
@@ -213,7 +213,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{dbaaddf6-277e-4762-8157-96be5a913454}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{38e15834-fa69-4460-823d-a12d306334ad}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="55,138,221,255" type="QString" name="color"/>
@@ -252,7 +252,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>bal_36e96ac0</id>
+<id>bal_c5253d73</id>
 <datasource>./couches/services/bal.geojson</datasource>
 <keywordList>
 <value></value>
@@ -262,7 +262,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{efd69a19-4294-4eb0-810f-303437304fae}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{90b77a27-2b06-4788-892d-5896c0bd69e9}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="95,94,90,255" type="QString" name="color"/>
@@ -301,7 +301,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>dechets_7322716c</id>
+<id>dechets_2e307236</id>
 <datasource>./couches/services/dechets.geojson</datasource>
 <keywordList>
 <value></value>
@@ -309,18 +309,18 @@
 <layername>Déchèteries / tri</layername>
 <provider encoding="UTF-8">ogr</provider>
 <renderer-v2 type="RuleRenderer" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
-<rules key="{910f12c3-c1c3-4227-9edd-66f1eb1493c3}">
-<rule key="{9e4eb867-c357-4e98-901e-4700cec9fde6}" filter="&quot;type&quot; = 'centre'" symbol="0" label="Déchèterie"/>
-<rule key="{adf61b2a-bc2a-4820-9483-7942bec81d64}" filter="&quot;type&quot; = 'compost'" symbol="1" label="Composteur partagé"/>
-<rule key="{8d992d76-a959-4dd8-ba67-7349ef6f7c23}" filter="lower(&quot;glass&quot;) LIKE 'y%'" symbol="2" label="Point de tri (verre)"/>
-<rule key="{bc7c1b12-1ff8-48a4-b9bf-4f217178f947}" filter="lower(&quot;paper&quot;) LIKE 'y%'" symbol="3" label="Point de tri (papier)"/>
-<rule key="{42b5aee4-f614-46dd-9a54-76af3124c671}" filter="lower(&quot;plastic_packaging&quot;) LIKE 'y%'" symbol="4" label="Point de tri (emballages)"/>
-<rule key="{31553c7f-be14-4e7a-8f66-454d3ceb61e9}" filter="lower(&quot;waste&quot;) LIKE 'y%'" symbol="5" label="Point de tri (ordures)"/>
-<rule key="{484121c1-d3d2-4b4f-a5b7-99a124875bf3}" filter="ELSE" symbol="6" label="Point de tri (autre)"/>
+<rules key="{92d776be-f1fe-4969-a00e-3954f98ab59f}">
+<rule key="{8bedef43-beb7-4893-a77d-685fb15899f7}" filter="&quot;type&quot; = 'centre'" symbol="0" label="Déchèterie"/>
+<rule key="{885c2040-260f-4731-a86e-c509da2d9746}" filter="&quot;type&quot; = 'compost'" symbol="1" label="Composteur partagé"/>
+<rule key="{00c0bcd5-68e6-461c-8aa0-f9838a7231ab}" filter="lower(&quot;glass&quot;) LIKE 'y%'" symbol="2" label="Point de tri (verre)"/>
+<rule key="{f1060286-839c-4e6d-9635-5aabe450b2f0}" filter="lower(&quot;paper&quot;) LIKE 'y%'" symbol="3" label="Point de tri (papier)"/>
+<rule key="{95df1a7d-70bf-45fe-88d3-55fd3df753b9}" filter="lower(&quot;plastic_packaging&quot;) LIKE 'y%'" symbol="4" label="Point de tri (emballages)"/>
+<rule key="{799f75bc-483b-497b-8d9a-759733641f20}" filter="lower(&quot;waste&quot;) LIKE 'y%'" symbol="5" label="Point de tri (ordures)"/>
+<rule key="{b7f548bf-17b0-4bd1-a4b8-6010e7caa8c8}" filter="ELSE" symbol="6" label="Point de tri (autre)"/>
 </rules>
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{7cc7e9fd-c0af-4c84-804d-b21edcd6ef4e}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{9ebf805f-b8c3-4fc2-a53f-9ad696dd9424}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="15,110,86,255" type="QString" name="color"/>
@@ -337,7 +337,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="1" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{c7efa65c-0482-47d3-a28c-d5cb95152045}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{3b560226-3f25-4afb-a57a-0d785f7ee972}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="29,158,117,255" type="QString" name="color"/>
@@ -354,7 +354,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="2" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{537947d2-1af3-48d0-aa90-11b86e326660}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{8421375d-02b8-4377-ac95-5f15d6cf552b}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="29,158,117,255" type="QString" name="color"/>
@@ -371,7 +371,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="3" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{f9df1b4d-760e-4dab-8a17-e8dd80cfaf5a}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{c4dfbc30-bbfd-498f-8df3-832edadc0770}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="55,138,221,255" type="QString" name="color"/>
@@ -388,7 +388,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="4" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{531dfd4c-8249-4f4a-868d-499278962793}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{aee07b0e-9cab-49a5-8bf2-a1566177757f}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="242,201,76,255" type="QString" name="color"/>
@@ -405,7 +405,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="5" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{d3fd35d0-d74f-4f42-8c87-40e031776068}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{194d9769-56d2-42eb-81de-0ba92adf5351}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="42,42,40,255" type="QString" name="color"/>
@@ -422,7 +422,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="6" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{c0395bd8-a6a1-4167-a485-c889f4911823}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{b94923c2-4e10-4825-9855-d40d046c5d63}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="95,94,90,255" type="QString" name="color"/>
@@ -461,7 +461,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>lockers_osm_003e62bd</id>
+<id>lockers_osm_1acadc6d</id>
 <datasource>./couches/services/lockers_osm.geojson</datasource>
 <keywordList>
 <value></value>
@@ -471,7 +471,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{4eaa1711-393e-4c3c-b0ef-f8495e4cc5bf}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{346004db-7455-4b14-a8de-94438d2abfa1}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="95,94,90,255" type="QString" name="color"/>
@@ -510,7 +510,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>lockers_manuels_fad7fc73</id>
+<id>lockers_manuels_2518c51a</id>
 <datasource>./couches/services/lockers_manuels.geojson</datasource>
 <keywordList>
 <value></value>
@@ -520,7 +520,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{1337caec-e83b-49e4-8f4d-3cb66123d17a}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{e4fb03ac-ad84-4125-b559-cae149642262}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="55,138,221,255" type="QString" name="color"/>
@@ -559,7 +559,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>irve_01922bc3</id>
+<id>irve_25065cfe</id>
 <datasource>./couches/services/irve.geojson</datasource>
 <keywordList>
 <value></value>
@@ -569,7 +569,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{26c09d7c-bf0d-47fd-a9c0-0f38be266b21}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{b32abcfb-c50c-433a-8993-a6ee1d370718}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="216,90,48,255" type="QString" name="color"/>
@@ -608,7 +608,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>marches_b8df3e77</id>
+<id>marches_6b1d1474</id>
 <datasource>./couches/services/marches.geojson</datasource>
 <keywordList>
 <value></value>
@@ -618,7 +618,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{e54441d4-58d4-423d-8109-2eccf9c71b6c}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{5f54dfc5-ebbf-4342-8c8a-089491b2700d}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="29,158,117,255" type="QString" name="color"/>
@@ -657,7 +657,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>airesJeu_5b85092f</id>
+<id>airesJeu_3d29f30d</id>
 <datasource>./couches/services/airesJeu.geojson</datasource>
 <keywordList>
 <value></value>
@@ -667,7 +667,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{322dd911-b7f3-4d0c-a953-ea4d559dcaa0}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{7384b8ac-cff6-4c4a-8cf4-d18a7eee123f}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="216,90,48,255" type="QString" name="color"/>
@@ -706,7 +706,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>equipementSportif_722e06c7</id>
+<id>equipementSportif_87769185</id>
 <datasource>./couches/services/equipementSportif.geojson</datasource>
 <keywordList>
 <value></value>
@@ -716,7 +716,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{17e5f9c5-8374-4762-8616-2d150e47623f}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{834cf227-28f1-4f9e-b7a8-13ecb9f6c674}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="55,138,221,255" type="QString" name="color"/>
@@ -755,7 +755,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>bibliotheques_c516cb2a</id>
+<id>bibliotheques_e7afad12</id>
 <datasource>./couches/services/bibliotheques.geojson</datasource>
 <keywordList>
 <value></value>
@@ -765,7 +765,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{debac8bd-1fa3-4b85-a7d6-b57811573aa3}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{56833757-2d68-4b0f-be0f-0772251baaef}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="15,110,86,255" type="QString" name="color"/>
@@ -804,7 +804,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>franceServices_8f2cdd1f</id>
+<id>franceServices_2c3a5653</id>
 <datasource>./couches/services/franceServices.geojson</datasource>
 <keywordList>
 <value></value>
@@ -814,7 +814,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{41032832-c787-452e-af83-65f1943eedc9}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{6996e3bf-afc8-45c4-9693-c3a9cc62b05e}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="55,138,221,255" type="QString" name="color"/>
@@ -853,7 +853,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>toilettes_82066be9</id>
+<id>toilettes_c2728b7e</id>
 <datasource>./couches/services/toilettes.geojson</datasource>
 <keywordList>
 <value></value>
@@ -863,7 +863,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{8d157911-a177-44d4-bd40-8b776bc3c0ce}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{bd2ea8c8-d700-4f56-8144-1f7dd48d9751}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="95,94,90,255" type="QString" name="color"/>
@@ -902,7 +902,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>fontaines_7cb3f5cb</id>
+<id>fontaines_93e92264</id>
 <datasource>./couches/services/fontaines.geojson</datasource>
 <keywordList>
 <value></value>
@@ -912,7 +912,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{6918a2b3-3e11-4796-b34a-4c8820ae486e}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{8c1b2aaf-aaf1-4803-a5ca-b13ebc4c6518}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="55,138,221,255" type="QString" name="color"/>
@@ -951,7 +951,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>parkings_57ddae07</id>
+<id>parkings_af7588e3</id>
 <datasource>./couches/services/parkings.geojson</datasource>
 <keywordList>
 <value></value>
@@ -961,7 +961,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{37cdb9bd-0102-48c0-ba10-1d2e61b67c6d}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{3c366353-a5db-4e24-994d-2785a2edfd9e}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="95,94,90,255" type="QString" name="color"/>
@@ -1000,7 +1000,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>antennes_2fff19a0</id>
+<id>antennes_6a4b6b19</id>
 <datasource>./couches/services/antennes.geojson</datasource>
 <keywordList>
 <value></value>
@@ -1010,7 +1010,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{0bbe26eb-d70f-4947-941d-37a0c522cf4c}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{2b6d444b-2bf5-4139-b667-c66c26953af4}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="95,94,90,255" type="QString" name="color"/>
@@ -1049,7 +1049,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>petiteEnfance_2ed30700</id>
+<id>petiteEnfance_57172647</id>
 <datasource>./couches/famille/petiteEnfance.geojson</datasource>
 <keywordList>
 <value></value>
@@ -1059,7 +1059,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{66236cf5-110e-4db1-b6b7-e9c862bd1f90}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{ed3b0c1d-9bbd-47bb-aa44-3abc88716a77}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="216,90,48,255" type="QString" name="color"/>
@@ -1098,7 +1098,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>education_e3ca5cd8</id>
+<id>education_a0dc1971</id>
 <datasource>./couches/famille/education.geojson</datasource>
 <keywordList>
 <value></value>
@@ -1108,7 +1108,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{9824bd54-7be3-46c7-a3c3-4f50d07cd306}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{50b7bb18-d89c-4db6-83f7-ad92030b28f2}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="216,90,48,255" type="QString" name="color"/>
@@ -1147,7 +1147,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>commerces_ece41591</id>
+<id>commerces_41763072</id>
 <datasource>./couches/commerces/commerces.geojson</datasource>
 <keywordList>
 <value></value>
@@ -1155,26 +1155,26 @@
 <layername>Commerces</layername>
 <provider encoding="UTF-8">ogr</provider>
 <renderer-v2 type="RuleRenderer" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
-<rules key="{85783cea-d20b-4457-bdc5-07f3ccceb289}">
-<rule key="{d75d5aa5-81fc-4c92-a6ff-ac7d676849fe}" filter="&quot;type&quot; LIKE '%bakery%' OR &quot;type&quot; LIKE '%chocolate%'" symbol="0" label="Boulangerie &amp; pâtisserie"/>
-<rule key="{cfb517ea-d625-45f5-9c94-9ebdb9d2cb72}" filter="&quot;type&quot; LIKE '%supermarket%' OR &quot;type&quot; LIKE '%convenience%' OR &quot;type&quot; LIKE '%butcher%' OR &quot;type&quot; LIKE '%deli%' OR &quot;type&quot; LIKE '%seafood%' OR &quot;type&quot; LIKE '%greengrocer%' OR &quot;type&quot; LIKE '%winery%' OR &quot;type&quot; LIKE '%variety_store%' OR &quot;type&quot; LIKE '%newsagent%'" symbol="1" label="Alimentation"/>
-<rule key="{10b0c664-0470-4e19-9540-e3de47e93f42}" filter="&quot;type&quot; LIKE '%restaurant%' OR &quot;type&quot; LIKE '%bar%' OR &quot;type&quot; LIKE '%pub%' OR &quot;type&quot; LIKE '%fast_food%'" symbol="2" label="Restaurants &amp; bars"/>
-<rule key="{87e9dccb-96bf-4957-b0c7-5ef24aaf6cf5}" filter="&quot;type&quot; LIKE '%hairdresser%'" symbol="3" label="Coiffure"/>
-<rule key="{627a5a38-30a8-4643-b638-e721bef7302b}" filter="&quot;type&quot; LIKE '%beauty%' OR &quot;type&quot; LIKE '%perfumery%' OR &quot;type&quot; LIKE '%tattoo%'" symbol="4" label="Beauté &amp; bien-être"/>
-<rule key="{587eab98-c012-4498-bdfa-187d3a412239}" filter="&quot;type&quot; LIKE '%pharmacy%' OR &quot;type&quot; LIKE '%optician%' OR &quot;type&quot; LIKE '%hearing_aids%'" symbol="5" label="Santé"/>
-<rule key="{e47035bf-9b71-4729-91bc-fd7f92e05482}" filter="&quot;type&quot; LIKE '%car_repair%' OR &quot;type&quot; LIKE '%car_wash%' OR &quot;type&quot; LIKE '%fuel%' OR &quot;type&quot; LIKE '%vehicle_inspection%' OR &quot;type&quot; LIKE '%driving_school%' OR &quot;type&quot; LIKE '%bicycle%'" symbol="6" label="Automobile"/>
-<rule key="{22df635b-bad9-4355-af35-adb1e0bae019}" filter="&quot;type&quot; LIKE '%doityourself%' OR &quot;type&quot; LIKE '%garden_centre%' OR &quot;type&quot; LIKE '%interior_decoration%'" symbol="7" label="Bricolage &amp; jardin"/>
-<rule key="{d18c3b06-235d-48f7-a0cb-2eef40345247}" filter="&quot;type&quot; LIKE '%clothes%' OR &quot;type&quot; LIKE '%shoes%' OR &quot;type&quot; LIKE '%leather%' OR &quot;type&quot; LIKE '%jewelry%'" symbol="8" label="Mode &amp; accessoires"/>
-<rule key="{ec18f9c2-e338-4b6c-bb5f-02e409aa068e}" filter="&quot;type&quot; LIKE '%post_office%'" symbol="9" label="Bureau de poste"/>
-<rule key="{d52d5531-afae-477e-ba0d-96289c737987}" filter="&quot;type&quot; LIKE '%insurance%' OR &quot;type&quot; LIKE '%estate_agent%' OR &quot;type&quot; LIKE '%funeral_directors%' OR &quot;type&quot; LIKE '%laundry%' OR &quot;type&quot; LIKE '%cleaning%' OR &quot;type&quot; LIKE '%photographer%' OR &quot;type&quot; LIKE '%association%'" symbol="10" label="Services professionnels"/>
-<rule key="{25eea08d-d9b8-4c18-9ef5-381e8b1c9eda}" filter="&quot;type&quot; LIKE '%computer%' OR &quot;type&quot; LIKE '%electronics%' OR &quot;type&quot; LIKE '%e-cigarette%'" symbol="11" label="High-tech &amp; électronique"/>
-<rule key="{0f24be38-6c11-4a4b-b8e2-44db3d4af1c6}" filter="&quot;type&quot; LIKE '%books%' OR &quot;type&quot; LIKE '%art%' OR &quot;type&quot; LIKE '%cinema%' OR &quot;type&quot; LIKE '%sports%' OR &quot;type&quot; LIKE '%photo%' OR &quot;type&quot; LIKE '%gift%' OR &quot;type&quot; LIKE '%handicraft%' OR &quot;type&quot; LIKE '%sewing%'" symbol="12" label="Culture &amp; loisirs"/>
-<rule key="{e6dfe0d0-9e3a-4a00-b81b-1868aedde779}" filter="&quot;type&quot; LIKE '%antiques%' OR &quot;type&quot; LIKE '%second_hand%' OR &quot;type&quot; LIKE '%wholesale%'" symbol="13" label="Brocante &amp; antiquités"/>
-<rule key="{826c5821-7690-435a-b83f-3895f5aee827}" filter="ELSE" symbol="14" label="Autres commerces"/>
+<rules key="{5b17da93-00bb-459c-a7b4-dd17a62c5328}">
+<rule key="{d07d86fd-4296-48b0-ac87-ddce13555f66}" filter="&quot;type&quot; LIKE '%bakery%' OR &quot;type&quot; LIKE '%chocolate%'" symbol="0" label="Boulangerie &amp; pâtisserie"/>
+<rule key="{410b0652-677d-44ef-9e36-08ecd8ec49aa}" filter="&quot;type&quot; LIKE '%supermarket%' OR &quot;type&quot; LIKE '%convenience%' OR &quot;type&quot; LIKE '%butcher%' OR &quot;type&quot; LIKE '%deli%' OR &quot;type&quot; LIKE '%seafood%' OR &quot;type&quot; LIKE '%greengrocer%' OR &quot;type&quot; LIKE '%winery%' OR &quot;type&quot; LIKE '%variety_store%' OR &quot;type&quot; LIKE '%newsagent%'" symbol="1" label="Alimentation"/>
+<rule key="{bf3004c2-ba67-45f8-ba6f-ed81300ac3a5}" filter="&quot;type&quot; LIKE '%restaurant%' OR &quot;type&quot; LIKE '%bar%' OR &quot;type&quot; LIKE '%pub%' OR &quot;type&quot; LIKE '%fast_food%'" symbol="2" label="Restaurants &amp; bars"/>
+<rule key="{98a13fa2-b1e7-4933-bf66-c908cf624563}" filter="&quot;type&quot; LIKE '%hairdresser%'" symbol="3" label="Coiffure"/>
+<rule key="{ddd6b1ad-f612-439b-8f1d-d7604065c8ce}" filter="&quot;type&quot; LIKE '%beauty%' OR &quot;type&quot; LIKE '%perfumery%' OR &quot;type&quot; LIKE '%tattoo%'" symbol="4" label="Beauté &amp; bien-être"/>
+<rule key="{1c2b3a42-cbd3-4750-8c09-40330504038b}" filter="&quot;type&quot; LIKE '%pharmacy%' OR &quot;type&quot; LIKE '%optician%' OR &quot;type&quot; LIKE '%hearing_aids%'" symbol="5" label="Santé"/>
+<rule key="{012209c4-65ae-493d-b980-0e5aab0e4a74}" filter="&quot;type&quot; LIKE '%car_repair%' OR &quot;type&quot; LIKE '%car_wash%' OR &quot;type&quot; LIKE '%fuel%' OR &quot;type&quot; LIKE '%vehicle_inspection%' OR &quot;type&quot; LIKE '%driving_school%' OR &quot;type&quot; LIKE '%bicycle%'" symbol="6" label="Automobile"/>
+<rule key="{8eccaf6c-59e0-43f4-ac73-dbecbb26b198}" filter="&quot;type&quot; LIKE '%doityourself%' OR &quot;type&quot; LIKE '%garden_centre%' OR &quot;type&quot; LIKE '%interior_decoration%'" symbol="7" label="Bricolage &amp; jardin"/>
+<rule key="{e2a5f723-62c5-4a53-82ed-f82cb7341bac}" filter="&quot;type&quot; LIKE '%clothes%' OR &quot;type&quot; LIKE '%shoes%' OR &quot;type&quot; LIKE '%leather%' OR &quot;type&quot; LIKE '%jewelry%'" symbol="8" label="Mode &amp; accessoires"/>
+<rule key="{cd9eef6c-ab45-47b2-acb2-038e49f04d66}" filter="&quot;type&quot; LIKE '%post_office%'" symbol="9" label="Bureau de poste"/>
+<rule key="{e039acca-c05f-4b34-a863-1f96a98cefe6}" filter="&quot;type&quot; LIKE '%insurance%' OR &quot;type&quot; LIKE '%estate_agent%' OR &quot;type&quot; LIKE '%funeral_directors%' OR &quot;type&quot; LIKE '%laundry%' OR &quot;type&quot; LIKE '%cleaning%' OR &quot;type&quot; LIKE '%photographer%' OR &quot;type&quot; LIKE '%association%'" symbol="10" label="Services professionnels"/>
+<rule key="{64e1a8e6-ab5d-4f6b-b1aa-55a6c690ad4f}" filter="&quot;type&quot; LIKE '%computer%' OR &quot;type&quot; LIKE '%electronics%' OR &quot;type&quot; LIKE '%e-cigarette%'" symbol="11" label="High-tech &amp; électronique"/>
+<rule key="{7bb53732-18fa-4cc9-ac8a-5b0a85e87570}" filter="&quot;type&quot; LIKE '%books%' OR &quot;type&quot; LIKE '%art%' OR &quot;type&quot; LIKE '%cinema%' OR &quot;type&quot; LIKE '%sports%' OR &quot;type&quot; LIKE '%photo%' OR &quot;type&quot; LIKE '%gift%' OR &quot;type&quot; LIKE '%handicraft%' OR &quot;type&quot; LIKE '%sewing%'" symbol="12" label="Culture &amp; loisirs"/>
+<rule key="{e2fcbe1b-6f5e-4065-bb3b-d3d3b56f2cb9}" filter="&quot;type&quot; LIKE '%antiques%' OR &quot;type&quot; LIKE '%second_hand%' OR &quot;type&quot; LIKE '%wholesale%'" symbol="13" label="Brocante &amp; antiquités"/>
+<rule key="{f651c4cd-89f5-4f13-ba65-1a6a3f4f479d}" filter="ELSE" symbol="14" label="Autres commerces"/>
 </rules>
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{15ae6ee9-c1d6-4014-84f1-58354fbcc795}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{3794aaa3-a6a3-4a9a-8703-ce1b9b448836}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="29,158,117,255" type="QString" name="color"/>
@@ -1191,7 +1191,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="1" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{548eb6d2-3856-461a-9aab-224a74df683a}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{79022923-6c99-45a1-b527-0f9f9e245ca3}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="29,158,117,255" type="QString" name="color"/>
@@ -1208,7 +1208,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="2" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{8e055f00-c776-4085-be73-0c6f4608f5a1}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{fbd9ca0b-ab7c-4990-b9cf-24d26361ab32}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="216,90,48,255" type="QString" name="color"/>
@@ -1225,7 +1225,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="3" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{2a54a9ed-e701-49bc-a191-08209af8cbe4}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{2919874c-c246-4f9b-9924-54c88e37bbf6}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="173,72,38,255" type="QString" name="color"/>
@@ -1242,7 +1242,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="4" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{ad47c002-30b1-494c-b551-a2f4317210ae}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{6440257d-7393-4285-9a82-ad7cef8712d9}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="216,90,48,255" type="QString" name="color"/>
@@ -1259,7 +1259,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="5" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{6647f949-518d-4bba-ae3d-c6383384b773}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{08c630c3-694b-4be9-a483-1cc9ab1c1e5b}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="55,138,221,255" type="QString" name="color"/>
@@ -1276,7 +1276,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="6" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{4e8a7146-273d-4fba-b2f4-c7323c876645}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{50af7baf-2471-405c-a1eb-d8b1fbbde03f}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="95,94,90,255" type="QString" name="color"/>
@@ -1293,7 +1293,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="7" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{4fb15ecd-0c57-4da3-8077-4bc022576b9b}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{8e684ff5-16c5-4c98-86bd-46fbb916b8eb}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="29,158,117,255" type="QString" name="color"/>
@@ -1310,7 +1310,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="8" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{4393d635-035e-43ec-b85e-d2a4e2753959}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{82a246b2-07fc-4f84-8575-dc207485021a}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="216,90,48,255" type="QString" name="color"/>
@@ -1327,7 +1327,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="9" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{5a06fdc7-9908-470d-ae58-94387e5f6941}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{5f693e35-ef64-401f-8f43-a76fc60367e9}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="95,94,90,255" type="QString" name="color"/>
@@ -1344,7 +1344,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="10" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{fedfc835-c175-48b8-b93e-1368fca0b51b}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{f169b510-7c64-416e-aede-5062b8a68fbb}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="95,94,90,255" type="QString" name="color"/>
@@ -1361,7 +1361,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="11" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{d14f8940-bb10-4c74-b687-887455b08cfd}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{143d01af-d8f2-4d23-b755-cf0a8ad55288}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="55,138,221,255" type="QString" name="color"/>
@@ -1378,7 +1378,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="12" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{c4dd5884-0aa6-4a1a-b266-cf1086bd0e73}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{3f8380cc-45a5-4249-909e-73be4c8f8a0c}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="29,158,117,255" type="QString" name="color"/>
@@ -1395,7 +1395,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="13" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{18d030fd-c8a3-4f9d-81eb-718476cbacc3}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{17cb0a89-7e8e-4ac0-84f3-a915b5107bd3}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="127,126,123,255" type="QString" name="color"/>
@@ -1412,7 +1412,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="14" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{1588c910-6363-4491-bf41-04433747a0b3}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{f5347576-7e07-40f4-9ba1-e4d1233c4dd2}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="95,94,90,255" type="QString" name="color"/>
@@ -1451,7 +1451,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>banques_34c22623</id>
+<id>banques_191aec30</id>
 <datasource>./couches/commerces/banques.geojson</datasource>
 <keywordList>
 <value></value>
@@ -1461,7 +1461,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{eb7fde24-4ba7-480a-b117-e3f72a6b2037}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{2fa7b00a-dbf7-46ed-ad7c-c153ed0be8e6}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="95,94,90,255" type="QString" name="color"/>
@@ -1500,7 +1500,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>arretsALEOP_c77afb19</id>
+<id>arretsALEOP_0ada1996</id>
 <datasource>./couches/mobilite/arretsALEOP.geojson</datasource>
 <keywordList>
 <value></value>
@@ -1510,7 +1510,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{351b04c3-a6a3-4c22-8ae6-32c2f3de8a3c}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{166d5d13-a143-47f8-837c-6a684735c7bd}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="55,138,221,255" type="QString" name="color"/>
@@ -1549,7 +1549,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>reseauALEOP_26a7158c</id>
+<id>reseauALEOP_b5e0e266</id>
 <datasource>./couches/mobilite/reseauALEOP.geojson</datasource>
 <keywordList>
 <value></value>
@@ -1559,7 +1559,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="line" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleLine" locked="0" enabled="1" id="{ee94274f-d7eb-474f-a3d9-d197c0271f08}">
+<layer pass="0" class="SimpleLine" locked="0" enabled="1" id="{937193ba-05b6-4da9-8a69-672e9fb212ae}">
 <Option type="Map">
 <Option value="55,138,221,255" type="QString" name="line_color"/>
 <Option value="solid" type="QString" name="line_style"/>
@@ -1593,7 +1593,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>airecovoiturage_4959cfc7</id>
+<id>airecovoiturage_8cf349e5</id>
 <datasource>./couches/mobilite/airecovoiturage.geojson</datasource>
 <keywordList>
 <value></value>
@@ -1603,7 +1603,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{5df1a4c2-fc15-42b0-ac6d-618ee66210ad}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{af04573c-82af-47cf-ac31-c09dda548673}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="55,138,221,255" type="QString" name="color"/>
@@ -1642,7 +1642,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>dae_e724c0c5</id>
+<id>dae_5d219946</id>
 <datasource>./couches/securite/dae.geojson</datasource>
 <keywordList>
 <value></value>
@@ -1652,7 +1652,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{12f12832-556e-4932-b7be-f6761b3d4b53}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{17c93b93-2d43-46b2-b13c-0f2c53b46823}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="173,72,38,255" type="QString" name="color"/>
@@ -1691,7 +1691,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>pompiers_8b1f2244</id>
+<id>pompiers_1122787e</id>
 <datasource>./couches/securite/pompiers.geojson</datasource>
 <keywordList>
 <value></value>
@@ -1701,7 +1701,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{311e213c-015e-4fd2-aca8-ff0e4958e8c2}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{6c70630c-cf72-431f-967b-d217bb4186d7}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="173,72,38,255" type="QString" name="color"/>
@@ -1740,7 +1740,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>gendarmerie_fea0cba3</id>
+<id>gendarmerie_721d076d</id>
 <datasource>./couches/securite/gendarmerie.geojson</datasource>
 <keywordList>
 <value></value>
@@ -1750,7 +1750,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{7e8425c0-0f2d-4d1a-a2f7-2852d6a5e92e}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{7a276f20-1efe-47af-9349-5a9da75dec0a}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="173,72,38,255" type="QString" name="color"/>
@@ -1789,7 +1789,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>ehpad_1d432e47</id>
+<id>ehpad_a4002d5f</id>
 <datasource>./couches/securite/ehpad.geojson</datasource>
 <keywordList>
 <value></value>
@@ -1799,7 +1799,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{5469cd78-e38a-4750-9784-68b7a2ecf70b}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{80acf85b-9936-434a-83b7-ead3f531eeeb}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="173,72,38,255" type="QString" name="color"/>
@@ -1838,7 +1838,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>immeublesProteges_5a095619</id>
+<id>immeublesProteges_cd98373a</id>
 <datasource>./couches/patrimoine/immeublesProteges.geojson</datasource>
 <keywordList>
 <value></value>
@@ -1848,7 +1848,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{78f393fd-be4e-41e9-b624-f7bb78304b5e}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{48344658-a3d4-4c46-8735-d4d46750cdca}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="127,126,123,255" type="QString" name="color"/>
@@ -1887,7 +1887,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>patrimoineRural_144d0525</id>
+<id>patrimoineRural_8ea17806</id>
 <datasource>./couches/patrimoine/patrimoineRural.geojson</datasource>
 <keywordList>
 <value></value>
@@ -1895,16 +1895,16 @@
 <layername>Petit patrimoine rural</layername>
 <provider encoding="UTF-8">ogr</provider>
 <renderer-v2 type="RuleRenderer" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
-<rules key="{cda1d26b-9dab-4127-b81d-34a48dd611d6}">
-<rule key="{6bd39953-ef1d-41b3-ab58-ecf47d48a1ab}" filter="&quot;historic&quot; = 'wayside_cross'" symbol="0" label="Croix de chemin"/>
-<rule key="{8bdba3dd-7e43-46d1-821d-f8055fc86c0d}" filter="&quot;man_made&quot; = 'wash_house'" symbol="1" label="Lavoir"/>
-<rule key="{7ef6d2ab-d002-4f54-a809-71b04b403994}" filter="&quot;man_made&quot; = 'watermill' OR &quot;historic&quot; = 'mill'" symbol="2" label="Moulin"/>
-<rule key="{7ac0a54b-1baa-49da-a364-d16a3280e7a2}" filter="&quot;amenity&quot; = 'fountain'" symbol="3" label="Fontaine"/>
-<rule key="{26b6e2b3-0bb0-43fa-af43-453d8f79a8cb}" filter="ELSE" symbol="4" label="Autre petit patrimoine"/>
+<rules key="{888dcf58-e875-4c70-9653-b55aa432cbf2}">
+<rule key="{3f1431a9-b04a-46f2-a860-f19db1b69233}" filter="&quot;historic&quot; = 'wayside_cross'" symbol="0" label="Calvaire"/>
+<rule key="{a710da99-32a5-45b5-bc1d-1dd3450a9824}" filter="&quot;man_made&quot; = 'wash_house'" symbol="1" label="Lavoir"/>
+<rule key="{c316e18a-2cf8-40e8-bbda-728ab561b6a6}" filter="&quot;man_made&quot; = 'watermill' OR &quot;historic&quot; = 'mill'" symbol="2" label="Moulin"/>
+<rule key="{c24d7c82-0145-4a1f-8aa9-401b68aaecce}" filter="&quot;amenity&quot; = 'fountain'" symbol="3" label="Fontaine"/>
+<rule key="{dbb494b0-3460-4893-a0a4-8bd796bf2931}" filter="ELSE" symbol="4" label="Autre petit patrimoine"/>
 </rules>
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{28cc3925-115b-4596-9c93-f16fe98f0297}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{d16a252f-1727-4e21-b6d7-bb22b18af068}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="95,94,90,255" type="QString" name="color"/>
@@ -1921,7 +1921,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="1" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{ad8eb491-aab7-4022-96ab-199ae6f87d20}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{1f34bd42-e372-479d-90d0-086cc9d28b5f}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="55,138,221,255" type="QString" name="color"/>
@@ -1938,7 +1938,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="2" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{974ab531-1939-4d59-bb3e-1a670a7626de}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{b193f944-4c76-486f-95c5-c22e4728da8e}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="216,90,48,255" type="QString" name="color"/>
@@ -1955,7 +1955,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="3" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{819fd2b2-c7c1-4862-ba02-7fcca205b3b9}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{5f5c02be-11e5-4001-8cb6-4fbfc90ca6ee}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="55,138,221,255" type="QString" name="color"/>
@@ -1972,7 +1972,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="4" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{93483f12-9870-4f79-b498-f2999cd3774e}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{6872e4d9-4f5e-4525-bf78-b358ef5de924}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="127,126,123,255" type="QString" name="color"/>
@@ -2011,7 +2011,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>randonnees_osm_e3a352ad</id>
+<id>randonnees_osm_89c29ea8</id>
 <datasource>./couches/tourisme/randonnees_osm.geojson</datasource>
 <keywordList>
 <value></value>
@@ -2021,7 +2021,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="line" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleLine" locked="0" enabled="1" id="{0cdc142e-14c2-4eed-a113-3eb4d9451f1f}">
+<layer pass="0" class="SimpleLine" locked="0" enabled="1" id="{ddc184fc-6b7b-45be-8e09-3e938da25c7c}">
 <Option type="Map">
 <Option value="29,158,117,255" type="QString" name="line_color"/>
 <Option value="solid" type="QString" name="line_style"/>
@@ -2055,7 +2055,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>randonnees_j1_a70673d0</id>
+<id>randonnees_j1_fae3b71c</id>
 <datasource>./couches/tourisme/randonnees.geojson</datasource>
 <keywordList>
 <value></value>
@@ -2065,7 +2065,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="line" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleLine" locked="0" enabled="1" id="{eed9a3f4-ac19-4912-b27f-999b0ba890b0}">
+<layer pass="0" class="SimpleLine" locked="0" enabled="1" id="{9d1ee754-98bd-4a29-8d1e-a3d4e5c690f2}">
 <Option type="Map">
 <Option value="29,158,117,255" type="QString" name="line_color"/>
 <Option value="dash" type="QString" name="line_style"/>
@@ -2099,7 +2099,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>velo_bf1b94d9</id>
+<id>velo_c8a36eb9</id>
 <datasource>./couches/tourisme/velo.geojson</datasource>
 <keywordList>
 <value></value>
@@ -2109,7 +2109,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="line" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleLine" locked="0" enabled="1" id="{45d3338a-ce2c-4c0c-a404-41f9dc605c16}">
+<layer pass="0" class="SimpleLine" locked="0" enabled="1" id="{721cbdc7-dce7-4b1e-80ec-4be34ca1ba85}">
 <Option type="Map">
 <Option value="216,90,48,255" type="QString" name="line_color"/>
 <Option value="solid" type="QString" name="line_style"/>
@@ -2143,7 +2143,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>officesTourisme_117ea825</id>
+<id>officesTourisme_bd9dd9fa</id>
 <datasource>./couches/tourisme/officesTourisme.geojson</datasource>
 <keywordList>
 <value></value>
@@ -2153,7 +2153,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{4679bd30-a45d-49d5-b380-85ba811b1330}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{e313809c-c6d7-4dcb-a5fa-5edb9695cd7b}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="55,138,221,255" type="QString" name="color"/>
@@ -2192,7 +2192,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>campingcar_47ad9233</id>
+<id>campingcar_a3ce5a68</id>
 <datasource>./couches/tourisme/campingcar.geojson</datasource>
 <keywordList>
 <value></value>
@@ -2202,7 +2202,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{034b6336-756e-476f-a110-d2372cf86815}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{ef65d4a8-0514-42b6-958e-905f05605d12}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="216,90,48,255" type="QString" name="color"/>
@@ -2241,7 +2241,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>berce_osm_92fbd846</id>
+<id>berce_osm_2cb5a6f7</id>
 <datasource>./couches/tourisme/pointsRemarquablesBerce_osm.geojson</datasource>
 <keywordList>
 <value></value>
@@ -2249,14 +2249,14 @@
 <layername>Points remarquables forêt de Bercé (OSM, figés)</layername>
 <provider encoding="UTF-8">ogr</provider>
 <renderer-v2 type="RuleRenderer" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
-<rules key="{936a334f-84d2-4023-b48b-b44b19edbcd2}">
-<rule key="{9736ba97-26b5-4874-b7e0-2b1b0d562bca}" filter="&quot;natural&quot; = 'tree'" symbol="0" label="Arbre remarquable"/>
-<rule key="{196bf3c7-bf0b-4162-844f-de0305448bd7}" filter="&quot;natural&quot; = 'spring'" symbol="1" label="Source"/>
-<rule key="{745585f1-9e48-4861-aa40-874a97300e5f}" filter="ELSE" symbol="2" label="Point remarquable"/>
+<rules key="{7d3842a4-7b1d-4208-970c-d4084e2e7abb}">
+<rule key="{954fa495-722a-4d2e-a1ad-d33cb175635f}" filter="&quot;natural&quot; = 'tree'" symbol="0" label="Arbre remarquable"/>
+<rule key="{0199b533-8a02-4d4d-b1e6-0f1f280ca7a6}" filter="&quot;natural&quot; = 'spring'" symbol="1" label="Source"/>
+<rule key="{fff3296f-ce8d-4ecf-bb3f-85340cd837b0}" filter="ELSE" symbol="2" label="Point remarquable"/>
 </rules>
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{48e87355-fcdc-4157-936a-837ca9a52dbe}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{e55d676d-151c-486f-83d0-d372a069c1c2}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="15,110,86,255" type="QString" name="color"/>
@@ -2273,7 +2273,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="1" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{45b14b61-fd82-4cec-b76f-f86265332df2}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{9878661f-5084-400d-b98d-c6fcfc0652a2}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="55,138,221,255" type="QString" name="color"/>
@@ -2290,7 +2290,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="2" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{348ad7b2-a98f-4a01-88bc-8e9e4fd7b8cd}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{8388bb3a-eeac-4e2e-8290-b765523f144c}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="216,90,48,255" type="QString" name="color"/>
@@ -2329,7 +2329,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>berce_manuels_81bebac6</id>
+<id>berce_manuels_a1d36a39</id>
 <datasource>./couches/tourisme/pointsRemarquablesBerce_manuels.geojson</datasource>
 <keywordList>
 <value></value>
@@ -2337,14 +2337,14 @@
 <layername>Points remarquables forêt de Bercé (à compléter à la main)</layername>
 <provider encoding="UTF-8">ogr</provider>
 <renderer-v2 type="RuleRenderer" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
-<rules key="{623e495f-71b8-41dc-a5d3-1b8b3fdbde40}">
-<rule key="{0c335609-1cbd-4b31-b364-276428d8bca3}" filter="&quot;natural&quot; = 'tree'" symbol="0" label="Arbre remarquable"/>
-<rule key="{d740a5c2-c5ff-4995-a654-03ff62cbbd26}" filter="&quot;natural&quot; = 'spring'" symbol="1" label="Source"/>
-<rule key="{12fe0f15-a295-4467-9f7e-43bc7e0afb1b}" filter="ELSE" symbol="2" label="Point remarquable"/>
+<rules key="{d1996af5-025d-4a7e-ae84-217900837ca3}">
+<rule key="{8bd60a2d-6128-484b-8c22-721c2e82f564}" filter="&quot;natural&quot; = 'tree'" symbol="0" label="Arbre remarquable"/>
+<rule key="{41a8e210-c894-4fe2-b142-1a8b58740ce3}" filter="&quot;natural&quot; = 'spring'" symbol="1" label="Source"/>
+<rule key="{cc3d27be-8eee-41eb-8a2b-e48cda3d3f86}" filter="ELSE" symbol="2" label="Point remarquable"/>
 </rules>
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{ac122f4f-d613-4949-bfdb-91b560b203ad}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{1193ca11-a8f9-42b2-88b9-fd4e2d7144ef}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="15,110,86,255" type="QString" name="color"/>
@@ -2361,7 +2361,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="1" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{a7c97b78-2a8d-4fee-9160-2b5b1b762987}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{821a12d6-55b2-4734-b4dc-db95a432250e}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="55,138,221,255" type="QString" name="color"/>
@@ -2378,7 +2378,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="2" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{3bbe4bc5-43ab-4109-bdac-afd8b491ce97}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{5e30a2bd-3e4a-4851-b4d7-802248553c93}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="216,90,48,255" type="QString" name="color"/>
@@ -2417,7 +2417,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>prixImmobilier_1d332db9</id>
+<id>prixImmobilier_de07e187</id>
 <datasource>./couches/urbanisme/prix_immobilier_communes.geojson</datasource>
 <keywordList>
 <value></value>
@@ -2425,19 +2425,19 @@
 <layername>Prix immobilier par commune</layername>
 <provider encoding="UTF-8">ogr</provider>
 <renderer-v2 type="RuleRenderer" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
-<rules key="{9db413f9-cbf8-40e4-b0b6-ee609a2a90db}">
-<rule key="{686f0366-10d1-4b93-a40c-1bc7fbcae5df}" filter="&quot;prix_m2_median&quot; &lt; 1000" symbol="0" label="&lt; 1000 €/m²"/>
-<rule key="{66d7a174-e3ab-4a7d-adb9-726d9be12b0a}" filter="&quot;prix_m2_median&quot; &gt;= 1000 AND &quot;prix_m2_median&quot; &lt; 1300" symbol="1" label="1000 - 1300 €/m²"/>
-<rule key="{1051275f-7ef9-471e-89b7-f3c2dc933eeb}" filter="&quot;prix_m2_median&quot; &gt;= 1300 AND &quot;prix_m2_median&quot; &lt; 1600" symbol="2" label="1300 - 1600 €/m²"/>
-<rule key="{da04232c-790a-44aa-b4bf-87c332d811c2}" filter="&quot;prix_m2_median&quot; &gt;= 1600 AND &quot;prix_m2_median&quot; &lt; 1900" symbol="3" label="1600 - 1900 €/m²"/>
-<rule key="{660d5827-e47e-4219-961d-08d70b40c878}" filter="&quot;prix_m2_median&quot; &gt;= 1900 AND &quot;prix_m2_median&quot; &lt; 2200" symbol="4" label="1900 - 2200 €/m²"/>
-<rule key="{5a268539-fbd4-403e-ac64-e533516e35e2}" filter="&quot;prix_m2_median&quot; &gt;= 2200 AND &quot;prix_m2_median&quot; &lt; 2600" symbol="5" label="2200 - 2600 €/m²"/>
-<rule key="{ecc66cc4-1525-4b1a-aa95-8a3eb60ee126}" filter="&quot;prix_m2_median&quot; &gt;= 2600" symbol="6" label="&gt;= 2600 €/m²"/>
-<rule key="{644b55ae-a02a-448b-a172-eb8c2cac3030}" filter="ELSE" symbol="7" label="Prix inconnu"/>
+<rules key="{f66eb17b-2461-49eb-bd6c-86b8ee281cdf}">
+<rule key="{22e0fd3e-2dbe-4d69-bfc4-d53e6bb65a4e}" filter="&quot;prix_m2_median&quot; &lt; 1000" symbol="0" label="&lt; 1000 €/m²"/>
+<rule key="{be2f6fb2-915d-4cc6-8e0f-ddb1d3ea265a}" filter="&quot;prix_m2_median&quot; &gt;= 1000 AND &quot;prix_m2_median&quot; &lt; 1300" symbol="1" label="1000 - 1300 €/m²"/>
+<rule key="{632b2e33-1d3e-463a-bcb3-d4ed8fa918d9}" filter="&quot;prix_m2_median&quot; &gt;= 1300 AND &quot;prix_m2_median&quot; &lt; 1600" symbol="2" label="1300 - 1600 €/m²"/>
+<rule key="{bee00c6e-b3c1-4947-9102-11764ae1f2af}" filter="&quot;prix_m2_median&quot; &gt;= 1600 AND &quot;prix_m2_median&quot; &lt; 1900" symbol="3" label="1600 - 1900 €/m²"/>
+<rule key="{f4cf933d-bc57-4065-a837-c82fa77ff880}" filter="&quot;prix_m2_median&quot; &gt;= 1900 AND &quot;prix_m2_median&quot; &lt; 2200" symbol="4" label="1900 - 2200 €/m²"/>
+<rule key="{2c067cb6-19c7-47c2-b851-ce9ec1dc1dc9}" filter="&quot;prix_m2_median&quot; &gt;= 2200 AND &quot;prix_m2_median&quot; &lt; 2600" symbol="5" label="2200 - 2600 €/m²"/>
+<rule key="{a0093379-5712-4856-bedb-5afc39a83242}" filter="&quot;prix_m2_median&quot; &gt;= 2600" symbol="6" label="&gt;= 2600 €/m²"/>
+<rule key="{8dcd052a-5284-4d33-8920-9f950c807910}" filter="ELSE" symbol="7" label="Prix inconnu"/>
 </rules>
 <symbols>
 <symbol type="fill" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{2be70586-bf09-40f1-9111-7641fb60686d}">
+<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{b0f9efa0-0b86-49d3-80a8-57772635209f}">
 <Option type="Map">
 <Option value="46,139,87,170" type="QString" name="color"/>
 <Option value="46,139,87,255" type="QString" name="outline_color"/>
@@ -2449,7 +2449,7 @@
 </layer>
 </symbol>
 <symbol type="fill" name="1" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{be593fdc-9589-4761-9a4c-1a55a06ad6a3}">
+<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{80ae2041-9f6a-4eb4-bd85-a08c73f53412}">
 <Option type="Map">
 <Option value="118,169,66,170" type="QString" name="color"/>
 <Option value="118,169,66,255" type="QString" name="outline_color"/>
@@ -2461,7 +2461,7 @@
 </layer>
 </symbol>
 <symbol type="fill" name="2" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{25fbe6e6-8369-4799-9707-c9f5dace230b}">
+<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{b9a3f9d8-b5f9-438f-91d2-9ea78b373c63}">
 <Option type="Map">
 <Option value="183,201,74,170" type="QString" name="color"/>
 <Option value="183,201,74,255" type="QString" name="outline_color"/>
@@ -2473,7 +2473,7 @@
 </layer>
 </symbol>
 <symbol type="fill" name="3" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{f88bab8b-d844-458b-97da-ae1d7ea7f7e9}">
+<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{3dde695d-69d7-46a2-96fb-5cc662816748}">
 <Option type="Map">
 <Option value="224,200,60,170" type="QString" name="color"/>
 <Option value="224,200,60,255" type="QString" name="outline_color"/>
@@ -2485,7 +2485,7 @@
 </layer>
 </symbol>
 <symbol type="fill" name="4" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{afc75d4c-851c-4207-b67c-9fe1d228e6ea}">
+<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{cc0fc29b-bf8c-4755-be1e-8c6958ff48d8}">
 <Option type="Map">
 <Option value="237,168,50,170" type="QString" name="color"/>
 <Option value="237,168,50,255" type="QString" name="outline_color"/>
@@ -2497,7 +2497,7 @@
 </layer>
 </symbol>
 <symbol type="fill" name="5" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{353eb79d-e25f-4d68-bc80-35b4ec58b8cc}">
+<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{f1619523-9a47-43fe-baaf-22cf951eeedf}">
 <Option type="Map">
 <Option value="228,119,50,170" type="QString" name="color"/>
 <Option value="228,119,50,255" type="QString" name="outline_color"/>
@@ -2509,7 +2509,7 @@
 </layer>
 </symbol>
 <symbol type="fill" name="6" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{11f2a5df-4118-4ed1-bcbe-f8c9a5eeb35e}">
+<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{3e91b32b-4edc-48f0-b395-fb577cefd3bc}">
 <Option type="Map">
 <Option value="201,67,56,170" type="QString" name="color"/>
 <Option value="201,67,56,255" type="QString" name="outline_color"/>
@@ -2521,7 +2521,7 @@
 </layer>
 </symbol>
 <symbol type="fill" name="7" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{e4ea7ea2-82d1-418c-aa90-ddc6230a7949}">
+<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{031b7025-69b1-40c1-a0c1-87efe95cd592}">
 <Option type="Map">
 <Option value="184,192,189,170" type="QString" name="color"/>
 <Option value="184,192,189,255" type="QString" name="outline_color"/>
@@ -2555,7 +2555,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>dpe_e0b960bc</id>
+<id>dpe_869cb877</id>
 <datasource>./couches/urbanisme/dpe_loir_luce_berce.geojson</datasource>
 <keywordList>
 <value></value>
@@ -2575,7 +2575,7 @@
 </categories>
 <symbols>
 <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{a9d3d57d-baff-4a82-9053-80ecfbb590b6}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{563beb07-ada5-4105-b88a-f23490420b90}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="46,139,87,255" type="QString" name="color"/>
@@ -2592,7 +2592,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="1" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{f36c1a4a-d993-4562-ae6d-7df981ba565b}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{1016fc3e-ce73-42c9-8a1b-49565a37986c}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="118,169,66,255" type="QString" name="color"/>
@@ -2609,7 +2609,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="2" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{3a541a38-5462-4cbd-b522-1fcb2a360f21}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{40908d71-3ed6-4f77-bc2f-4fb8c88f13ca}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="183,201,74,255" type="QString" name="color"/>
@@ -2626,7 +2626,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="3" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{9d184581-35f1-4bdb-bb44-e23e55d1f98f}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{f5c46dda-4a5e-4f3d-89d4-92dc43e915ba}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="224,200,60,255" type="QString" name="color"/>
@@ -2643,7 +2643,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="4" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{c4ecc550-2d11-4f22-9021-2483f185f0be}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{888aa946-21ef-44dd-a16c-81dfdc14a273}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="237,168,50,255" type="QString" name="color"/>
@@ -2660,7 +2660,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="5" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{d9411d06-ebc4-40a4-a7a3-959281836ab7}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{f97ed24c-dd1b-47ce-bf0a-f67045dfdfa0}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="228,119,50,255" type="QString" name="color"/>
@@ -2677,7 +2677,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="6" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{7397aef3-098f-4463-920f-9ff66a44a7a6}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{ff3800c3-afae-4e3a-8eb8-4a8a021cb8c3}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="201,67,56,255" type="QString" name="color"/>
@@ -2694,7 +2694,7 @@
 </layer>
 </symbol>
 <symbol type="marker" name="7" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{d787f06b-2efe-4327-97c9-ece90965276b}">
+<layer pass="0" class="SimpleMarker" locked="0" enabled="1" id="{1f1fb970-a7ed-45c3-b664-8b0c154ad4c9}">
 <Option type="Map">
 <Option value="circle" type="QString" name="name"/>
 <Option value="95,94,90,255" type="QString" name="color"/>
@@ -2733,7 +2733,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>zonagePLUi_4258e217</id>
+<id>zonagePLUi_0ee808e3</id>
 <datasource>./couches/urbanisme/zonage_plui_loir_luce_berce_filtre.geojson</datasource>
 <keywordList>
 <value></value>
@@ -2741,16 +2741,16 @@
 <layername>Zonage PLUi</layername>
 <provider encoding="UTF-8">ogr</provider>
 <renderer-v2 type="RuleRenderer" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
-<rules key="{e8bd7520-30e8-4b1c-a588-c3c9942dc719}">
-<rule key="{fac9115a-4891-4a8e-b7c5-9e7b5d4eb0c6}" filter="&quot;typezone&quot; = 'U'" symbol="0" label="U — Zone urbaine"/>
-<rule key="{02e6abf7-7e42-4339-afb9-7eee50402438}" filter="&quot;typezone&quot; = 'AUc' OR &quot;typezone&quot; = 'AUs' OR &quot;typezone&quot; LIKE 'AU%'" symbol="1" label="AU — Zone à urbaniser"/>
-<rule key="{6402ce2b-bb4c-4900-a064-87b7cf05afc2}" filter="&quot;typezone&quot; = 'A'" symbol="2" label="A — Zone agricole"/>
-<rule key="{300a45da-14a3-471a-b2d1-4ec58915fc64}" filter="&quot;typezone&quot; = 'N'" symbol="3" label="N — Zone naturelle"/>
-<rule key="{63f23431-b8d4-44aa-afc5-143b784fd2c8}" filter="ELSE" symbol="4" label="Autre zone"/>
+<rules key="{4b20687a-84a9-42ca-99ff-7deb0b7b04ae}">
+<rule key="{834a5943-c3e7-43d7-91d6-b1d536df55c6}" filter="&quot;typezone&quot; = 'U'" symbol="0" label="U — Zone urbaine"/>
+<rule key="{f34fd555-67e0-4e3c-8d33-3bbdc8c2e73e}" filter="&quot;typezone&quot; = 'AUc' OR &quot;typezone&quot; = 'AUs' OR &quot;typezone&quot; LIKE 'AU%'" symbol="1" label="AU — Zone à urbaniser"/>
+<rule key="{e9cc3eb0-222a-4f8c-a733-e58abb989e1b}" filter="&quot;typezone&quot; = 'A'" symbol="2" label="A — Zone agricole"/>
+<rule key="{1a48c608-710b-4643-b5b5-1a8fd668417a}" filter="&quot;typezone&quot; = 'N'" symbol="3" label="N — Zone naturelle"/>
+<rule key="{376ba3f5-85ad-4d3f-b307-0cb31a96e1ad}" filter="ELSE" symbol="4" label="Autre zone"/>
 </rules>
 <symbols>
 <symbol type="fill" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{23ac99c3-8f2f-4867-a84f-a2c31849d924}">
+<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{ec587249-849d-4749-992e-58a522157567}">
 <Option type="Map">
 <Option value="217,72,61,140" type="QString" name="color"/>
 <Option value="217,72,61,255" type="QString" name="outline_color"/>
@@ -2762,7 +2762,7 @@
 </layer>
 </symbol>
 <symbol type="fill" name="1" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{4f13501c-dbab-4ee8-9e24-67bc6c70fa21}">
+<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{1ffad0c8-18e0-4fa4-9dbc-c28d5633da42}">
 <Option type="Map">
 <Option value="177,143,207,140" type="QString" name="color"/>
 <Option value="177,143,207,255" type="QString" name="outline_color"/>
@@ -2774,7 +2774,7 @@
 </layer>
 </symbol>
 <symbol type="fill" name="2" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{99360b72-bd69-4c62-b56c-45132ae626b8}">
+<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{d5729e62-dae1-4164-997e-ae79b3fd4a92}">
 <Option type="Map">
 <Option value="232,196,104,140" type="QString" name="color"/>
 <Option value="232,196,104,255" type="QString" name="outline_color"/>
@@ -2786,7 +2786,7 @@
 </layer>
 </symbol>
 <symbol type="fill" name="3" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{1aab2fb2-a79f-49f1-8595-e0bec48f9242}">
+<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{e8e2d797-e760-49e9-ae09-9bbad313b0ab}">
 <Option type="Map">
 <Option value="111,174,125,140" type="QString" name="color"/>
 <Option value="111,174,125,255" type="QString" name="outline_color"/>
@@ -2798,7 +2798,7 @@
 </layer>
 </symbol>
 <symbol type="fill" name="4" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{27d16acc-0d87-4d8d-bc8b-fbe1b9af0beb}">
+<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{852184ad-f400-4909-9522-e84159347ce8}">
 <Option type="Map">
 <Option value="95,94,90,140" type="QString" name="color"/>
 <Option value="95,94,90,255" type="QString" name="outline_color"/>
@@ -2832,7 +2832,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>rga_295a499a</id>
+<id>rga_a4ce3e9f</id>
 <datasource>./couches/urbanisme/rga_2025_loir_luce_berce.geojson</datasource>
 <keywordList>
 <value></value>
@@ -2840,15 +2840,15 @@
 <layername>Retrait-gonflement des argiles</layername>
 <provider encoding="UTF-8">ogr</provider>
 <renderer-v2 type="RuleRenderer" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
-<rules key="{c54dbe86-fb62-4bd5-9c5f-ee29601bfb5a}">
-<rule key="{8bd8c737-c583-4fed-a30a-0e80124259b1}" filter="&quot;niveau&quot; = 1" symbol="0" label="Faible"/>
-<rule key="{74f1b4e2-0af2-437d-a131-f0a5061c7d15}" filter="&quot;niveau&quot; = 2" symbol="1" label="Moyen"/>
-<rule key="{8721e248-146b-403a-a5ba-7cdfdf43e462}" filter="&quot;niveau&quot; = 3" symbol="2" label="Fort"/>
-<rule key="{3d688519-b4cd-4c8e-a35a-f26800843760}" filter="ELSE" symbol="3" label="Niveau inconnu"/>
+<rules key="{ddf2dacc-9d6c-4b2a-9785-14651b4d297c}">
+<rule key="{e7e85ca3-aa61-49e5-99e9-44a6d16352ac}" filter="&quot;niveau&quot; = 1" symbol="0" label="Faible"/>
+<rule key="{cce07c42-2b44-4253-ae61-1cac895cd74d}" filter="&quot;niveau&quot; = 2" symbol="1" label="Moyen"/>
+<rule key="{3e8babce-ddf3-48e6-bb8b-00882865e059}" filter="&quot;niveau&quot; = 3" symbol="2" label="Fort"/>
+<rule key="{eaf44825-ab9f-414a-8cf1-f5bf1f66584b}" filter="ELSE" symbol="3" label="Niveau inconnu"/>
 </rules>
 <symbols>
 <symbol type="fill" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{2c0c344b-efef-4244-8b1e-e3607d4960fb}">
+<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{c9216623-4aba-4b9e-9fce-6477d5f8adf9}">
 <Option type="Map">
 <Option value="242,226,168,140" type="QString" name="color"/>
 <Option value="242,226,168,255" type="QString" name="outline_color"/>
@@ -2860,7 +2860,7 @@
 </layer>
 </symbol>
 <symbol type="fill" name="1" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{fc28a643-421b-4069-b8dc-7a4ee16b7685}">
+<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{28f4eaff-af35-4783-8bba-ac3c095e28b4}">
 <Option type="Map">
 <Option value="242,153,74,140" type="QString" name="color"/>
 <Option value="242,153,74,255" type="QString" name="outline_color"/>
@@ -2872,7 +2872,7 @@
 </layer>
 </symbol>
 <symbol type="fill" name="2" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{033140bf-e9e0-4744-83e9-233daa5d2eea}">
+<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{5efc95be-87bc-4444-9f27-48f12ad62c6e}">
 <Option type="Map">
 <Option value="201,67,56,140" type="QString" name="color"/>
 <Option value="201,67,56,255" type="QString" name="outline_color"/>
@@ -2884,7 +2884,7 @@
 </layer>
 </symbol>
 <symbol type="fill" name="3" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{1dd74a3d-1c47-46e2-ac98-724c2e9af06b}">
+<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{6d950c37-f09c-4870-b14a-20ecd4602f16}">
 <Option type="Map">
 <Option value="184,192,189,140" type="QString" name="color"/>
 <Option value="184,192,189,255" type="QString" name="outline_color"/>
@@ -2918,7 +2918,7 @@
 <geographicflag>true</geographicflag>
 </spatialrefsys>
 </crs>
-<id>mutations_2c26f851</id>
+<id>mutations_984c367d</id>
 <datasource>./couches/urbanisme/parcelles_dvf_2021_2025_loir_luce_berce.geojson</datasource>
 <keywordList>
 <value></value>
@@ -2928,7 +2928,7 @@
 <renderer-v2 type="singleSymbol" symbollevels="0" enableorderby="0" forceraster="0" referencescale="-1">
 <symbols>
 <symbol type="fill" name="0" alpha="1" clip_to_extent="1" force_rhr="0">
-<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{04fdcc51-2859-4bb5-9d5b-36e6015b927d}">
+<layer pass="0" class="SimpleFill" locked="0" enabled="1" id="{3264d290-ca1c-4c11-b7e4-fe6a8f626dfc}">
 <Option type="Map">
 <Option value="216,90,48,100" type="QString" name="color"/>
 <Option value="216,90,48,255" type="QString" name="outline_color"/>

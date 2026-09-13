@@ -927,7 +927,7 @@ concrètes détaillées ci-dessous.
   architecture Overpass que toutes les couches précédentes.
 - **Petit patrimoine rural** (`patrimoineRural`, groupe Patrimoine) :
   extension du principe de `pointsRemarquablesBerce` à **tout le
-  territoire** plutôt qu'à la seule forêt de Bercé — croix de chemin
+  territoire** plutôt qu'à la seule forêt de Bercé — calvaires
   (`historic=wayside_cross`), lavoirs (`man_made=wash_house`), moulins
   (`man_made=watermill` ou `historic=mill`, deux tags concurrents selon
   le contributeur, les deux interrogés), fontaines anciennes/monumentales
