@@ -46,18 +46,52 @@ function fermerResultatsProximite() {
 
 function afficherMessageResultats(titre, message) {
     ouvrirVueResultats(titre);
+    document.getElementById("results-filtre").hidden = true;
     document.getElementById("results-list").innerHTML =
         `<div class="suggestion-vide">${message}</div>`;
 }
 
-function afficherResultatsProximite(map, titre, resultats) {
-    ouvrirVueResultats(titre + (resultats.length ? ` · ${resultats.length} résultat(s)` : ""));
+/* Horaires d'un résultat "près de chez moi", selon la convention de sa
+   couche d'origine - mairies et France Services ont leur propre format
+   texte (voir parserHorairesMairie/parserHorairesFranceServices dans
+   popup.js), toutes les autres couches suivent la syntaxe OSM standard
+   (parserHorairesOsm). Une couche sans horaires du tout (boîtes aux
+   lettres, défibrillateurs, écoles...) renvoie naturellement null ici -
+   ce n'est pas une erreur, juste une donnée absente. */
+function horairesPourItem(item) {
+    const props = (item.layer.feature && item.layer.feature.properties) || {};
+    if (item.layerId === "mairies") return parserHorairesMairie(props.opening_hours);
+    if (item.layerId === "franceServices") {
+        return /itin|mobile/i.test(props.format_fs || "") ? null : parserHorairesFranceServices(props);
+    }
+    return parserHorairesOsm(props.opening_hours);
+}
+
+/* true/false si on peut se prononcer, null si la couche ne porte
+   simplement pas d'horaires - voir horairesPourItem. */
+function estOuvertItem(item) {
+    return estOuvertMaintenant(horairesPourItem(item));
+}
+
+let derniersResultatsProximite = [];
+let dernierTitreProximite = "";
+let filtreOuvertActif = false;
+
+function rendreResultatsProximite(map) {
+    const resultats = filtreOuvertActif
+        ? derniersResultatsProximite.filter(item => item.ouvert === true)
+        : derniersResultatsProximite;
+
+    document.getElementById("results-title").textContent =
+        dernierTitreProximite + (resultats.length ? ` · ${resultats.length} résultat(s)` : "");
 
     const liste = document.getElementById("results-list");
     liste.innerHTML = "";
 
     if (!resultats.length) {
-        liste.innerHTML = `<div class="suggestion-vide">Aucun résultat trouvé à proximité.</div>`;
+        liste.innerHTML = `<div class="suggestion-vide">${
+            filtreOuvertActif ? "Aucun résultat ouvert actuellement à proximité." : "Aucun résultat trouvé à proximité."
+        }</div>`;
         return;
     }
 
@@ -80,6 +114,40 @@ function afficherResultatsProximite(map, titre, resultats) {
         ligne.addEventListener("click", () => ouvrirPopupIndex(map, item));
         liste.appendChild(ligne);
     });
+}
+
+let ecouteursFiltreProximiteBranches = false;
+
+/* Le filtre "Ouvert maintenant" n'a de sens que si au moins un résultat
+   porte une info d'horaires exploitable - sans ça (ex. "Où déposer mon
+   courrier ?", boîtes aux lettres jamais fermées) le bouton resterait
+   affiché pour ne jamais rien changer, plus déroutant qu'utile. */
+function afficherResultatsProximite(map, titre, resultats) {
+    dernierTitreProximite = titre;
+    derniersResultatsProximite = resultats.map(item => ({ ...item, ouvert: estOuvertItem(item) }));
+    filtreOuvertActif = false;
+
+    ouvrirVueResultats(titre);
+
+    const filtreConteneur = document.getElementById("results-filtre");
+    const aDesHoraires = derniersResultatsProximite.some(item => item.ouvert !== null);
+    filtreConteneur.hidden = !aDesHoraires;
+    filtreConteneur.querySelectorAll(".results-filtre-btn").forEach(bouton => {
+        bouton.classList.toggle("actif", bouton.dataset.filtre === "tous");
+    });
+
+    if (!ecouteursFiltreProximiteBranches) {
+        ecouteursFiltreProximiteBranches = true;
+        filtreConteneur.querySelectorAll(".results-filtre-btn").forEach(bouton => {
+            bouton.addEventListener("click", () => {
+                filtreOuvertActif = bouton.dataset.filtre === "ouverts";
+                filtreConteneur.querySelectorAll(".results-filtre-btn").forEach(b => b.classList.toggle("actif", b === bouton));
+                rendreResultatsProximite(map);
+            });
+        });
+    }
+
+    rendreResultatsProximite(map);
 }
 
 /* Charge une couche (si besoin) et coche sa case dans le panneau,
