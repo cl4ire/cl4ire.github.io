@@ -146,9 +146,15 @@ function pointBatiment(b) {
 const URL_SUP_GPU = "https://apicarto.ign.fr/api/gpu/assiette-sup-s";
 
 /* Nomenclature officielle des catégories de SUP (arrêté du 26/05/2020),
-   les plus courantes sur un territoire rural - repli sur le libellé déjà
-   fourni par l'API (nomsuf/libelle) puis sur le code brut si la
-   catégorie n'est pas dans cette liste, plutôt que de ne rien afficher. */
+   les plus courantes sur un territoire rural. Champs réels confirmés en
+   conditions réelles (retour de l'utilisatrice, une vraie parcelle du
+   territoire, servitude AC1 "Hôtel Maillard") : `suptype` porte le code
+   de catégorie en MINUSCULES ("ac1", pas "AC1"), `nomsuplitt` le nom
+   littéral de la servitude/du monument concerné, `typeass` une
+   description du type de périmètre ("Périmètre des abords") - utile en
+   repli si le code n'est pas dans la liste ci-dessous. AC1 confirmé
+   correct : "Monument historique (abords)" correspondait bien à la
+   servitude réelle retournée. */
 const LABELS_SUP = {
     AC1: "Monument historique (abords)", AC2: "Site inscrit ou classé",
     AC3: "Réserve naturelle", AC4: "Site patrimonial remarquable",
@@ -162,18 +168,15 @@ const LABELS_SUP = {
     T1: "Voie ferrée", T5: "Aérodrome",
     INT1: "Cimetière"
 };
-/* ⚠️ Aucun des noms de champs devinés ci-dessous n'a été confirmé sur une
-   vraie réponse de l'API (voir plus haut) : élargi à plusieurs variantes
-   plausibles plutôt qu'une seule paire "categorie/type_sup", et le
-   console.warn permet de retrouver le nom exact du champ réel (ouvrir la
-   console du navigateur, F12) sans avoir à fouiller l'onglet Réseau. */
 function libelleSup(props) {
-    const libelleAPI = premierChampValide(props, ["nomsuf", "libelle", "nom_sup", "generateur", "nom_generateur", "titre", "name"]);
-    if (libelleAPI) return libelleAPI;
-    const code = premierChampValide(props, ["categorie", "type_sup", "code", "code_sup", "type", "partition"]);
-    if (code && LABELS_SUP[code]) return LABELS_SUP[code];
+    const code = (premierChampValide(props, ["suptype", "categorie", "type_sup", "code", "code_sup"]) || "").toString().toUpperCase();
+    const categorie = LABELS_SUP[code] || props.typeass || (code ? `Servitude ${code}` : null);
+    const nom = premierChampValide(props, ["nomsuplitt", "nomsuf", "libelle", "nom_sup", "generateur", "nom_generateur", "titre", "name"]);
+    if (categorie && nom) return `${categorie} : ${nom}`;
+    if (categorie) return categorie;
+    if (nom) return nom;
     console.warn("SUP : catégorie non reconnue, propriétés brutes reçues :", props);
-    return code ? `Servitude (${code})` : "Servitude (type non identifié - voir la console)";
+    return "Servitude (type non identifié - voir la console)";
 }
 
 /* Récupère les SUP dont l'assiette recoupe la géométrie de cette

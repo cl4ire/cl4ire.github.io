@@ -88,8 +88,12 @@ button { font-family: inherit; cursor: pointer; }
     color: var(--primaire);
     font-size: 15px;
 }
+/* Toujours visible (avant : caché sur grand écran, où le panneau était
+   fixe en permanence) - permet de fermer/rouvrir le panneau des couches
+   sur PC aussi, pas seulement sur mobile, retour direct de
+   l'utilisatrice. */
 #menu-button {
-    display: none;
+    display: inline-flex; align-items: center; justify-content: center;
     border: none;
     background: var(--primaire);
     color: #fff;
@@ -101,10 +105,18 @@ button { font-family: inherit; cursor: pointer; }
 /* ---------- APPLICATION ---------- */
 #app { display: flex; height: calc(100% - 62px); position: relative; }
 #map { flex: 1; }
-#layers-panel { width: 280px; background: #fff; border-right: 1px solid var(--bordure); overflow-y: auto; flex-shrink: 0; }
+/* 340px (contre 280px avant) : retour direct, la liste des couches et le
+   formulaire de recherche foncière se sentaient à l'étroit. */
+#layers-panel { width: 340px; background: #fff; border-right: 1px solid var(--bordure); overflow-y: auto; flex-shrink: 0; }
+/* Repliée (bouton "Couches" ou croix de fermeture) : entièrement masqué
+   plutôt qu'une largeur à 0 animée - la carte reprend tout de suite
+   l'espace libéré (#map est flex:1, juste à côté), il suffit d'appeler
+   map.invalidateSize() après coup pour que Leaflet redessine les tuiles
+   sur la nouvelle largeur (voir js/map.js). */
+#layers-panel.layers-panel-hidden { display: none; }
 .panel-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px 10px; }
 .panel-title { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--primaire); }
-.panel-close { display: none; border: none; background: none; font-size: 20px; color: var(--ardoise); }
+.panel-close { display: block; border: none; background: none; font-size: 20px; color: var(--ardoise); }
 #layers-search { display: flex; align-items: center; gap: 8px; margin: 0 18px 12px; padding: 8px 12px; background: var(--fond); border-radius: 999px; color: var(--ardoise); }
 #layers-search input { border: none; background: none; outline: none; font-size: 13px; width: 100%; font-family: inherit; }
 .layer-group { border-top: 1px solid var(--bordure); padding: 6px 18px; }
@@ -292,7 +304,14 @@ button { font-family: inherit; cursor: pointer; }
 
 /* ---------- POPUP CARBURANT — fiche détaillée ---------- */
 .leaflet-popup-content-wrapper:has(.popup-carburant) { border-radius: 18px; padding: 0; overflow: hidden; }
-.leaflet-popup-content:has(.popup-carburant) { margin: 0; width: 390px !important; }
+/* Pas de largeur forcée ici (ni !important) : Leaflet mesure lui-même la
+   largeur réelle de .popup-carburant ci-dessous (via OPTIONS_POPUP,
+   js/layers.js) pour calculer correctement l'auto-pan quand la popup
+   s'ouvre près d'un bord de carte - un forçage CSS après coup créait un
+   décalage entre ce que Leaflet croyait afficher et ce qui s'affichait
+   réellement (popup mal positionnée/fermée près des bords, signalé en
+   conditions réelles). */
+.leaflet-popup-content:has(.popup-carburant) { margin: 0; }
 .popup-carburant { width: 390px; max-width: 100%; background: #fff; font-family: var(--font-texte); color: #2A2A28; }
 .popup-carburant-entete { display: flex; align-items: flex-start; gap: 11px; padding: 18px 18px 15px; border-bottom: 1px solid var(--bordure); }
 .popup-carburant-icon { width: 39px; height: 39px; flex: 0 0 39px; display: flex; align-items: center; justify-content: center; border-radius: 12px; background: var(--riviere); color: #fff; font-size: 17px; }
@@ -336,7 +355,9 @@ button { font-family: inherit; cursor: pointer; }
 
 /* ---------- POPUP FICHE — base commune (commerces, banques, mairies, boîtes aux lettres) ---------- */
 .leaflet-popup-content-wrapper:has(.popup-fiche) { border-radius: 18px; padding: 0; overflow: hidden; }
-.leaflet-popup-content:has(.popup-fiche) { margin: 0; width: 340px !important; }
+/* Pas de largeur forcée ici : voir le commentaire équivalent pour
+   .popup-carburant plus haut, même raison. */
+.leaflet-popup-content:has(.popup-fiche) { margin: 0; }
 .popup-fiche { width: 340px; max-width: 100%; background: #fff; font-family: var(--font-texte); color: #2A2A28; }
 .popup-fiche-entete { display: flex; align-items: flex-start; gap: 11px; padding: 16px 16px 14px; border-bottom: 1px solid var(--bordure); }
 .popup-fiche-icon { width: 36px; height: 36px; flex: 0 0 36px; display: flex; align-items: center; justify-content: center; border-radius: 10px; color: #fff; font-size: 15px; }
@@ -414,18 +435,23 @@ button { font-family: inherit; cursor: pointer; }
 .contact-titre { font-weight: 700; font-size: 13.5px; color: #2A2A28; margin-bottom: 10px; }
 
 @media (max-width: 780px) {
-    #menu-button { display: inline-flex; align-items: center; justify-content: center; }
     #recherche-button span { display: none; }
     #recherche-button { padding: 8px 11px; }
-    #layers-panel { position: absolute; inset: 0 15% 0 0; transform: translateX(-100%); transition: transform 0.25s ease; z-index: 900; }
+    /* Hors champ par défaut (pas "display:none" comme sur PC) : c'est ce
+       qui permet l'animation de glissement au lieu d'une simple
+       apparition/disparition brute - layers-panel-hidden (PC) et
+       layers-panel-open (mobile) restent bien deux mécanismes séparés,
+       chacun adapté à son propre mode d'affichage (voir plus haut). */
+    #layers-panel { position: absolute; inset: 0 15% 0 0; transform: translateX(-100%); transition: transform 0.25s ease; z-index: 900; display: block; }
     #layers-panel.layers-panel-open { transform: translateX(0); }
-    .panel-close { display: block; }
     #hero-title { font-size: 22px; }
-    .leaflet-popup-content:has(.popup-carburant) { width: min(390px, calc(100vw - 48px)) !important; }
+    /* Pas de largeur forcée sur .leaflet-popup-content ici non plus (voir
+       le commentaire plus haut dans ce fichier) : la largeur responsive
+       vient uniquement de .popup-carburant/.popup-fiche ci-dessous, que
+       Leaflet mesure correctement pour son propre calcul d'auto-pan. */
     .popup-carburant { width: min(390px, calc(100vw - 48px)); }
     .popup-carburant-entete { padding: 15px; }
     .popup-carburant-section { padding: 12px 15px; }
-    .leaflet-popup-content:has(.popup-fiche) { width: min(340px, calc(100vw - 48px)) !important; }
     .popup-fiche { width: min(340px, calc(100vw - 48px)); }
 }
 

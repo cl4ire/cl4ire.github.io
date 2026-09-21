@@ -49,13 +49,48 @@ initRecherche(map, {
 
 
 /* ---------- 4. Interactions d'interface ---------- */
-document.getElementById("menu-button").addEventListener("click", () => {
-    document.getElementById("layers-panel").classList.toggle("layers-panel-open");
-});
+/* Deux classes pour un seul état, chacune lue par un mécanisme d'affichage
+   différent selon la largeur d'écran : "layers-panel-open" pilote le
+   glissement hors-champ sur mobile (transform, voir la media query dans
+   style.css), "layers-panel-hidden" pilote la disparition/réapparition
+   sur PC (display:none, où le panneau prenait toute la place en
+   permanence avant - retour direct de l'utilisatrice). Basculées
+   ensemble, toujours en opposition l'une de l'autre, plutôt que de
+   deviner la largeur d'écran actuelle en JS : chaque règle CSS ignore
+   simplement la classe qui ne la concerne pas. */
+function panneauEstOuvert() {
+    /* "Ouvert" n'a pas le même signal selon la largeur d'écran : sur mobile,
+       le panneau est fermé par défaut (absence de "layers-panel-open", hors
+       champ via transform) ; sur PC, il est ouvert par défaut (absence de
+       "layers-panel-hidden", display normal). Comme aucune des deux classes
+       n'est posée au chargement de la page, se fier uniquement à
+       "layers-panel-open" fait rater le tout premier clic sur PC (le
+       panneau semblait déjà "ouvert" faute de classe, donc rien ne se
+       repliait) - d'où la vérification adaptée à la largeur d'écran ici. */
+    const panel = document.getElementById("layers-panel");
+    if (window.matchMedia("(max-width: 780px)").matches) {
+        return panel.classList.contains("layers-panel-open");
+    }
+    return !panel.classList.contains("layers-panel-hidden");
+}
 
-document.getElementById("layers-close").addEventListener("click", () => {
-    document.getElementById("layers-panel").classList.remove("layers-panel-open");
-});
+function togglerPanneauCouches(forcerOuvert) {
+    const panel = document.getElementById("layers-panel");
+    const seraOuvert = forcerOuvert !== undefined ? forcerOuvert : !panneauEstOuvert();
+    panel.classList.toggle("layers-panel-open", seraOuvert);
+    panel.classList.toggle("layers-panel-hidden", !seraOuvert);
+    /* Sur PC, la carte reprend immédiatement l'espace libéré (#map est
+       flex:1 juste à côté) : Leaflet ne redétecte pas seul un
+       changement de taille de son conteneur, invalidateSize() le force
+       à recalculer/redessiner les tuiles sur la nouvelle largeur. Sans
+       effet notable sur mobile (le panneau y est en position absolute,
+       la carte ne change pas réellement de taille), mais un appel de
+       plus ne coûte rien. */
+    map.invalidateSize();
+}
+
+document.getElementById("menu-button").addEventListener("click", () => togglerPanneauCouches());
+document.getElementById("layers-close").addEventListener("click", () => togglerPanneauCouches(false));
 
 document.getElementById("about-button").addEventListener("click", () => {
     document.getElementById("about-modal").classList.add("modal-open");

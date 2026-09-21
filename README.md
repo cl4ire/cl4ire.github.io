@@ -1254,15 +1254,19 @@ comme demandé ("affiche que si nécessaire").
   réponse inattendu) - une section "Servitudes" simplement absente,
   jamais une fiche cassée.
 
-⚠️ **Endpoint et noms de champs non vérifiables en conditions réelles**
-depuis cet environnement (accès réseau restreint pendant le
-développement, comme pour OLD/catnat/bâtiments documentés plus haut) :
-à confirmer une fois en ligne. Si aucune servitude n'apparaît jamais,
-même sur une parcelle dont on sait qu'elle en porte une (ex. à côté
-d'un des monuments historiques déjà cartographiés dans la couche
-`immeublesProteges`), inspecter la réponse réseau réelle de
-`fetchSupPourParcelle` et ajuster l'URL/les noms de propriétés lues
-(`categorie`, `type_sup`, `nomsuf`...) dans `js/recherche.js`.
+✅ **Endpoint et champs confirmés en conditions réelles.** Contrairement
+à la première version de cette section, `libelleSup` (`js/recherche.js`)
+lit désormais les vrais noms de champs renvoyés par l'API (confirmés via
+la console du navigateur par l'utilisatrice) : `suptype` (code catégorie,
+ex. `"ac1"`), `nomsuplitt` (nom littéral du générateur, ex. `"Hôtel
+Maillard"`) et `typeass` (libellé du type d'assiette, ex. `"Périmètre
+des abords"`) en repli si le code n'est pas reconnu dans `LABELS_SUP`.
+AC1 = "Monument historique (abords)" est bien la bonne catégorie. Un
+`console.warn` reste en place dans `libelleSup` si un jour un code
+inconnu apparaît, pour diagnostiquer sans casser l'affichage. La
+servitude a aussi sa propre section dans la fiche parcelle (avant
+mélangée à "Urbanisme" avec PLUi/RGA, retour direct de l'utilisatrice
+sur la confusion visuelle que ça créait).
 
 ### Couches nature (ZNIEFF, Natura 2000, forêts, cours d'eau)
 
@@ -1313,6 +1317,74 @@ couche se charge sans erreur mais n'affiche rien tant que ce fichier
 n'est pas complété. Voir "Ce qui reste à faire" ci-dessous pour le
 détail des champs attendus et la marche à suivre.
 
+## Popups qui se fermaient près des bords de carte
+
+Retour direct de l'utilisatrice : une popup touchant presque le bord du
+cadre de carte se fermait toute seule à l'ouverture. Cause trouvée :
+`.leaflet-popup-content:has(.popup-fiche) { width: 340px !important; }`
+(et l'équivalent pour `.popup-carburant`) forçait une largeur en CSS qui
+entrait en conflit avec le calcul interne de Leaflet
+(`_updateLayout`/`_adjustPan`), qui lit lui-même les dimensions du
+contenu pour décider de combien décaler la carte (`autoPan`) afin que la
+popup reste visible - un `!important` en dehors de ce mécanisme fausse
+ce calcul.
+
+Corrigé en retirant ces `width: ... !important;` du CSS (les conteneurs
+internes `.popup-fiche`/`.popup-carburant` ont déjà leur propre largeur,
+sans `!important`, que Leaflet mesure correctement) et en passant plutôt
+`maxWidth`/`autoPanPadding` via le mécanisme prévu par Leaflet
+lui-même : `layer.bindPopup(html, OPTIONS_POPUP)` avec
+`OPTIONS_POPUP = { maxWidth: 420, autoPanPadding: [24, 24] }`
+(`js/layers.js`), repris pour toutes les popups du site (couches,
+adresses).
+
+⚠️ **Symptôme non reproduit à l'identique dans cet environnement de
+développement** (sandbox sans accès réseau complet) : le bug CSS/JS
+trouvé est réel et corrigé, mais je n'ai pas pu observer la popup se
+fermer d'elle-même ni avant ni après le correctif dans mes tests -
+seulement une marge d'`autoPan` insuffisante près des bords (passée de
+5px à 24px avec le correctif). À confirmer en ligne ; si le problème
+persiste, il faudra creuser ailleurs (ex. un gestionnaire de clic global
+qui fermerait la popup par erreur).
+
+## Panneau des couches : agrandi et repliable
+
+Deux retours groupés de l'utilisatrice : la liste des couches et le
+formulaire de recherche foncière se sentaient à l'étroit, et il
+manquait un moyen de replier le panneau pour libérer de la place sur la
+carte (puis le rouvrir).
+
+- **Largeur** : `#layers-panel` passé de 280px à 340px (`css/style.css`).
+- **Repli/réouverture sur PC** : le bouton "Couches" (`#menu-button`,
+  désormais toujours visible, plus seulement sur mobile) et la croix de
+  fermeture (`#layers-close`) appellent `togglerPanneauCouches()`
+  (`js/map.js`), qui bascule une classe `layers-panel-hidden`
+  (`display: none`) - la carte reprend aussitôt l'espace libéré
+  (`#map` est `flex: 1` juste à côté) via `map.invalidateSize()`, que
+  Leaflet a besoin qu'on appelle explicitement pour redessiner les
+  tuiles sur la nouvelle largeur de son conteneur.
+- **Cohabitation avec le mode mobile existant** : le panneau utilisait
+  déjà une classe `layers-panel-open` pour le glissement hors-champ en
+  `@media (max-width: 780px)` (`transform`, pas `display`). Les deux
+  mécanismes cohabitent sans se marcher dessus : chaque règle CSS
+  ignore la classe qui ne la concerne pas. Point d'attention corrigé en
+  cours de route : au chargement de la page, aucune des deux classes
+  n'est posée (le panneau est déjà visuellement ouvert sur PC et fermé
+  sur mobile par défaut, uniquement via l'absence de classe) - une
+  première version du code se fiait à `layers-panel-open` pour détecter
+  l'état courant et ratait donc le tout premier clic sur PC (rien ne se
+  repliait). `panneauEstOuvert()` (`js/map.js`) vérifie maintenant la
+  bonne classe selon la largeur d'écran (`window.matchMedia`) plutôt que
+  de supposer que les deux classes sont toujours renseignées.
+- **Réouverture automatique** : `ouvrirVuePanneau` (`js/panel.js`,
+  utilisée par "Près de chez moi" et "Recherche foncière") retire aussi
+  `layers-panel-hidden` - un raccourci déclenché panneau replié le
+  rouvre plutôt que de rester invisible.
+
+Testé via Playwright (largeur du panneau, premier clic sur PC, aller-retour
+repli/réouverture, réouverture automatique sur "Près de chez moi", glissement
+mobile inchangé) : voir `js/map.js`/`js/panel.js`.
+
 ## Ce qui reste à faire
 
 - **Couche `demographie` ("Mon territoire en chiffres") : fichier de
@@ -1335,12 +1407,6 @@ détail des champs attendus et la marche à suivre.
   À VÉRIFIER EN CONDITIONS RÉELLES**, voir la section dédiée plus haut —
   cocher chaque case une par une ; si une couche reste vide, consulter le
   GetCapabilities et ajuster `wmsLayer` dans `js/config.js`.
-- **Servitudes d'utilité publique (fiche parcelle) : endpoint APICarto
-  GPU À VÉRIFIER EN CONDITIONS RÉELLES**, voir la section dédiée plus
-  haut — ouvrir la fiche d'une parcelle proche d'un monument historique
-  déjà cartographié (couche `immeublesProteges`) et vérifier qu'une
-  servitude AC1 apparaît bien ; sinon, inspecter la réponse réseau réelle
-  et ajuster `fetchSupPourParcelle`/`LABELS_SUP` dans `js/recherche.js`.
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.
 - Ajouter les commerces comme thématique dédiée sur la page d'accueil si

@@ -4,6 +4,19 @@
    couches décrites dans config.js, selon son "type".
    ========================================================= */
 
+/* Options communes à toutes les popups du site (points, adresses de
+   recherche...). `maxWidth` généreux (nos fiches vont jusqu'à 390px de
+   large, popup-carburant) plutôt que le défaut Leaflet (300px) : sans
+   ça, la largeur affichée dépendait d'un forçage CSS ("!important" sur
+   .leaflet-popup-content) appliqué APRÈS le calcul interne de Leaflet
+   (_adjustPan, basé sur la largeur qu'IL pense avoir), d'où un
+   décalage - signalé en conditions réelles : une popup ouverte près du
+   bord de la carte pouvait se fermer/mal se positionner au lieu de
+   glisser proprement dans le champ visible. `autoPanPadding` élargi
+   (24px, contre 5px par défaut) pour garder une marge nette avec le
+   bord plutôt qu'un pixel-perfect qui laisse la popup coller au bord. */
+const OPTIONS_POPUP = { maxWidth: 420, autoPanPadding: [24, 24] };
+
 const groupesLeaflet = {};      // id de couche -> L.LayerGroup / L.MarkerClusterGroup
 const souscouchesLeaflet = {};  // id de couche -> { idCategorie: L.LayerGroup } (couches catégorisables, ex : commerces)
 const coucheChargee = {};       // id de couche -> bool (déjà fetchée ?)
@@ -157,7 +170,7 @@ function construireCoucheDonnees(data, layerConf) {
                (recherche, "près de chez moi", clusters) : seul le
                popup.bindPopup est sauté, pas l'indexation. */
             if (!layerConf.sansPopup) {
-                layer.bindPopup(construirePopup(feature, layerConf));
+                layer.bindPopup(construirePopup(feature, layerConf), OPTIONS_POPUP);
             }
             /* La fiche parcelle a besoin de couches encore en différé
                (mutations/DPE/PLUi/RGA) : plutôt que de les charger à la
