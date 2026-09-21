@@ -35,14 +35,52 @@ function construirePanneauCouches(map) {
             checkbox.type = "checkbox";
             checkbox.id = "layer-" + conf.id;
 
+            /* Badge d'état (chargement / échec) à côté du libellé : sans
+               ça, cocher une couche "en flux" (Vigieau, Vigicrues, SUP,
+               Overpass...) ne donne aucun signe de vie pendant les
+               quelques secondes d'attente - retour direct de
+               l'utilisatrice ("on sait pas trop si ça fonctionne ou
+               pas"). Recherché dans le DOM à chaque fois plutôt que suivi
+               par une seule variable fermée sur le scope : un badge créé
+               puis jamais retiré (ex. l'ancien spinner encore présent
+               quand l'échec crée son propre badge d'erreur à côté) restait
+               orphelin indéfiniment avec la première version de ce code. */
+            function retirerBadgeEtat() {
+                const existant = texte.querySelector(".layer-etat-badge");
+                if (existant) existant.remove();
+            }
+
             checkbox.addEventListener("change", function () {
+                retirerBadgeEtat();
                 if (checkbox.checked) {
+                    if (!coucheChargee[conf.id]) {
+                        const badge = document.createElement("span");
+                        badge.className = "layer-etat-badge";
+                        badge.title = "Chargement en cours...";
+                        badge.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i>`;
+                        texte.appendChild(badge);
+                    }
                     chargerCouche(conf, () => {
+                        retirerBadgeEtat();
                         if (conf.viewportOnly) {
                             actualiserCoucheViewport(conf, map);
                         } else if (coucheDoitEtreVisible(conf, map)) {
                             groupesLeaflet[conf.id].addTo(map);
                         }
+                    }, () => {
+                        /* Décochée plutôt que laissée "cochée mais vide" :
+                           une case à cocher qui reste active sans rien
+                           afficher sur la carte est trompeuse - un
+                           nouveau clic relance chargerCouche depuis zéro
+                           (coucheChargee[conf.id] reste falsy après un
+                           échec, pas de logique de retry à part). */
+                        retirerBadgeEtat();
+                        checkbox.checked = false;
+                        const badge = document.createElement("span");
+                        badge.className = "layer-etat-badge layer-etat-badge-erreur";
+                        badge.title = "Échec du chargement - recochez pour réessayer";
+                        badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i>`;
+                        texte.appendChild(badge);
                     });
                 } else if (groupesLeaflet[conf.id]) {
                     map.removeLayer(groupesLeaflet[conf.id]);

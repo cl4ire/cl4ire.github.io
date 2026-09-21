@@ -1504,6 +1504,32 @@ impossible de vérifier ici que chaque page embed affiche effectivement
 les bonnes actualités - seule l'URL générée (`urlIllwapEmbed`) et son
 insertion dans le DOM au bon moment ont pu être testées.
 
+## Indicateur de chargement des couches en flux
+
+Retour direct de l'utilisatrice : cocher une couche "en flux" (Vigieau,
+Vigicrues, SUP, Overpass...) ne donnait aucun signe de vie pendant les
+quelques secondes d'attente - impossible de savoir si ça fonctionnait ou
+pas. `retirerBadgeEtat`/le gestionnaire de la case à cocher
+(`js/panel.js`) affichent maintenant un badge à côté du libellé de la
+couche :
+- **Pendant le chargement** : une icône qui tourne (`fa-circle-notch
+  fa-spin`), retirée dès que `chargerCouche` (`js/layers.js`) appelle
+  son callback `onReady`.
+- **En cas d'échec** : une icône d'avertissement (avec une infobulle
+  "recochez pour réessayer") plutôt qu'un badge de chargement qui
+  tournerait indéfiniment - la case est aussi décochée automatiquement,
+  pour ne pas laisser une case cochée sans rien sur la carte (trompeur).
+  Recocher relance `chargerCouche` depuis zéro : `coucheChargee[id]`
+  reste `false` après un échec, pas besoin d'une logique de retry à
+  part.
+
+Le badge est recherché dans le DOM (`texte.querySelector(".layer-etat-badge")`)
+à chaque changement d'état plutôt que suivi par une seule variable de
+fermeture : une première version de ce code perdait la référence de
+l'ancien badge en le remplaçant par le nouveau sans le retirer, laissant
+un spinner orphelin indéfiniment affiché à côté du badge d'erreur -
+trouvé en testant le scénario d'échec puis de nouvelle tentative.
+
 ## Ce qui reste à faire
 - **Vigicrues : endpoint et nom de champ À VÉRIFIER EN CONDITIONS
   RÉELLES**, voir la section dédiée plus haut — cocher la couche ; si
