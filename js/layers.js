@@ -21,6 +21,23 @@ function couleurPrix(prix) {
     return "#c94338";
 }
 
+/* Échelle séquentielle (une seule teinte, du clair au foncé) plutôt que
+   la palette rouge/vert de couleurPrix : une population plus ou moins
+   nombreuse n'est pas "bonne" ou "mauvaise" comme peut l'être un prix au
+   m², une échelle à jugement de valeur serait trompeuse ici. Seuils
+   pensés pour des communes rurales de la taille de celles du territoire
+   (quelques centaines à quelques milliers d'habitants), pas pour une
+   grande ville. */
+function couleurPopulation(pop) {
+    if (pop === null || pop === undefined || isNaN(pop)) return "#b8c0bd";
+    if (pop < 300) return "#DCEDEA";
+    if (pop < 600) return "#B8DBD3";
+    if (pop < 1000) return "#8AC4B7";
+    if (pop < 1500) return "#5AA898";
+    if (pop < 2500) return "#2E8B7A";
+    return "#0F6E56";
+}
+
 /* `layer` (le marqueur/polygone/ligne Leaflet réel, déjà lié à sa vraie
    popup stylée) est gardé dans l'entrée d'index : la recherche et "près
    de chez moi" peuvent ainsi rouvrir CETTE popup (voir ouvrirPopupIndex

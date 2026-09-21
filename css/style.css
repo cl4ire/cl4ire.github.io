@@ -29,7 +29,7 @@ button { font-family: inherit; cursor: pointer; }
 #brand-subtitle { font-size: 11px; color: var(--ardoise); }
 .brand-logo { height: 34px; width: auto; display: block; }
 .brand-logo-large { height: 56px; width: auto; margin: 0 auto 14px; }
-#search-container { position: relative; flex: 1; max-width: 480px; }
+#search-container { position: relative; flex: 1; min-width: 0; max-width: 480px; }
 #search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primaire); font-size: 13px; }
 
 #search {
@@ -140,13 +140,21 @@ button { font-family: inherit; cursor: pointer; }
 }
 .results-title { padding: 2px 18px 10px; font-size: 12.5px; color: var(--ardoise); }
 
-.results-filtre { display: flex; gap: 6px; padding: 0 18px 10px; }
+/* [hidden] doit gagner sur ".results-filtre { display: flex }" ci-dessous
+   (même spécificité, cascade seule ne suffit pas de façon fiable) - sans
+   ce sélecteur plus spécifique, `element.hidden = true` en JS n'a aucun
+   effet visuel : la rangée de filtres reste affichée alors que l'attribut
+   HTML est bien positionné (constaté en testant le rendu réel, pas
+   seulement la propriété `hidden` en JavaScript). */
+.results-filtre[hidden] { display: none; }
+.results-filtre { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 18px 10px; }
 .results-filtre-btn {
     border: 1px solid var(--bordure); background: #fff; color: var(--ardoise);
     font-size: 11.5px; font-weight: 700; padding: 6px 12px;
     border-radius: 999px; cursor: pointer;
 }
 .results-filtre-btn.actif { background: var(--primaire); border-color: var(--primaire); color: #fff; }
+.result-item-prix { font-size: 11px; font-weight: 700; color: var(--primaire); }
 
 #results-list { padding: 0 10px; }
 .result-item {
@@ -180,11 +188,12 @@ button { font-family: inherit; cursor: pointer; }
 
 .rf-champ { display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; font-weight: 700; color: #2A2A28; margin-bottom: 10px; }
 .rf-champ:last-child { margin-bottom: 0; }
-.rf-champ select, .rf-champ input[type="number"] {
+.rf-champ select, .rf-champ input[type="number"], .rf-champ textarea {
     font-family: inherit; font-size: 13px; font-weight: 400;
     padding: 8px 10px; border: 1px solid var(--bordure); border-radius: 8px;
     background: var(--fond); width: 100%;
 }
+.rf-champ textarea { resize: vertical; min-height: 70px; }
 .rf-champ-plage .rf-plage { display: flex; align-items: center; gap: 8px; font-weight: 400; color: var(--ardoise); font-size: 12px; }
 .rf-champ-plage .rf-plage input { flex: 1; min-width: 0; }
 .rf-champ-inline { flex-direction: row; align-items: center; gap: 8px; }
@@ -401,6 +410,9 @@ button { font-family: inherit; cursor: pointer; }
 .about-source { font-size: 11.5px; color: var(--ardoise); }
 .info-close { position: absolute; top: 10px; right: 14px; background: none; border: none; font-size: 20px; color: var(--ardoise); }
 
+.contact-form { text-align: left; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--bordure); }
+.contact-titre { font-weight: 700; font-size: 13.5px; color: #2A2A28; margin-bottom: 10px; }
+
 @media (max-width: 780px) {
     #menu-button { display: inline-flex; align-items: center; justify-content: center; }
     #recherche-button span { display: none; }
@@ -415,4 +427,21 @@ button { font-family: inherit; cursor: pointer; }
     .popup-carburant-section { padding: 12px 15px; }
     .leaflet-popup-content:has(.popup-fiche) { width: min(340px, calc(100vw - 48px)) !important; }
     .popup-fiche { width: min(340px, calc(100vw - 48px)); }
+}
+
+/* Écrans de téléphone étroits (< 420px environ, ex. iPhone SE, la plupart
+   des Android d'entrée de gamme) : même avec le panneau des couches déjà
+   passé en hors-champ ci-dessus, la barre du haut (logo + recherche +
+   boutons) restait plus large que l'écran - le bouton "Couches", le plus
+   à droite, se retrouvait poussé hors de la zone visible (constaté en
+   conditions réelles, nécessitait de dézoomer le navigateur pour le
+   faire réapparaître). Resserré ici plutôt que de le cacher/l'empiler
+   ailleurs : tout doit rester accessible sans scroll horizontal ni zoom. */
+@media (max-width: 420px) {
+    #topbar { padding: 0 10px; gap: 8px; }
+    #topbar-actions { gap: 6px; }
+    #brand-subtitle { display: none; }
+    .brand-logo { height: 26px; }
+    #brand-title { font-size: 15px; }
+    #about-button { padding: 8px 9px; font-size: 11px; }
 }

@@ -128,6 +128,68 @@ function pointBatiment(b) {
     return geom.type === "Point" ? geom.coordinates : centroideFeature(b);
 }
 
+/* =========================================================
+   SERVITUDES D'UTILITÉ PUBLIQUE (SUP)
+   Géoportail de l'Urbanisme, via l'API Carto de l'IGN (couche au-dessus
+   du GPU, plus simple à interroger qu'un flux WFS brut). ⚠️ Endpoint et
+   noms de champs non vérifiables en conditions réelles depuis cet
+   environnement (accès réseau restreint pendant le développement, comme
+   pour URL_BATIMENTS_EPCI/OLD/catnat ci-dessus/ailleurs) : à confirmer
+   une fois en ligne, voir le README pour la marche à suivre si rien ne
+   remonte jamais. Interrogée PAR PARCELLE (géométrie en paramètre),
+   jamais préchargée pour tout le territoire comme le cadastre : une
+   servitude peut concerner n'importe quel point du territoire, un
+   filtre par bbox de tout l'EPCI n'apporterait rien qu'un vrai filtre
+   géométrique par parcelle ne fasse déjà, et ça reste un seul petit
+   appel réseau par clic sur une parcelle plutôt qu'un flux volumineux à
+   charger d'un coup. */
+const URL_SUP_GPU = "https://apicarto.ign.fr/api/gpu/assiette-sup-s";
+
+/* Nomenclature officielle des catégories de SUP (arrêté du 26/05/2020),
+   les plus courantes sur un territoire rural - repli sur le libellé déjà
+   fourni par l'API (nomsuf/libelle) puis sur le code brut si la
+   catégorie n'est pas dans cette liste, plutôt que de ne rien afficher. */
+const LABELS_SUP = {
+    AC1: "Monument historique (abords)", AC2: "Site inscrit ou classé",
+    AC3: "Réserve naturelle", AC4: "Site patrimonial remarquable",
+    A4: "Servitude de halage / marchepied (cours d'eau)", A5: "Aqueduc souterrain",
+    A7: "Alignement des cours d'eau non domaniaux",
+    I3: "Canalisation de transport de gaz", I4: "Ligne électrique / poste",
+    I1: "Hydrocarbures liquides",
+    PM1: "Plan de prévention des risques naturels", PM2: "Ancienne carrière",
+    PM3: "Plan de prévention des risques technologiques",
+    EL3: "Halage et marchepied", EL7: "Alignement des voies publiques",
+    T1: "Voie ferrée", T5: "Aérodrome",
+    INT1: "Cimetière"
+};
+function libelleSup(props) {
+    return premierChampValide(props, ["nomsuf", "libelle", "nom_sup", "generateur"])
+        || LABELS_SUP[props.categorie] || LABELS_SUP[props.type_sup] || props.categorie || props.type_sup || "Servitude";
+}
+
+/* Récupère les SUP dont l'assiette recoupe la géométrie de cette
+   parcelle - un seul appel réseau, déclenché seulement à l'ouverture
+   d'une fiche parcelle (voir ouvrirPopupParcelle, popup.js), pas pour
+   les centaines de parcelles d'une recherche par critères. Dégrade vers
+   un tableau vide en cas d'échec (réseau, format de réponse inattendu) :
+   une section "Servitudes" absente plutôt qu'une fiche cassée. */
+function fetchSupPourParcelle(feature) {
+    const geom = encodeURIComponent(JSON.stringify(feature.geometry));
+    return fetch(`${URL_SUP_GPU}?geom=${geom}`)
+        .then(r => r.ok ? r.json() : { features: [] })
+        .then(data => {
+            const features = extraireFeatures(data);
+            const parCategorie = {};
+            features.forEach(f => {
+                const props = f.properties || {};
+                const categorie = props.categorie || props.type_sup || "?";
+                if (!parCategorie[categorie]) parCategorie[categorie] = libelleSup(props);
+            });
+            return Object.entries(parCategorie).map(([categorie, libelle]) => ({ categorie, libelle }));
+        })
+        .catch(() => []);
+}
+
 function chargerDonneesFoncieres() {
     return Promise.all([
         ...COUCHES_RECHERCHE.map(id => new Promise(resolve => {
