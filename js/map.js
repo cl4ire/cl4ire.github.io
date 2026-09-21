@@ -135,17 +135,52 @@ document.getElementById("about-close").addEventListener("click", () => {
 });
 
 /* Formulaire de contact (bugs/idées) : pas de backend sur un site 100%
-   statique GitHub Pages, donc pas de vrai envoi depuis la page - le
-   bouton construit un lien mailto (type + message pré-remplis en sujet/
-   corps) et laisse le client mail du visiteur gérer l'envoi réel, comme
-   n'importe quel lien "contactez-nous" d'un site statique. */
+   statique GitHub Pages, donc pas de serveur mail à nous - Web3Forms
+   reçoit la requête et fait l'envoi réel à notre place (clé liée à
+   swallowage@proton.me, pas de compte/mot de passe à gérer côté site).
+   Remplace l'ancien lien mailto, qui ouvrait le client mail du visiteur
+   au lieu d'envoyer directement - retour direct de l'utilisatrice. */
 const EMAIL_CONTACT = "swallowage@proton.me";
+const WEB3FORMS_ACCESS_KEY = "f8e3cf6f-6ad8-42dd-b403-1ad9728373f6";
 document.getElementById("contact-envoyer").addEventListener("click", () => {
+    const bouton = document.getElementById("contact-envoyer");
+    const statut = document.getElementById("contact-statut");
     const type = document.getElementById("contact-type").value;
     const message = document.getElementById("contact-message").value.trim();
+
+    if (!message) {
+        statut.textContent = "Merci de décrire votre message avant l'envoi.";
+        statut.className = "contact-statut contact-statut-erreur";
+        return;
+    }
+
     const sujet = type === "bug" ? "[GéoBercé] Signalement de bug" : "[GéoBercé] Proposition d'idée";
-    const corps = message || "(décrivez ici votre message)";
-    window.location.href = `mailto:${EMAIL_CONTACT}?subject=${encodeURIComponent(sujet)}&body=${encodeURIComponent(corps)}`;
+    bouton.disabled = true;
+    statut.textContent = "Envoi en cours...";
+    statut.className = "contact-statut";
+
+    fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({
+            access_key: WEB3FORMS_ACCESS_KEY,
+            subject: sujet,
+            type: type === "bug" ? "Bug" : "Idée",
+            message
+        })
+    })
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) throw new Error(data.message || "Échec de l'envoi");
+            statut.textContent = "Message envoyé, merci !";
+            statut.className = "contact-statut contact-statut-succes";
+            document.getElementById("contact-message").value = "";
+        })
+        .catch(() => {
+            statut.textContent = `L'envoi a échoué. Réessayez, ou écrivez-nous directement à ${EMAIL_CONTACT}.`;
+            statut.className = "contact-statut contact-statut-erreur";
+        })
+        .finally(() => { bouton.disabled = false; });
 });
 
 document.getElementById("home-button").addEventListener("click", () => {

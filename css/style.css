@@ -451,6 +451,9 @@ button { font-family: inherit; cursor: pointer; }
 
 .contact-form { text-align: left; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--bordure); }
 .contact-titre { font-weight: 700; font-size: 13.5px; color: #2A2A28; margin-bottom: 10px; }
+.contact-statut { margin-top: 10px; font-size: 12.5px; min-height: 15px; }
+.contact-statut-succes { color: var(--foret); font-weight: 700; }
+.contact-statut-erreur { color: #C94338; font-weight: 700; }
 
 @media (max-width: 780px) {
     #recherche-button span { display: none; }

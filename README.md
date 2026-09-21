@@ -1193,14 +1193,22 @@ Bouton "Un bug à signaler ? Une idée à proposer ?" ajouté au bas de la
 modale "À propos" (pas un nouveau bouton dans la barre du haut, déjà
 chargée - voir la section précédente) : site 100% statique GitHub Pages,
 donc pas de vrai envoi de formulaire possible sans un service tiers.
-Choisi avec l'utilisatrice : un lien `mailto:` plutôt qu'un lien vers les
-issues GitHub du dépôt - accessible à n'importe quel visiteur du grand
-public sans compte GitHub, contrairement à la seconde option. Le
-sélecteur "Bug / Idée" et le message pré-remplissent le sujet/corps d'un
-mail vers `swallowage@proton.me` (`EMAIL_CONTACT` dans `js/map.js`) ;
-`window.location.href = "mailto:..."` laisse ensuite le client mail du
-visiteur gérer l'envoi réel, comme n'importe quel lien de contact d'un
-site statique.
+Choisi avec l'utilisatrice : un lien vers les issues GitHub du dépôt
+aurait exigé un compte GitHub de la part du visiteur, écarté au profit
+d'un envoi par email accessible à n'importe qui.
+
+**Première version : un lien `mailto:`** - ouvrait le client mail du
+visiteur avec le sujet/corps pré-remplis, plutôt qu'un vrai envoi. Retour
+direct de l'utilisatrice ("c'est un peu nul... ça envoie rien, ça ouvre
+une appli") : remplacé par un vrai envoi au clic via **Web3Forms**
+(`https://api.web3forms.com/submit`, `WEB3FORMS_ACCESS_KEY` dans
+`js/map.js`) - service pensé justement pour les sites statiques sans
+backend : la clé d'accès (liée à `swallowage@proton.me`, `EMAIL_CONTACT`)
+est publique par conception, pas un secret à protéger, contrairement à
+des identifiants SMTP qu'on ne pourrait jamais mettre dans du JS
+exposé publiquement. Le bouton se désactive pendant l'envoi et affiche un
+message de statut (`#contact-statut`) : succès (champ vidé) ou échec avec
+un repli explicite vers `swallowage@proton.me` en direct.
 
 ## Servitudes d'utilité publique (SUP), couches nature, démographie INSEE
 
