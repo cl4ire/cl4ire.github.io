@@ -1673,7 +1673,13 @@ function construirePopupPrixCommune(props) {
    exemple, ne sont pas dans tous les extraits Insee). */
 function construirePopupDemographie(props) {
     const nom = premierChampValide(props, ["commune_nom", "commune"]) || "Commune";
-    const couleur = couleurPopulation(props.population);
+    /* Couleur fixe (terracotta, déjà la couleur déclarée pour cette
+       couche dans config.js) plutôt que couleurPopulation(), dont les
+       teintes les plus claires (petites communes) sont illisibles en
+       texte/icône sur fond blanc - couleurPopulation() reste pertinente
+       pour l'aplat de la choroplèthe sur la carte (une grande zone
+       remplie n'a pas ce problème de contraste), mais pas ici. */
+    const couleur = PALETTE.terracotta;
     /* evolution_annuelle_2017_2023 : taux ANNUEL moyen (Insee), pas une
        variation cumulée sur 10 ans - étiqueté avec sa vraie période
        plutôt que de laisser deviner ou d'afficher "sur 10 ans" comme une
