@@ -1313,24 +1313,23 @@ Couleur de la choroplèthe : `couleurPopulation` (`js/layers.js`), une
 "bonne" ou "mauvaise" comme peut l'être un prix au m², une échelle à
 jugement de valeur serait trompeuse ici.
 
-**Mise à jour : la population est maintenant renseignée pour les 24
-communes**, sans attendre un extrait INSEE séparé - `couches/communes.geojson`
-(IGN ADMIN-EXPRESS, millésime 2023-01-01) contenait déjà un champ
-`population` fiable, réutilisé tel quel pour peupler
-`couches/urbanisme/demographie_communes.geojson` (voir son `_lisezmoi`).
-La choroplèthe et le dashboard commune (voir plus bas) affichent donc
-déjà un chiffre réel par commune.
+**Mise à jour : population, revenu médian et nombre d'établissements
+sont maintenant renseignés pour les 24 communes.** La population était
+déjà disponible via `couches/communes.geojson` (IGN ADMIN-EXPRESS,
+millésime 2023-01-01) ; l'utilisatrice a ensuite fourni un extrait Insee
+- Statistiques locales (millésime 2023 pour le revenu médian, 2024 pour
+les établissements) qui a permis de compléter `revenu_median` et
+`nb_entreprises` pour les 24 communes (voir le `_lisezmoi` de
+`couches/urbanisme/demographie_communes.geojson`). Les deux sources
+donnaient exactement la même population sur les 24 communes, vérifié
+avant fusion. `nb_entreprises` correspond au nombre d'établissements
+Insee (REE), pas au nombre de sociétés au sens strict - terminologie la
+plus courante utilisée par les communes pour ce type de chiffre.
 
-**Les autres champs restent une vraie absence de source exploitable
-depuis cet environnement**, pas juste "à vérifier" : `evolution_10ans`,
-`pop_0_14`/`pop_65_plus`, `nb_logements`, `revenu_median`,
-`nb_entreprises` n'ont pas d'équivalent dans `communes.geojson`, et
-l'API INSEE (recensement complet, revenus fiscaux Filosofi,
-établissements REE) n'est pas joignable ici (accès réseau restreint) ni
-dotée d'un endpoint public filtrable par commune sans clé personnelle,
-contrairement à Géorisques ou IGN Géoplateforme. Voir "Ce qui reste à
-faire" ci-dessous pour le détail des champs attendus et la marche à
-suivre.
+**Restent encore à fournir** (vraie absence de source exploitable
+depuis cet environnement, pas juste "à vérifier") : `evolution_10ans`,
+`pop_0_14`/`pop_65_plus`, `nb_logements`. Voir "Ce qui reste à faire"
+ci-dessous si vous voulez les compléter un jour.
 
 ## Popups qui se fermaient près des bords de carte
 
@@ -1488,18 +1487,16 @@ insertion dans le DOM au bon moment ont pu être testées.
 
 ## Ce qui reste à faire
 
-- **Couche `demographie` ("Mon territoire en chiffres") : champs
-  au-delà de la population à fournir**, voir la section dédiée plus
-  haut — `couches/urbanisme/demographie_communes.geojson` a désormais
-  une Feature par commune avec `commune` (code INSEE), `commune_nom` et
-  `population` (réelle, reprise de `couches/communes.geojson`). Pour
-  compléter, ajouter à chaque Feature tout ou partie de ces propriétés :
-  `evolution_10ans` (variation en %), `pop_0_14`/`pop_65_plus` (%),
-  `nb_logements`, `revenu_median` (€/an), `nb_entreprises`. Sources
-  possibles : API INSEE Données locales (recensement, Filosofi, REE) ou
-  téléchargement direct sur insee.fr - même principe que le fichier
-  France Services fourni précédemment (un extrait déjà filtré, pas un
-  accès direct à l'API depuis le site).
+- **Couche `demographie` ("Mon territoire en chiffres") : trois champs
+  encore optionnels**, voir la section dédiée plus haut —
+  `couches/urbanisme/demographie_communes.geojson` a désormais
+  `population`, `revenu_median` et `nb_entreprises` réels pour les 24
+  communes. Pour compléter davantage, ajouter à chaque Feature tout ou
+  partie de : `evolution_10ans` (variation en %), `pop_0_14`/`pop_65_plus`
+  (%), `nb_logements`. Sources possibles : API INSEE Données locales
+  (recensement) ou téléchargement direct sur insee.fr - même principe
+  que l'extrait déjà fourni (un extrait filtré, pas un accès direct à
+  l'API depuis le site).
 - **Couches ZNIEFF/Natura 2000/Forêts/Cours d'eau : noms de couches WMS
   À VÉRIFIER EN CONDITIONS RÉELLES**, voir la section dédiée plus haut —
   cocher chaque case une par une ; si une couche reste vide, consulter le
