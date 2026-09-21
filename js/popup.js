@@ -1664,38 +1664,38 @@ function construirePopupPrixCommune(props) {
     </div>`;
 }
 
-/* "Mon territoire en chiffres" (démographie INSEE) : fichier pas encore
-   fourni (voir config.js), donc rien de vérifiable en conditions
-   réelles pour l'instant - chaque ligne est strictement conditionnelle
-   à la présence du champ correspondant, plutôt que de supposer que
-   l'extrait fourni un jour couvrira systématiquement tous les
-   indicateurs (le fichier France Services fourni précédemment, par
-   comparaison, ne couvrait déjà pas tous les champs imaginables). Noms
-   de champs volontairement simples/prévisibles (population,
-   evolution_10ans, pop_0_14, pop_65_plus, nb_logements, revenu_median,
-   nb_entreprises) : à documenter dans le README pour l'utilisatrice qui
-   préparera l'extrait. */
+/* "Mon territoire en chiffres" (démographie INSEE) : extrait Insee -
+   Statistiques locales fourni par l'utilisatrice pour les 24 communes
+   (voir couches/urbanisme/demographie_communes.geojson). Chaque ligne
+   reste strictement conditionnelle à la présence du champ correspondant
+   plutôt que de supposer que l'extrait couvre systématiquement tous les
+   indicateurs (les tranches d'âge ou la vacance des logements, par
+   exemple, ne sont pas dans tous les extraits Insee). */
 function construirePopupDemographie(props) {
     const nom = premierChampValide(props, ["commune_nom", "commune"]) || "Commune";
     const couleur = couleurPopulation(props.population);
-    const evolution = typeof props.evolution_10ans === "number" ? props.evolution_10ans : null;
+    /* evolution_annuelle_2017_2023 : taux ANNUEL moyen (Insee), pas une
+       variation cumulée sur 10 ans - étiqueté avec sa vraie période
+       plutôt que de laisser deviner ou d'afficher "sur 10 ans" comme une
+       ancienne version le faisait (avant d'avoir de vraies données). */
+    const evolution = typeof props.evolution_annuelle_2017_2023 === "number" ? props.evolution_annuelle_2017_2023 : null;
 
     const lignes = [
         typeof props.population === "number"
-            ? `<div class="popup-fiche-ligne"><i class="fa-solid fa-people-group"></i> ${props.population.toLocaleString("fr-FR")} habitants${evolution !== null ? ` <span class="popup-fiche-precision">(${evolution > 0 ? "+" : ""}${evolution}% sur 10 ans)</span>` : ""}</div>`
+            ? `<div class="popup-fiche-ligne"><i class="fa-solid fa-people-group"></i> ${props.population.toLocaleString("fr-FR")} habitants${evolution !== null ? ` <span class="popup-fiche-precision">(${evolution > 0 ? "+" : ""}${evolution}%/an en moyenne 2017-2023)</span>` : ""}</div>`
             : null,
-        (typeof props.pop_0_14 === "number" || typeof props.pop_65_plus === "number")
+        (typeof props.part_moins_25 === "number" || typeof props.part_65_plus === "number")
             ? `<div class="popup-fiche-ligne"><i class="fa-solid fa-child-reaching"></i> ${[
-                typeof props.pop_0_14 === "number" ? `${props.pop_0_14}% de 0-14 ans` : null,
-                typeof props.pop_65_plus === "number" ? `${props.pop_65_plus}% de 65 ans et +` : null
+                typeof props.part_moins_25 === "number" ? `${props.part_moins_25}% de moins de 25 ans` : null,
+                typeof props.part_65_plus === "number" ? `${props.part_65_plus}% de 65 ans et +` : null
             ].filter(Boolean).join(" · ")}</div>`
             : null,
         typeof props.nb_logements === "number"
-            ? `<div class="popup-fiche-ligne"><i class="fa-solid fa-house"></i> ${props.nb_logements.toLocaleString("fr-FR")} logements</div>` : null,
+            ? `<div class="popup-fiche-ligne"><i class="fa-solid fa-house"></i> ${props.nb_logements.toLocaleString("fr-FR")} logements${typeof props.part_logements_vacants === "number" ? ` <span class="popup-fiche-precision">(dont ${props.part_logements_vacants}% vacants)</span>` : ""}</div>` : null,
         typeof props.revenu_median === "number"
             ? `<div class="popup-fiche-ligne"><i class="fa-solid fa-sack-dollar"></i> Revenu médian : ${Math.round(props.revenu_median).toLocaleString("fr-FR")} €/an</div>` : null,
         typeof props.nb_entreprises === "number"
-            ? `<div class="popup-fiche-ligne"><i class="fa-solid fa-building"></i> ${props.nb_entreprises.toLocaleString("fr-FR")} entreprises</div>` : null
+            ? `<div class="popup-fiche-ligne"><i class="fa-solid fa-building"></i> ${props.nb_entreprises.toLocaleString("fr-FR")} établissements</div>` : null
     ].filter(Boolean);
 
     return `<div class="popup-fiche">
