@@ -1684,9 +1684,10 @@ function construirePopupDemographie(props) {
         typeof props.population === "number"
             ? `<div class="popup-fiche-ligne"><i class="fa-solid fa-people-group"></i> ${props.population.toLocaleString("fr-FR")} habitants${evolution !== null ? ` <span class="popup-fiche-precision">(${evolution > 0 ? "+" : ""}${evolution}%/an en moyenne 2017-2023)</span>` : ""}</div>`
             : null,
-        (typeof props.part_moins_25 === "number" || typeof props.part_65_plus === "number")
+        (typeof props.part_moins_25 === "number" || typeof props.part_25_64 === "number" || typeof props.part_65_plus === "number")
             ? `<div class="popup-fiche-ligne"><i class="fa-solid fa-child-reaching"></i> ${[
                 typeof props.part_moins_25 === "number" ? `${props.part_moins_25}% de moins de 25 ans` : null,
+                typeof props.part_25_64 === "number" ? `${props.part_25_64}% de 25 à 64 ans` : null,
                 typeof props.part_65_plus === "number" ? `${props.part_65_plus}% de 65 ans et +` : null
             ].filter(Boolean).join(" · ")}</div>`
             : null,
