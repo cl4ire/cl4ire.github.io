@@ -1749,6 +1749,34 @@ function construirePopupRga(props) {
     </div>`;
 }
 
+/* Vigilance crues (Vigicrues) : LABELS_VIGICRUES traduit le niveau
+   numérique documenté par Vigicrues (1 à 4, même échelle que la
+   vigilance météo) en libellé lisible - contrairement aux noms des
+   champs eux-mêmes (non vérifiables en conditions réelles ici), cette
+   échelle 1-4 est une norme officielle stable, pas une supposition. */
+const LABELS_VIGICRUES = { 1: "Vigilance verte", 2: "Vigilance jaune", 3: "Vigilance orange", 4: "Vigilance rouge" };
+const COULEURS_VIGICRUES = { 1: "#31B44C", 2: "#FFD500", 3: "#FF8300", 4: "#C9182C" };
+function construirePopupVigicrues(props) {
+    const niveau = Number(premierChampValide(props, ["NivSituVigiCruEnt", "niveau", "NivSitu", "niveau_vigilance"]));
+    const label = LABELS_VIGICRUES[niveau] || "Niveau de vigilance non identifié";
+    const couleur = COULEURS_VIGICRUES[niveau] || PALETTE.riviere;
+    const nom = premierChampValide(props, ["NomEntVigiCru", "nom", "nom_troncon", "libelle"]);
+    const code = premierChampValide(props, ["CdEntVigiCru", "code", "code_troncon"]);
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${couleur}"><i class="fa-solid fa-water"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${couleur}">Vigicrues</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom || code || "Tronçon de cours d'eau")}</div>
+            </div>
+        </div>
+        <div class="popup-fiche-section">
+            <div class="popup-fiche-ligne"><span class="popup-fiche-badge" style="background:${couleur}20;color:${couleur}">${echapperHtml(label)}</span></div>
+        </div>
+    </div>`;
+}
+
 /* =========================================================
    POPUP GÉNÉRIQUE — dernier repli pour toute couche sans fiche dédiée
    (aujourd'hui : Vigieau uniquement, dont les noms de champs exacts ne
@@ -1873,6 +1901,7 @@ function construirePopup(feature, layerConf) {
     else if (layerConf.id === "demographie") html = construirePopupDemographie(props);
     else if (layerConf.id === "zonagePLUi") html = construirePopupZonePLUi(props);
     else if (layerConf.id === "rga") html = construirePopupRga(props);
+    else if (layerConf.id === "vigicrues") html = construirePopupVigicrues(props);
     else html = construirePopupGenerique(feature, layerConf);
     return injecterItineraire(html, feature);
 }

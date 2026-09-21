@@ -44,6 +44,24 @@ carburants, **Habitat & urbanisme** pour le cadastre) :
   déduite par mots-clés (`couleurVigieau` dans `config.js`) plutôt que par un
   nom de champ figé, pour rester robuste si le fournisseur change ses noms
   d'attributs.
+- **Vigicrues** (`id: "vigicrues"`) — même principe que Vigieau, pour la
+  vigilance crues (SCHAPI/DREAL) cette fois : tronçons de cours d'eau sous
+  surveillance, colorés selon leur niveau de vigilance courant (vert/jaune/
+  orange/rouge). Flux GeoJSON public :
+  `https://www.vigicrues.gouv.fr/services/1/InfoVigiCru.geojson`.
+  Contrairement au reste du contenu de cette section, l'échelle de niveau
+  elle-même (1 = vert à 4 = rouge, champ documenté `NivSituVigiCruEnt`)
+  n'est pas une supposition - c'est la norme officielle Vigicrues,
+  identique au principe de la vigilance météo. `couleurVigicrues` et
+  `construirePopupVigicrues` (`js/config.js`/`js/popup.js`) s'appuient
+  dessus en priorité, avec un repli par mots-clés (comme Vigieau) si le
+  nom de champ attendu venait à changer.
+  ⚠️ **Endpoint et nom de champ non vérifiables en conditions réelles**
+  depuis cet environnement (accès réseau restreint, même limite que pour
+  Vigieau/OLD/SUP avant leur vérification) : à confirmer une fois en
+  ligne (cocher la couche - si rien ne s'affiche ou si toutes les lignes
+  restent grises "niveau inconnu", inspecter la réponse réseau réelle et
+  ajuster l'URL/les noms de champs).
 - **Obligations légales de débroussaillement** (`id: "old"`) — flux WMS de
   l'IGN Géoplateforme (`type: "wms"`, géré par `construireCoucheWMS` dans
   `layers.js`). ⚠️ Le nom de couche WMS (`wmsLayer: "DEBROUSSAILLEMENT"`)
@@ -1487,6 +1505,11 @@ les bonnes actualités - seule l'URL générée (`urlIllwapEmbed`) et son
 insertion dans le DOM au bon moment ont pu être testées.
 
 ## Ce qui reste à faire
+- **Vigicrues : endpoint et nom de champ À VÉRIFIER EN CONDITIONS
+  RÉELLES**, voir la section dédiée plus haut — cocher la couche ; si
+  rien ne s'affiche ou si tout reste gris (niveau non identifié),
+  inspecter la réponse réseau réelle et ajuster l'URL/les noms de
+  champs dans `js/config.js`/`js/popup.js`.
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.
 - Ajouter les commerces comme thématique dédiée sur la page d'accueil si
