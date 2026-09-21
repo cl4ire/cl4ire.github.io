@@ -21,16 +21,31 @@ function initRecherche(map, { onResultat } = {}) {
     }
 
     function rechercheAdresse(q) {
-        return fetch("https://api-adresse.data.gouv.fr/search/?q=" + encodeURIComponent(q) + "&limit=5")
+        /* lat/lon : centre approximatif du territoire, pour faire remonter
+           les adresses locales en tête de la réponse de l'API (elle ne
+           filtre pas dessus, elle s'en sert juste pour trier) - le vrai
+           filtre "hors territoire" est le .filter() ci-dessous, sur le
+           code INSEE de la commune retournée. L'API Adresse n'accepte
+           qu'un seul "citycode" par requête (pas une liste), impossible de
+           lui demander directement "que ces 24 communes" : on demande donc
+           plus de résultats que nécessaire (limit=15) puis on filtre côté
+           client sur COMMUNES_TERRITOIRE (js/config.js) avant de ne garder
+           que les 5 premiers - une recherche "boula" ne doit pas proposer
+           une adresse en Ille-et-Vilaine ou dans l'Indre. */
+        const params = "q=" + encodeURIComponent(q) + "&lat=47.791528&lon=0.412223&limit=15";
+        return fetch("https://api-adresse.data.gouv.fr/search/?" + params)
             .then(r => r.ok ? r.json() : { features: [] })
-            .then(d => d.features.map(f => ({
-                titre: f.properties.label,
-                sousTitre: "Adresse",
-                icon: "fa-solid fa-location-dot",
-                color: "#5F5E5A",
-                latlng: L.latLng(f.geometry.coordinates[1], f.geometry.coordinates[0]),
-                estAdresse: true
-            })))
+            .then(d => d.features
+                .filter(f => COMMUNES_TERRITOIRE.hasOwnProperty(f.properties.citycode))
+                .slice(0, 5)
+                .map(f => ({
+                    titre: f.properties.label,
+                    sousTitre: "Adresse",
+                    icon: "fa-solid fa-location-dot",
+                    color: "#5F5E5A",
+                    latlng: L.latLng(f.geometry.coordinates[1], f.geometry.coordinates[0]),
+                    estAdresse: true
+                })))
             .catch(() => []);
     }
 
