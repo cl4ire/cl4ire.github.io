@@ -38,6 +38,7 @@
     <div id="topbar-actions">
         <button type="button" id="home-button" aria-label="Accueil"><i class="fa-solid fa-house"></i></button>
         <button type="button" id="recherche-button"><i class="fa-solid fa-sliders"></i><span>Recherche foncière</span></button>
+        <button type="button" id="actu-button" aria-label="Actualités"><i class="fa-solid fa-bullhorn"></i></button>
         <button type="button" id="about-button">À propos</button>
         <button type="button" id="menu-button" aria-label="Couches"><i class="fa-solid fa-layer-group"></i></button>
     </div>
@@ -87,6 +88,26 @@
             </div>
             <div id="recherche-contenu"><!-- Généré par recherche.js --></div>
         </div>
+
+        <div id="actu-view" hidden>
+            <button type="button" id="actu-back" class="panel-back">
+                <i class="fa-solid fa-arrow-left"></i><span>Toutes les couches</span>
+            </button>
+            <div class="recherche-titre">
+                <i class="fa-solid fa-bullhorn"></i> Actualités du territoire
+            </div>
+            <div class="illiwap-embed">
+                <iframe id="actu-iframe" title="Actualités Illiwap" loading="lazy"></iframe>
+            </div>
+        </div>
+
+        <div id="commune-view" hidden>
+            <button type="button" id="commune-back" class="panel-back">
+                <i class="fa-solid fa-arrow-left"></i><span>Toutes les couches</span>
+            </button>
+            <div class="recherche-titre" id="commune-titre"></div>
+            <div id="commune-contenu"><!-- Généré par communes.js --></div>
+        </div>
     </aside>
 
     <div id="map"></div>
@@ -97,6 +118,14 @@
             <p id="hero-title">Que recherchez-vous ?</p>
             <p id="hero-subtitle">Tapez dans la barre de recherche en haut, ou choisissez un raccourci ci-dessous</p>
             <div id="hero-raccourcis"><!-- Généré par proximite.js --></div>
+
+            <div id="hero-communes">
+                <label for="hero-commune-select">Ou consultez votre commune</label>
+                <select id="hero-commune-select">
+                    <option value="">Choisir une commune...</option>
+                    <!-- Options générées par communes.js -->
+                </select>
+            </div>
 
             <details id="hero-plus">
                 <summary>Voir plus de thématiques</summary>
@@ -156,6 +185,7 @@
 <script src="js/hero.js"></script>
 <script src="js/proximite.js"></script>
 <script src="js/recherche.js"></script>
+<script src="js/communes.js"></script>
 <script src="js/map.js"></script>
 <!-- FIN SCRIPTS -->
 

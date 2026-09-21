@@ -63,7 +63,7 @@ button { font-family: inherit; cursor: pointer; }
 .suggestion-sous { font-size: 11px; color: var(--ardoise); }
 .suggestion-vide { padding: 12px 14px; font-size: 13px; color: var(--ardoise); }
 #topbar-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
-#home-button, #about-button {
+#home-button, #about-button, #actu-button {
     border: 1px solid var(--bordure);
     background: #fff;
     border-radius: 999px;
@@ -82,7 +82,7 @@ button { font-family: inherit; cursor: pointer; }
     display: flex; align-items: center; gap: 7px;
     flex-shrink: 0;
 }
-#home-button {
+#home-button, #actu-button {
     width: 38px; height: 38px;
     display: flex; align-items: center; justify-content: center;
     color: var(--primaire);
@@ -188,11 +188,21 @@ button { font-family: inherit; cursor: pointer; }
 
 /* ---------- PANNEAU "RECHERCHE FONCIÈRE" ---------- */
 #recherche-view { padding-bottom: 16px; }
+#actu-view, #commune-view { padding-bottom: 16px; }
 .recherche-titre {
     display: flex; align-items: center; gap: 8px;
     padding: 4px 18px 12px; font-weight: 700; font-size: 14px; color: #2A2A28;
 }
 #recherche-contenu { padding: 0 18px; }
+
+/* ---------- ILLIWAP (actualités territoire/commune) ---------- */
+/* Hauteur fixe avec défilement interne plutôt que 100% de la hauteur du
+   panneau : la page Illiwap embarquée est elle-même longue (plusieurs
+   actus qui s'enchaînent), une hauteur fixe évite qu'elle n'allonge tout
+   le panneau au-delà de l'écran. */
+.illiwap-embed { margin: 0 18px 4px; border: 1px solid var(--bordure); border-radius: 10px; overflow: hidden; }
+.illiwap-embed iframe { display: block; width: 100%; height: 480px; border: none; }
+#commune-titre { padding-bottom: 4px; }
 
 .rf-groupe { border-top: 1px solid var(--bordure); padding: 14px 0; }
 .rf-groupe-titre { font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: var(--ardoise); margin-bottom: 10px; }
@@ -271,6 +281,14 @@ button { font-family: inherit; cursor: pointer; }
     border-radius: 50%; color: #fff; font-size: 15px;
 }
 .hero-tile-label { font-size: 13px; font-weight: 700; color: #2A2A28; }
+
+#hero-communes { margin-bottom: 18px; }
+#hero-communes label { display: block; font-size: 12.5px; color: var(--ardoise); margin-bottom: 6px; }
+#hero-communes select {
+    font-family: inherit; font-size: 13px; font-weight: 700; color: #2A2A28;
+    padding: 10px 12px; border: 1px solid var(--bordure); border-radius: 10px;
+    background: #fff; width: 100%; max-width: 320px;
+}
 
 #hero-plus { margin-bottom: 18px; }
 #hero-plus summary {

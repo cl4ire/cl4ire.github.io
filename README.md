@@ -1305,17 +1305,24 @@ Couleur de la choroplèthe : `couleurPopulation` (`js/layers.js`), une
 "bonne" ou "mauvaise" comme peut l'être un prix au m², une échelle à
 jugement de valeur serait trompeuse ici.
 
-**Contrairement aux autres flux "à vérifier" ci-dessus, il ne s'agit pas
-ici d'un nom de couche incertain mais d'une vraie absence de source
-exploitable depuis cet environnement** : l'API INSEE (recensement,
-revenus fiscaux Filosofi, établissements) n'est pas joignable ici (accès
-réseau restreint) et n'a de toute façon pas d'endpoint public filtrable
-par commune sans clé personnelle, contrairement à Géorisques ou IGN
-Géoplateforme. **`couches/urbanisme/demographie_communes.geojson`
-n'existe donc pour l'instant qu'avec un tableau `features` vide** : la
-couche se charge sans erreur mais n'affiche rien tant que ce fichier
-n'est pas complété. Voir "Ce qui reste à faire" ci-dessous pour le
-détail des champs attendus et la marche à suivre.
+**Mise à jour : la population est maintenant renseignée pour les 24
+communes**, sans attendre un extrait INSEE séparé - `couches/communes.geojson`
+(IGN ADMIN-EXPRESS, millésime 2023-01-01) contenait déjà un champ
+`population` fiable, réutilisé tel quel pour peupler
+`couches/urbanisme/demographie_communes.geojson` (voir son `_lisezmoi`).
+La choroplèthe et le dashboard commune (voir plus bas) affichent donc
+déjà un chiffre réel par commune.
+
+**Les autres champs restent une vraie absence de source exploitable
+depuis cet environnement**, pas juste "à vérifier" : `evolution_10ans`,
+`pop_0_14`/`pop_65_plus`, `nb_logements`, `revenu_median`,
+`nb_entreprises` n'ont pas d'équivalent dans `communes.geojson`, et
+l'API INSEE (recensement complet, revenus fiscaux Filosofi,
+établissements REE) n'est pas joignable ici (accès réseau restreint) ni
+dotée d'un endpoint public filtrable par commune sans clé personnelle,
+contrairement à Géorisques ou IGN Géoplateforme. Voir "Ce qui reste à
+faire" ci-dessous pour le détail des champs attendus et la marche à
+suivre.
 
 ## Popups qui se fermaient près des bords de carte
 
@@ -1385,24 +1392,106 @@ Testé via Playwright (largeur du panneau, premier clic sur PC, aller-retour
 repli/réouverture, réouverture automatique sur "Près de chez moi", glissement
 mobile inchangé) : voir `js/map.js`/`js/panel.js`.
 
+## Illiwap (actualités/alertes) et dashboard par commune
+
+Suite à un retour de l'utilisatrice : quasi toutes les communes du
+territoire utilisent Illiwap pour leurs actualités/alertes (travaux,
+sorties, coupures d'eau...), avec l'idée de les faire remonter sur
+GéoBercé sans alourdir la carte thématique existante.
+
+- **URLs dérivées, pas collectées à la main** : chaque commune a sa
+  propre "station" publique Illiwap sous la forme
+  `station.illiwap.com/fr/public/<code_insee>/actu/embed` - confirmé
+  par l'utilisatrice avec le 72248 (Pruillé-l'Éguillé). Comme
+  `COMMUNES_TERRITOIRE` (`js/config.js`) a déjà les 24 codes INSEE,
+  `urlIllwapEmbed()` génère les 24 liens directement, sans avoir à les
+  demander un par un. La CC Loir-Lucé-Bercé elle-même a un identifiant à
+  part (`ILLIWAP_TERRITOIRE = "cc-loir-luce-berce"`, pas de code INSEE
+  pour une intercommunalité), fourni par l'utilisatrice.
+- **Iframe, pas RSS/JSON** : en inspectant le réseau de la page embed
+  Illiwap (F12, fourni par l'utilisatrice), aucun flux JSON/XML séparé -
+  le contenu est rendu côté serveur directement dans le document HTML de
+  l'iframe. Impossible donc d'en tirer un badge de notifications non
+  lues (pas de liste d'articles lisible en JS, et de toute façon une
+  iframe reste cross-origin, illisible depuis notre JS même si un flux
+  existait) - la seule option réaliste était l'embed direct.
+- **Chargée à la demande, jamais 24 d'avance** : aucune iframe Illiwap
+  n'existe dans le DOM tant qu'on n'a pas explicitement ouvert la vue
+  correspondante (`ouvrirVueActu`/`ouvrirDashboardCommune`,
+  `js/communes.js`) - une seule active à la fois. En quittant la vue
+  (bouton retour), le `src` est vidé (`about:blank` pour l'actu
+  territoire ; le conteneur entier est vidé pour le dashboard commune)
+  plutôt que laissée tourner en arrière-plan masquée par `[hidden]` -
+  répond directement à "je ne veux pas que ça alourdisse notre carte".
+
+### Vue "Actualités" (territoire)
+
+Nouvelle icône 📢 dans la barre du haut (`#actu-button`), à côté d'"À
+propos" : ouvre une vue du panneau avec l'iframe Illiwap de la CC. Pensée
+pour qui reste sur la carte thématique globale plutôt que de s'intéresser
+à une commune précise, comme demandé par l'utilisatrice ("garder une
+carte thématique sur tout le territoire... dans ces cas-là, on met
+l'Illiwap de la CC").
+
+### Dashboard par commune
+
+Une vue dédiée par commune (mairie, chiffres clés, actualités Illiwap de
+la commune), accessible de deux façons complémentaires :
+
+- **Sélecteur sur l'écran d'accueil** (`#hero-commune-select`, une liste
+  déroulante plutôt que 24 tuiles supplémentaires qui auraient surchargé
+  l'accueil à côté des raccourcis thématiques) - le choix le plus
+  découvrable pour qui ne pense pas spontanément à cliquer sur la carte.
+- **Clic direct sur la commune** sur la carte (limites communales,
+  `couches/communes.geojson`, déjà affichées mais sans interaction
+  jusqu'ici). Point technique : un contour sans remplissage
+  (`fill: false`, valeur d'origine) ne capte un clic Leaflet que tout
+  près du trait, pas au milieu de la commune - remplacé par une
+  `fillOpacity` quasi nulle (`0.02`) pour rendre toute la surface
+  cliquable sans rien changer visuellement. Aucun conflit avec les
+  marqueurs/couches par-dessus (mairies, commerces...) : chaque élément
+  interactif a déjà son propre `bindPopup`/gestionnaire de clic, et
+  Leaflet fait remonter l'événement au premier élément interactif sous
+  le curseur sans le laisser continuer plus loin - vérifié par un test
+  Playwright avec un vrai clic souris (pas simulé en JS) sur un marqueur
+  mairie : sa popup s'ouvre normalement, le dashboard commune ne se
+  déclenche pas.
+
+Contenu du dashboard (`construireDashboardCommune`, `js/communes.js`),
+trois blocs indépendants, chacun absent s'il n'a rien à montrer :
+- **Mairie(s)** : `couches/services/mairies.geojson`, déjà en local
+  (horaires, téléphone, email, site web) - une commune nouvelle avec
+  plusieurs mairies déléguées (ex. Loir en Vallée) affiche une carte par
+  mairie. Le rapprochement nom de commune (champ `commune` du fichier
+  mairies, aux graphies parfois différentes - tirets, majuscules, "œ"
+  qui ne se décompose pas comme un accent normal) ↔ `COMMUNES_TERRITOIRE`
+  passe par `normaliserNomCommune()` (`js/config.js`), vérifié sans nom
+  orphelin des deux côtés sur les 24 communes.
+- **Chiffres clés** : réutilise directement `construirePopupDemographie`
+  (`js/popup.js`), déjà conditionnelle par champ.
+- **Actualités Illiwap** de la commune.
+
+⚠️ **Iframe testée pour le chargement/l'affichage, pas pour son contenu
+réel** : `station.illiwap.com` n'est pas joignable depuis cet
+environnement de développement (bloqué par le proxy réseau), donc
+impossible de vérifier ici que chaque page embed affiche effectivement
+les bonnes actualités - seule l'URL générée (`urlIllwapEmbed`) et son
+insertion dans le DOM au bon moment ont pu être testées.
+
 ## Ce qui reste à faire
 
-- **Couche `demographie` ("Mon territoire en chiffres") : fichier de
-  données à fournir**, voir la section dédiée plus haut — contrairement
-  aux autres éléments de cette liste, ce n'est pas un flux à vérifier
-  mais une vraie donnée manquante : `couches/urbanisme/demographie_communes.geojson`
-  n'a que des `features` vides pour l'instant. Pour l'activer, fournir un
-  extrait (CSV ou GeoJSON) filtré sur les 24 communes du territoire
-  (`COMMUNES_TERRITOIRE` dans `js/config.js`), avec une Feature par
-  commune (géométrie du contour communal, à reprendre de
-  `couches/communes.geojson`) et tout ou partie de ces propriétés :
-  `commune` (code INSEE), `commune_nom`, `population`, `evolution_10ans`
-  (variation en %), `pop_0_14`/`pop_65_plus` (%), `nb_logements`,
-  `revenu_median` (€/an), `nb_entreprises`. Sources possibles : API INSEE
-  Données locales (recensement, Filosofi, REE) ou téléchargement direct
-  sur insee.fr - même principe que le fichier France Services fourni
-  précédemment (un extrait déjà filtré, pas un accès direct à l'API
-  depuis le site).
+- **Couche `demographie` ("Mon territoire en chiffres") : champs
+  au-delà de la population à fournir**, voir la section dédiée plus
+  haut — `couches/urbanisme/demographie_communes.geojson` a désormais
+  une Feature par commune avec `commune` (code INSEE), `commune_nom` et
+  `population` (réelle, reprise de `couches/communes.geojson`). Pour
+  compléter, ajouter à chaque Feature tout ou partie de ces propriétés :
+  `evolution_10ans` (variation en %), `pop_0_14`/`pop_65_plus` (%),
+  `nb_logements`, `revenu_median` (€/an), `nb_entreprises`. Sources
+  possibles : API INSEE Données locales (recensement, Filosofi, REE) ou
+  téléchargement direct sur insee.fr - même principe que le fichier
+  France Services fourni précédemment (un extrait déjà filtré, pas un
+  accès direct à l'API depuis le site).
 - **Couches ZNIEFF/Natura 2000/Forêts/Cours d'eau : noms de couches WMS
   À VÉRIFIER EN CONDITIONS RÉELLES**, voir la section dédiée plus haut —
   cocher chaque case une par une ; si une couche reste vide, consulter le

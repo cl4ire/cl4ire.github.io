@@ -24,12 +24,41 @@ fetch("couches/epci.geojson")
     })
     .catch(err => console.error("epci.geojson :", err));
 
+/* couchesCommunesParInsee : une entrée par commune (code_insee -> layer
+   Leaflet), remplie une fois le fetch résolu - sert à zoomer sur la bonne
+   commune depuis le dashboard (js/communes.js), sélecteur d'accueil ou
+   clic sur la carte, sans reparser le fichier à chaque fois. */
+const couchesCommunesParInsee = {};
+
 fetch("couches/communes.geojson")
     .then(r => r.json())
     .then(data => {
-        L.geoJSON(data, { style: { color: PALETTE.ardoise, weight: 1, fill: false, opacity: 0.5 } }).addTo(map);
+        L.geoJSON(data, {
+            /* fillOpacity quasi nulle plutôt que fill:false : un contour
+               sans remplissage ne capte les clics que tout près du trait
+               chez Leaflet, pas au milieu de la commune - au clic, comme
+               partout ailleurs sur le site, un marqueur/élément par-dessus
+               (mairie, commerce...) qui a déjà son propre gestionnaire de
+               clic (bindPopup) intercepte l'événement avant qu'il
+               n'atteigne ce contour, donc pas de conflit à gérer nous-
+               mêmes : ce clic ne se déclenche que sur une zone vide. */
+            style: { color: PALETTE.ardoise, weight: 1, fillOpacity: 0.02, fillColor: "#ffffff", opacity: 0.5 },
+            onEachFeature: (feature, layer) => {
+                const code = feature.properties && feature.properties.code_insee;
+                if (!code || !COMMUNES_TERRITOIRE[code]) return;
+                couchesCommunesParInsee[code] = layer;
+                layer.on("click", () => ouvrirDashboardCommune(map, code));
+                layer.on("mouseover", () => layer.setStyle({ weight: 2 }));
+                layer.on("mouseout", () => layer.setStyle({ weight: 1 }));
+            }
+        }).addTo(map);
     })
     .catch(err => console.error("communes.geojson :", err));
+
+function zoomerSurCommune(map, codeInsee) {
+    const layer = couchesCommunesParInsee[codeInsee];
+    if (layer) map.fitBounds(layer.getBounds(), { maxZoom: 14 });
+}
 
 
 /* ---------- 3. Couches de données, panneau, recherche, accueil ---------- */
@@ -39,6 +68,7 @@ construirePanneauCouches(map);
 initFiltrePanneau();
 construireEcranAccueil(map);
 construireRaccourcis(map);
+construireSelecteurCommunes(map);
 
 initRecherche(map, {
     onResultat: () => {
@@ -91,6 +121,10 @@ function togglerPanneauCouches(forcerOuvert) {
 
 document.getElementById("menu-button").addEventListener("click", () => togglerPanneauCouches());
 document.getElementById("layers-close").addEventListener("click", () => togglerPanneauCouches(false));
+
+document.getElementById("actu-button").addEventListener("click", ouvrirVueActu);
+document.getElementById("actu-back").addEventListener("click", fermerVueActu);
+document.getElementById("commune-back").addEventListener("click", fermerVueCommune);
 
 document.getElementById("about-button").addEventListener("click", () => {
     document.getElementById("about-modal").classList.add("modal-open");

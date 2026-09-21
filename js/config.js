@@ -267,6 +267,39 @@ const COMMUNES_TERRITOIRE = {
 /* SIREN de la comcom Loir-Lucé-Bercé (code_siren dans couches/communes.geojson). */
 const URL_CADASTRE_EPCI = "https://cadastre.data.gouv.fr/bundler/cadastre-etalab/epcis/200070373/geojson/parcelles";
 
+/* =========================================================
+   ILLIWAP — actualités/alertes des mairies et de la CC
+   Chaque commune du territoire a sa propre "station" publique
+   Illiwap, sous la forme station.illiwap.com/fr/public/<code_insee>
+   (confirmé par l'utilisatrice avec le 72248 = Pruillé-l'Éguillé) -
+   dérivable directement des codes INSEE déjà dans
+   COMMUNES_TERRITOIRE, pas besoin de collecter 24 liens à la main.
+   La CC elle-même a un identifiant à part (pas de code INSEE pour
+   une intercommunalité), fourni par l'utilisatrice.
+   ========================================================= */
+const ILLIWAP_TERRITOIRE = "cc-loir-luce-berce";
+
+function urlIllwapEmbed(identifiant) {
+    return `https://station.illiwap.com/fr/public/${identifiant}/actu/embed`;
+}
+
+/* Recale les variantes d'écriture d'un nom de commune (accents, tirets
+   vs espaces, apostrophes, casse, "œ" qui ne se décompose pas comme les
+   autres accents) pour comparer de façon fiable le champ "commune" de
+   couches/services/mairies.geojson (ex. "Beaumont-Pied-De-Boeuf") aux
+   noms officiels de COMMUNES_TERRITOIRE (ex. "Beaumont-Pied-de-Bœuf") -
+   vérifié sur les 24 communes du territoire, aucun nom orphelin des
+   deux côtés une fois normalisé. */
+function normaliserNomCommune(nom) {
+    return String(nom || "")
+        .replace(/œ/gi, "oe")
+        .replace(/[-']/g, " ")
+        .normalize("NFD").replace(/[̀-ͯ]/g, "")
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
 /* Extrait récursivement toutes les Features d'une réponse, quelle que
    soit sa forme exacte (une seule FeatureCollection, un tableau de
    FeatureCollection, un objet {insee: FeatureCollection, ...}...) :
