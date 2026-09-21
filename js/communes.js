@@ -109,23 +109,24 @@ function construireSelecteurCommunes(map) {
     });
 }
 
-/* Vue "Actualités" (icône de la barre du haut) : le flux Illiwap de la
-   CC elle-même, pour qui reste sur la carte thématique du territoire
-   plutôt que de choisir une commune précise. */
-function ouvrirVueActu() {
-    document.getElementById("actu-iframe").src = urlIllwapEmbed(ILLIWAP_TERRITOIRE);
-    ouvrirVuePanneau("actu-view");
-}
-
-/* Retire le src de l'iframe en quittant la vue plutôt que de la laisser
-   tourner en arrière-plan (masquée via [hidden], pas déchargée pour
-   autant) - explicitement demandé par l'utilisatrice ("je ne veux pas
-   que ça alourdisse notre carte"). */
-function fermerVueActu() {
+/* "Actualités" (icône de la barre du haut) : le flux Illiwap de la CC
+   elle-même, pour qui reste sur la carte thématique du territoire
+   plutôt que de choisir une commune précise. En menu déroulant ancré
+   sous l'icône plutôt que dans le panneau des couches (comme la vue
+   par commune, restée telle quelle) - retour direct de l'utilisatrice,
+   ça n'a pas besoin de prendre la place de tout le panneau pour un
+   simple coup d'œil aux actus du territoire. */
+function toggleActuDropdown(forcerOuvert) {
+    const dropdown = document.getElementById("actu-dropdown");
+    const seraOuvert = forcerOuvert !== undefined ? forcerOuvert : dropdown.hidden;
+    dropdown.hidden = !seraOuvert;
     /* "about:blank", pas "" : un src vide se résout à l'URL de la page
-       courante et ferait recharger index.html dans sa propre iframe. */
-    document.getElementById("actu-iframe").src = "about:blank";
-    fermerVuesPanneau();
+       courante et ferait recharger index.html dans sa propre iframe.
+       Vidée à la fermeture plutôt que laissée tourner en arrière-plan
+       (masquée via [hidden], pas déchargée pour autant) - explicitement
+       demandé par l'utilisatrice ("je ne veux pas que ça alourdisse
+       notre carte"). */
+    document.getElementById("actu-iframe").src = seraOuvert ? urlIllwapEmbed(ILLIWAP_TERRITOIRE) : "about:blank";
 }
 
 function fermerVueCommune() {

@@ -122,8 +122,15 @@ function togglerPanneauCouches(forcerOuvert) {
 document.getElementById("menu-button").addEventListener("click", () => togglerPanneauCouches());
 document.getElementById("layers-close").addEventListener("click", () => togglerPanneauCouches(false));
 
-document.getElementById("actu-button").addEventListener("click", ouvrirVueActu);
-document.getElementById("actu-back").addEventListener("click", fermerVueActu);
+document.getElementById("actu-button").addEventListener("click", () => toggleActuDropdown());
+document.getElementById("actu-dropdown-close").addEventListener("click", () => toggleActuDropdown(false));
+document.addEventListener("click", event => {
+    const wrap = document.querySelector(".actu-wrap");
+    if (wrap && !wrap.contains(event.target) && !document.getElementById("actu-dropdown").hidden) {
+        toggleActuDropdown(false);
+    }
+});
+
 document.getElementById("commune-back").addEventListener("click", fermerVueCommune);
 
 document.getElementById("about-button").addEventListener("click", () => {

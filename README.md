@@ -1435,14 +1435,27 @@ GéoBercé sans alourdir la carte thématique existante.
   plutôt que laissée tourner en arrière-plan masquée par `[hidden]` -
   répond directement à "je ne veux pas que ça alourdisse notre carte".
 
-### Vue "Actualités" (territoire)
+### Actualités (territoire) : menu déroulant, pas le panneau des couches
 
-Nouvelle icône 📢 dans la barre du haut (`#actu-button`), à côté d'"À
-propos" : ouvre une vue du panneau avec l'iframe Illiwap de la CC. Pensée
-pour qui reste sur la carte thématique globale plutôt que de s'intéresser
-à une commune précise, comme demandé par l'utilisatrice ("garder une
-carte thématique sur tout le territoire... dans ces cas-là, on met
-l'Illiwap de la CC").
+Icône 📢 dans la barre du haut (`#actu-button`), à côté d'"À propos" :
+ouvre un menu déroulant ancré sous l'icône avec l'iframe Illiwap de la
+CC (`toggleActuDropdown`, `js/communes.js`), plutôt que la vue par
+commune qui, elle, reste dans le panneau des couches. Retour direct de
+l'utilisatrice après une première version qui ouvrait tout le panneau :
+un simple coup d'œil aux actus du territoire n'a pas besoin de prendre
+toute la place, contrairement au dashboard commune (mairie + chiffres +
+actus) qui a plus de contenu et bénéficie du panneau complet.
+
+- **Fermeture** : clic sur la croix, ou n'importe où en dehors du menu
+  (écouteur sur `document`, même principe que les suggestions de
+  recherche) - src de l'iframe vidé à la fermeture, comme pour la vue
+  commune.
+- **Positionnement mobile** : `position: fixed` ancré à la barre du haut
+  (pas `absolute` sous le bouton) - sur petit écran, le bouton n'est pas
+  forcément au bord droit de la barre (d'autres boutons peuvent suivre),
+  donc un ancrage relatif au bouton pouvait pousser le menu hors de
+  l'écran côté gauche ; trouvé et corrigé en testant sur 375px avant
+  livraison.
 
 ### Dashboard par commune
 
