@@ -33,27 +33,37 @@ function listeValeurs(valeur) {
 }
 function nomCarburant(nom) { return { "Gazole": "Gazole", "SP95": "SP95", "SP98": "SP98", "E10": "SP95-E10", "E85": "E85", "GPLc": "GPL" }[nom] || nom; }
 
+/* Liste des carburants suivis par le flux data.economie.gouv.fr, réutilisée
+   telle quelle par construirePrixCarburants ci-dessous ET par le filtre
+   "type de carburant" des résultats "près de chez moi" (proximite.js) -
+   un seul endroit à maintenir si le flux ajoute/retire un carburant. */
+const LISTE_CARBURANTS = [
+    { nom: "Gazole", champ: "gazole_prix", maj: "gazole_maj" },
+    { nom: "SP95", champ: "sp95_prix", maj: "sp95_maj" },
+    { nom: "SP98", champ: "sp98_prix", maj: "sp98_maj" },
+    { nom: "E10", champ: "e10_prix", maj: "e10_maj" },
+    { nom: "E85", champ: "e85_prix", maj: "e85_maj" },
+    { nom: "GPLc", champ: "gplc_prix", maj: "gplc_maj" }
+];
+
 function construirePrixCarburants(props) {
-    const carburants = [
-        { nom: "Gazole", champ: "gazole_prix", maj: "gazole_maj" },
-        { nom: "SP95", champ: "sp95_prix", maj: "sp95_maj" },
-        { nom: "SP98", champ: "sp98_prix", maj: "sp98_maj" },
-        { nom: "E10", champ: "e10_prix", maj: "e10_maj" },
-        { nom: "E85", champ: "e85_prix", maj: "e85_maj" },
-        { nom: "GPLc", champ: "gplc_prix", maj: "gplc_maj" }
-    ];
     const disponibles = new Set(listeValeurs(props.carburants_disponibles));
     const indisponibles = new Set(listeValeurs(props.carburants_indisponibles));
     const temporaires = new Set(listeValeurs(props.carburants_rupture_temporaire));
     const definitives = new Set(listeValeurs(props.carburants_rupture_definitive));
 
-    return carburants.filter(c => props[c.champ] !== undefined || disponibles.has(c.nom) || indisponibles.has(c.nom)).map(c => {
+    return LISTE_CARBURANTS.filter(c => props[c.champ] !== undefined || disponibles.has(c.nom) || indisponibles.has(c.nom)).map(c => {
         const prix = Number(props[c.champ]);
         let statut = "Disponible", classe = "disponible";
         if (definitives.has(c.nom)) { statut = "Rupture définitive"; classe = "rupture"; }
         else if (temporaires.has(c.nom)) { statut = "Rupture temporaire"; classe = "rupture"; }
         else if (indisponibles.has(c.nom) || !disponibles.has(c.nom) || !Number.isFinite(prix)) { statut = "Indisponible"; classe = "indisponible"; }
-        return { nom: nomCarburant(c.nom), prix: Number.isFinite(prix) ? prix : null, maj: props[c.maj], statut, classe };
+        /* `champ` (nom brut du champ, ex. "gplc_prix") gardé en plus de
+           `nom` (déjà transformé pour l'affichage, ex. "GPL") : nécessaire
+           pour retrouver un carburant précis par son champ depuis
+           l'extérieur (filtre "type de carburant" des résultats "près de
+           chez moi", proximite.js) sans dépendre du libellé affiché. */
+        return { nom: nomCarburant(c.nom), champ: c.champ, prix: Number.isFinite(prix) ? prix : null, maj: props[c.maj], statut, classe };
     });
 }
 function formaterPrix(prix) { return prix === null ? "—" : `${prix.toFixed(3).replace(".", ",")} €`; }

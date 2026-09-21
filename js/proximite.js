@@ -76,11 +76,31 @@ function estOuvertItem(item) {
 let derniersResultatsProximite = [];
 let dernierTitreProximite = "";
 let filtreOuvertActif = false;
+let filtreCarburantActif = LISTE_CARBURANTS[0].champ; // Gazole par défaut, le plus répandu
 
 function rendreResultatsProximite(map) {
-    const resultats = filtreOuvertActif
-        ? derniersResultatsProximite.filter(item => item.ouvert === true)
-        : derniersResultatsProximite;
+    const estCarburant = derniersResultatsProximite.length > 0 && derniersResultatsProximite[0].layerId === "carburants";
+
+    let resultats = derniersResultatsProximite;
+    if (filtreOuvertActif) resultats = resultats.filter(item => item.ouvert === true);
+    if (estCarburant) {
+        resultats = resultats
+            .map(item => {
+                const props = (item.layer.feature && item.layer.feature.properties) || {};
+                /* Comparaison sur `champ` (nom brut, "gplc_prix"), pas `nom` :
+                   construirePrixCarburants renvoie des libellés déjà
+                   transformés pour l'affichage ("GPL", "SP95-E10"...),
+                   différents des noms bruts de LISTE_CARBURANTS. */
+                const entree = construirePrixCarburants(props).find(c => c.champ === filtreCarburantActif);
+                /* Seulement "Disponible" : un carburant en rupture garde un
+                   prix dans la donnée source (dernier prix connu avant la
+                   rupture), pas la peine d'orienter quelqu'un vers une
+                   station où il ne pourra pas faire le plein. */
+                return { ...item, carburantChoisi: (entree && entree.statut === "Disponible") ? entree : null };
+            })
+            .filter(item => item.carburantChoisi)
+            .slice(0, 15);
+    }
 
     document.getElementById("results-title").textContent =
         dernierTitreProximite + (resultats.length ? ` · ${resultats.length} résultat(s)` : "");
@@ -89,13 +109,17 @@ function rendreResultatsProximite(map) {
     liste.innerHTML = "";
 
     if (!resultats.length) {
-        liste.innerHTML = `<div class="suggestion-vide">${
-            filtreOuvertActif ? "Aucun résultat ouvert actuellement à proximité." : "Aucun résultat trouvé à proximité."
-        }</div>`;
+        const message = estCarburant
+            ? `Aucune station avec du ${nomCarburant(LISTE_CARBURANTS.find(c => c.champ === filtreCarburantActif).nom)} disponible à proximité.`
+            : (filtreOuvertActif ? "Aucun résultat ouvert actuellement à proximité." : "Aucun résultat trouvé à proximité.");
+        liste.innerHTML = `<div class="suggestion-vide">${message}</div>`;
         return;
     }
 
     resultats.forEach(item => {
+        const sousTitre = item.carburantChoisi
+            ? `<span class="result-item-prix">${formaterPrix(item.carburantChoisi.prix)}/L</span>${item.sousTitre ? ` · ${item.sousTitre}` : ""}`
+            : item.sousTitre;
         const ligne = document.createElement("button");
         ligne.type = "button";
         ligne.className = "result-item";
@@ -103,7 +127,7 @@ function rendreResultatsProximite(map) {
             <span class="result-item-icon" style="background:${item.color}"><i class="${item.icon}"></i></span>
             <span class="result-item-texte">
                 <span class="result-item-titre">${item.titre}</span>
-                ${item.sousTitre ? `<span class="result-item-sous">${item.sousTitre}</span>` : ""}
+                ${sousTitre ? `<span class="result-item-sous">${sousTitre}</span>` : ""}
             </span>
             <span class="result-item-distance">${formaterDistance(item.distance)}</span>
         `;
@@ -121,7 +145,11 @@ let ecouteursFiltreProximiteBranches = false;
 /* Le filtre "Ouvert maintenant" n'a de sens que si au moins un résultat
    porte une info d'horaires exploitable - sans ça (ex. "Où déposer mon
    courrier ?", boîtes aux lettres jamais fermées) le bouton resterait
-   affiché pour ne jamais rien changer, plus déroutant qu'utile. */
+   affiché pour ne jamais rien changer, plus déroutant qu'utile. Le
+   filtre "type de carburant" n'apparaît, lui, que pour le raccourci
+   "Stations essence" (seule couche qui porte des prix de carburant) :
+   les deux filtres sont mutuellement exclusifs, jamais affichés en
+   même temps. */
 function afficherResultatsProximite(map, titre, resultats) {
     dernierTitreProximite = titre;
     derniersResultatsProximite = resultats.map(item => ({ ...item, ouvert: estOuvertItem(item) }));
@@ -129,8 +157,10 @@ function afficherResultatsProximite(map, titre, resultats) {
 
     ouvrirVueResultats(titre);
 
+    const estCarburant = resultats.length > 0 && resultats[0].layerId === "carburants";
+
     const filtreConteneur = document.getElementById("results-filtre");
-    const aDesHoraires = derniersResultatsProximite.some(item => item.ouvert !== null);
+    const aDesHoraires = !estCarburant && derniersResultatsProximite.some(item => item.ouvert !== null);
     filtreConteneur.hidden = !aDesHoraires;
     filtreConteneur.querySelectorAll(".results-filtre-btn").forEach(bouton => {
         bouton.classList.toggle("actif", bouton.dataset.filtre === "tous");
@@ -142,6 +172,21 @@ function afficherResultatsProximite(map, titre, resultats) {
             bouton.addEventListener("click", () => {
                 filtreOuvertActif = bouton.dataset.filtre === "ouverts";
                 filtreConteneur.querySelectorAll(".results-filtre-btn").forEach(b => b.classList.toggle("actif", b === bouton));
+                rendreResultatsProximite(map);
+            });
+        });
+    }
+
+    const filtreCarburantConteneur = document.getElementById("results-filtre-carburant");
+    filtreCarburantConteneur.hidden = !estCarburant;
+    if (estCarburant) {
+        filtreCarburantConteneur.innerHTML = LISTE_CARBURANTS.map(c => `
+            <button type="button" class="results-filtre-btn${c.champ === filtreCarburantActif ? " actif" : ""}" data-carburant="${c.champ}">${echapperHtml(nomCarburant(c.nom))}</button>
+        `).join("");
+        filtreCarburantConteneur.querySelectorAll(".results-filtre-btn").forEach(bouton => {
+            bouton.addEventListener("click", () => {
+                filtreCarburantActif = bouton.dataset.carburant;
+                filtreCarburantConteneur.querySelectorAll(".results-filtre-btn").forEach(b => b.classList.toggle("actif", b === bouton));
                 rendreResultatsProximite(map);
             });
         });
@@ -201,12 +246,20 @@ function lancerRechercheProximite(map, raccourci) {
                    Feature GeoJSON d'origine à chaque layer d'un L.geoJSON,
                    donc ses propriétés brutes restent accessibles ici sans
                    rien stocker de plus dans l'index de recherche. */
+                /* Stations essence : bassin de candidats plus large (60 au
+                   lieu de 15) avant de géolocaliser - une fois le filtre
+                   par carburant appliqué (rendreResultatsProximite), un
+                   carburant moins courant (GPLc, E85) peut exclure la
+                   plupart des stations les plus proches ; garder plus de
+                   candidats en réserve évite de se retrouver avec trop peu
+                   de résultats après filtrage sur ces carburants-là. */
+                const limite = raccourci.layerIds.includes("carburants") ? 60 : 15;
                 const resultats = window.indexRecherche
                     .filter(item => raccourci.layerIds.includes(item.layerId))
                     .filter(item => !raccourci.filtre || raccourci.filtre(item))
                     .map(item => ({ ...item, distance: origine.distanceTo(item.latlng) }))
                     .sort((a, b) => a.distance - b.distance)
-                    .slice(0, 15);
+                    .slice(0, limite);
 
                 map.setView(origine, 13);
                 afficherResultatsProximite(map, raccourci.label, resultats);
