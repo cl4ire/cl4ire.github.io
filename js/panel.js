@@ -139,7 +139,7 @@ function construireLegende(conf, map) {
    ces deux fonctions centralisent le passage de l'une à l'autre pour
    que proximite.js et recherche.js restent cohérents entre eux.
    ========================================================= */
-const VUES_PANNEAU = ["layers-normal-view", "results-view", "recherche-view"];
+const VUES_PANNEAU = ["layers-normal-view", "results-view", "recherche-view", "actu-view", "commune-view"];
 
 function ouvrirVuePanneau(idVue) {
     /* Les deux classes ensemble, pas seulement "layers-panel-open" : si le
