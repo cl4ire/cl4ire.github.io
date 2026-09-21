@@ -188,7 +188,7 @@ button { font-family: inherit; cursor: pointer; }
 
 /* ---------- PANNEAU "RECHERCHE FONCIÈRE" ---------- */
 #recherche-view { padding-bottom: 16px; }
-#actu-view, #commune-view { padding-bottom: 16px; }
+#commune-view { padding-bottom: 16px; }
 .recherche-titre {
     display: flex; align-items: center; gap: 8px;
     padding: 4px 18px 12px; font-weight: 700; font-size: 14px; color: #2A2A28;
@@ -202,6 +202,33 @@ button { font-family: inherit; cursor: pointer; }
    le panneau au-delà de l'écran. */
 .illiwap-embed { margin: 0 18px 4px; border: 1px solid var(--bordure); border-radius: 10px; overflow: hidden; }
 .illiwap-embed iframe { display: block; width: 100%; height: 480px; border: none; }
+
+/* ---------- MENU DÉROULANT "ACTUALITÉS" (barre du haut) ---------- */
+/* Ancré sous l'icône plutôt qu'ouvert dans le panneau des couches
+   (contrairement à la vue par commune, qui garde ce fonctionnement) -
+   retour direct de l'utilisatrice. */
+.actu-wrap { position: relative; }
+.actu-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 380px;
+    max-width: calc(100vw - 24px);
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.14);
+    overflow: hidden;
+    z-index: 1001;
+}
+.actu-dropdown-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px;
+    font-weight: 700; font-size: 13px; color: var(--primaire);
+}
+.actu-dropdown-header i { margin-right: 6px; }
+.actu-dropdown-header button { border: none; background: none; font-size: 18px; color: var(--ardoise); }
+.actu-dropdown .illiwap-embed { margin: 0 14px 14px; }
+.actu-dropdown .illiwap-embed iframe { height: 420px; }
 #commune-titre { padding-bottom: 4px; }
 
 .rf-groupe { border-top: 1px solid var(--bordure); padding: 14px 0; }
@@ -474,6 +501,16 @@ button { font-family: inherit; cursor: pointer; }
     .popup-carburant-entete { padding: 15px; }
     .popup-carburant-section { padding: 12px 15px; }
     .popup-fiche { width: min(340px, calc(100vw - 48px)); }
+
+    /* position: fixed plutôt qu'absolute ancré sous le bouton : sur un
+       petit écran, le bouton "Actualités" n'est pas forcément au bord
+       droit de la barre du haut (d'autres boutons peuvent suivre), donc
+       "right: 0" relatif au bouton peut pousser le menu déroulant hors
+       de l'écran côté gauche - ancré à la barre du haut elle-même (62px
+       de hauteur, comme #app plus haut dans ce fichier) avec une marge
+       fixe des deux côtés, il reste toujours entièrement visible quelle
+       que soit la position du bouton qui l'ouvre. */
+    .actu-dropdown { position: fixed; top: 62px; left: 12px; right: 12px; width: auto; max-width: none; }
 }
 
 /* Écrans de téléphone étroits (< 420px environ, ex. iPhone SE, la plupart

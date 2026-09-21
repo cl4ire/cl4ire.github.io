@@ -38,7 +38,18 @@
     <div id="topbar-actions">
         <button type="button" id="home-button" aria-label="Accueil"><i class="fa-solid fa-house"></i></button>
         <button type="button" id="recherche-button"><i class="fa-solid fa-sliders"></i><span>Recherche foncière</span></button>
-        <button type="button" id="actu-button" aria-label="Actualités"><i class="fa-solid fa-bullhorn"></i></button>
+        <div class="actu-wrap">
+            <button type="button" id="actu-button" aria-label="Actualités"><i class="fa-solid fa-bullhorn"></i></button>
+            <div id="actu-dropdown" class="actu-dropdown" hidden>
+                <div class="actu-dropdown-header">
+                    <span><i class="fa-solid fa-bullhorn"></i> Actualités du territoire</span>
+                    <button type="button" id="actu-dropdown-close" aria-label="Fermer">×</button>
+                </div>
+                <div class="illiwap-embed">
+                    <iframe id="actu-iframe" title="Actualités Illiwap" loading="lazy"></iframe>
+                </div>
+            </div>
+        </div>
         <button type="button" id="about-button">À propos</button>
         <button type="button" id="menu-button" aria-label="Couches"><i class="fa-solid fa-layer-group"></i></button>
     </div>
@@ -87,18 +98,6 @@
                 <i class="fa-solid fa-magnifying-glass-location"></i> Recherche foncière
             </div>
             <div id="recherche-contenu"><!-- Généré par recherche.js --></div>
-        </div>
-
-        <div id="actu-view" hidden>
-            <button type="button" id="actu-back" class="panel-back">
-                <i class="fa-solid fa-arrow-left"></i><span>Toutes les couches</span>
-            </button>
-            <div class="recherche-titre">
-                <i class="fa-solid fa-bullhorn"></i> Actualités du territoire
-            </div>
-            <div class="illiwap-embed">
-                <iframe id="actu-iframe" title="Actualités Illiwap" loading="lazy"></iframe>
-            </div>
         </div>
 
         <div id="commune-view" hidden>
