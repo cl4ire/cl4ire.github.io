@@ -53,6 +53,27 @@ function couleurVigieau(feature) {
     return { color: "#fff", weight: 1, fillColor: remplissage, fillOpacity: 0.5 };
 }
 
+/* Même principe que couleurVigieau ci-dessus (nom de champ distant non
+   vérifiable en conditions réelles depuis cet environnement), mais avec
+   un repli plus précis en priorité : NivSituVigiCruEnt est le nom de
+   champ documenté par Vigicrues pour le niveau de vigilance (1 à 4,
+   même échelle que la vigilance météo), pas une supposition - seul son
+   éventuel remplacement par le fournisseur n'est pas vérifiable ici,
+   d'où le repli sur un scan de mots-clés si jamais absent. */
+function couleurVigicrues(feature) {
+    const props = feature.properties || {};
+    const COULEURS_NIVEAU_CRUE = { 1: "#31B44C", 2: "#FFD500", 3: "#FF8300", 4: "#C9182C" };
+    const niveau = Number(premierChampValide(props, ["NivSituVigiCruEnt", "niveau", "NivSitu", "niveau_vigilance"]));
+    if (COULEURS_NIVEAU_CRUE[niveau]) return { color: COULEURS_NIVEAU_CRUE[niveau], weight: 4, opacity: 0.85 };
+
+    const texte = Object.values(props).filter(v => typeof v === "string").join(" ").toLowerCase();
+    if (texte.includes("rouge")) return { color: "#C9182C", weight: 4, opacity: 0.85 };
+    if (texte.includes("orange")) return { color: "#FF8300", weight: 4, opacity: 0.85 };
+    if (texte.includes("jaune")) return { color: "#FFD500", weight: 4, opacity: 0.85 };
+    if (texte.includes("vert")) return { color: "#31B44C", weight: 4, opacity: 0.85 };
+    return { color: PALETTE.riviere, weight: 3, opacity: 0.6 };
+}
+
 /* =========================================================
    CATÉGORIES DE COMMERCES
    Le champ "type" du fichier commerces.geojson porte des valeurs
@@ -910,51 +931,6 @@ const LAYERS = [
         subtitleFields: []
     },
 
-    /* ---------- NATURE (flux WMS IGN Géoplateforme/INPN) ----------
-       Même service que la couche OLD plus bas (data.geopf.fr/wms-r/wms,
-       déjà en place) : simples survols visuels sans fiche cliquable
-       (comme OLD), pas de flux WFS/GeoJSON à parser - beaucoup moins de
-       surface à deviner que des noms de champs de popup. ⚠️ Noms de
-       couches WMS non vérifiables en conditions réelles depuis cet
-       environnement (accès réseau restreint pendant le développement,
-       même limite qu'OLD) : à confirmer/ajuster une fois en ligne via le
-       GetCapabilities (voir OLD ci-dessous pour l'URL), voir le README. */
-    {
-        id: "znieff1", group: "tourisme", label: "ZNIEFF type 1",
-        type: "wms", wmsUrl: "https://data.geopf.fr/wms-r/wms", wmsLayer: "PROTECTEDAREAS.ZNIEFF1",
-        opacity: 0.35, attribution: "IGN / INPN", color: "#8BC34A",
-        lazy: true, searchable: false, cluster: false
-    },
-    {
-        id: "znieff2", group: "tourisme", label: "ZNIEFF type 2",
-        type: "wms", wmsUrl: "https://data.geopf.fr/wms-r/wms", wmsLayer: "PROTECTEDAREAS.ZNIEFF2",
-        opacity: 0.3, attribution: "IGN / INPN", color: "#689F38",
-        lazy: true, searchable: false, cluster: false
-    },
-    {
-        id: "natura2000", group: "tourisme", label: "Natura 2000",
-        /* Deux couches combinées en une seule requête WMS (séparées par
-           une virgule, syntaxe standard OGC) : les zones de protection
-           spéciale "oiseaux" (ZPS) ET les sites d'importance
-           communautaire "habitats" (SIC), plutôt que deux cases à cocher
-           pour une distinction que peu de visiteurs feront la différence. */
-        type: "wms", wmsUrl: "https://data.geopf.fr/wms-r/wms", wmsLayer: "PROTECTEDAREAS.SIC,PROTECTEDAREAS.ZPS",
-        opacity: 0.3, attribution: "IGN / INPN", color: "#33691E",
-        lazy: true, searchable: false, cluster: false
-    },
-    {
-        id: "foretsIgn", group: "tourisme", label: "Forêts (BD Forêt)",
-        type: "wms", wmsUrl: "https://data.geopf.fr/wms-r/wms", wmsLayer: "LANDCOVER.FORESTINVENTORY.V2",
-        opacity: 0.4, attribution: "IGN", color: PALETTE.foret,
-        lazy: true, searchable: false, cluster: false
-    },
-    {
-        id: "coursDeau", group: "tourisme", label: "Cours d'eau",
-        type: "wms", wmsUrl: "https://data.geopf.fr/wms-r/wms", wmsLayer: "HYDROGRAPHY.HYDROGRAPHY",
-        opacity: 0.6, attribution: "IGN", color: PALETTE.riviere,
-        lazy: true, searchable: false, cluster: false
-    },
-
     /* ---------- URBANISME (fichiers lourds => chargement différé) ---------- */
     {
         id: "prixImmobilier", group: "urbanisme", label: "Prix immobilier par commune",
@@ -1054,6 +1030,16 @@ const LAYERS = [
         lazy: true, searchable: false, cluster: false,
         titleFields: ["nom_zone", "nomZone", "nom", "zone_nom", "libelle", "nomBassin"],
         subtitleFields: ["niveauGravite", "niveau_gravite", "type_eau", "zoneType", "departement", "nom_dept"]
+    },
+    {
+        id: "vigicrues", group: "risques", label: "Vigilance crues (Vigicrues)",
+        /* Flux GeoJSON public des tronçons de cours d'eau sous surveillance
+           Vigicrues, avec leur niveau de vigilance courant (SCHAPI/DREAL) -
+           même principe que Vigieau juste au-dessus. */
+        file: "https://www.vigicrues.gouv.fr/services/1/InfoVigiCru.geojson",
+        type: "line", color: PALETTE.riviere,
+        styleFn: couleurVigicrues,
+        lazy: true, searchable: false, cluster: false
     },
     {
         id: "old", group: "risques", label: "Obligations légales de débroussaillement",

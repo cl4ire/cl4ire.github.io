@@ -44,6 +44,24 @@ carburants, **Habitat & urbanisme** pour le cadastre) :
   déduite par mots-clés (`couleurVigieau` dans `config.js`) plutôt que par un
   nom de champ figé, pour rester robuste si le fournisseur change ses noms
   d'attributs.
+- **Vigicrues** (`id: "vigicrues"`) — même principe que Vigieau, pour la
+  vigilance crues (SCHAPI/DREAL) cette fois : tronçons de cours d'eau sous
+  surveillance, colorés selon leur niveau de vigilance courant (vert/jaune/
+  orange/rouge). Flux GeoJSON public :
+  `https://www.vigicrues.gouv.fr/services/1/InfoVigiCru.geojson`.
+  Contrairement au reste du contenu de cette section, l'échelle de niveau
+  elle-même (1 = vert à 4 = rouge, champ documenté `NivSituVigiCruEnt`)
+  n'est pas une supposition - c'est la norme officielle Vigicrues,
+  identique au principe de la vigilance météo. `couleurVigicrues` et
+  `construirePopupVigicrues` (`js/config.js`/`js/popup.js`) s'appuient
+  dessus en priorité, avec un repli par mots-clés (comme Vigieau) si le
+  nom de champ attendu venait à changer.
+  ⚠️ **Endpoint et nom de champ non vérifiables en conditions réelles**
+  depuis cet environnement (accès réseau restreint, même limite que pour
+  Vigieau/OLD/SUP avant leur vérification) : à confirmer une fois en
+  ligne (cocher la couche - si rien ne s'affiche ou si toutes les lignes
+  restent grises "niveau inconnu", inspecter la réponse réseau réelle et
+  ajuster l'URL/les noms de champs).
 - **Obligations légales de débroussaillement** (`id: "old"`) — flux WMS de
   l'IGN Géoplateforme (`type: "wms"`, géré par `construireCoucheWMS` dans
   `layers.js`). ⚠️ Le nom de couche WMS (`wmsLayer: "DEBROUSSAILLEMENT"`)
@@ -1210,9 +1228,9 @@ exposé publiquement. Le bouton se désactive pendant l'envoi et affiche un
 message de statut (`#contact-statut`) : succès (champ vidé) ou échec avec
 un repli explicite vers `swallowage@proton.me` en direct.
 
-## Servitudes d'utilité publique (SUP), couches nature, démographie INSEE
+## Servitudes d'utilité publique (SUP), démographie INSEE
 
-Trois ajouts suite à un brief détaillé de l'utilisatrice (issu d'un autre
+Ajouts suite à un brief détaillé de l'utilisatrice (issu d'un autre
 outil) évaluant les données pertinentes à croiser avec ce qui existe déjà
 plutôt que d'empiler de nouveaux points sur la carte. Plusieurs pistes du
 brief ont été écartées avant même d'être tentées, pour des raisons
@@ -1230,6 +1248,12 @@ concrètes :
   ouverte identifiée qui couvrirait 24 communes rurales de cette taille
   (contrairement à une grande ville) - la comcom/les mairies n'ont
   vraisemblablement pas de flux public pour ça.
+- **Couches nature (ZNIEFF, Natura 2000, forêts, cours d'eau)** :
+  tentées en flux WMS (`data.geopf.fr/wms-r/wms`), puis **retirées** sur
+  retour direct de l'utilisatrice après les avoir testées en ligne -
+  trop lourdes à charger pour ce qu'elles apportaient concrètement à un
+  usage communal/administratif (contrairement à SUP ou démographie,
+  directement utiles à une fiche parcelle ou un dashboard commune).
 
 ### Servitudes d'utilité publique (fiche parcelle)
 
@@ -1275,28 +1299,6 @@ inconnu apparaît, pour diagnostiquer sans casser l'affichage. La
 servitude a aussi sa propre section dans la fiche parcelle (avant
 mélangée à "Urbanisme" avec PLUi/RGA, retour direct de l'utilisatrice
 sur la confusion visuelle que ça créait).
-
-### Couches nature (ZNIEFF, Natura 2000, forêts, cours d'eau)
-
-Cinq nouvelles couches dans le groupe "Nature & rando" : ZNIEFF type 1,
-ZNIEFF type 2, Natura 2000 (zones de protection spéciale + sites
-d'importance communautaire combinés en une seule requête WMS plutôt que
-deux cases à cocher), Forêts (BD Forêt), Cours d'eau.
-
-Implémentées en flux **WMS** (`type: "wms"`, `data.geopf.fr/wms-r/wms`,
-même service déjà en place pour la couche OLD) plutôt qu'en WFS/GeoJSON
-à parser : un simple survol visuel sans fiche cliquable (comme OLD),
-qui évite d'avoir à deviner en plus les noms de champs de propriétés
-pour une popup - beaucoup moins de surface d'incertitude qu'un flux
-GeoJSON dont on ne connaîtrait ni le nom de couche ni le schéma.
-
-⚠️ **Noms de couches WMS non vérifiés en conditions réelles** (même
-limite qu'OLD) : `PROTECTEDAREAS.ZNIEFF1`/`ZNIEFF2`/`SIC`/`ZPS`,
-`LANDCOVER.FORESTINVENTORY.V2`, `HYDROGRAPHY.HYDROGRAPHY` sont les noms
-les plus probables au vu de la documentation du catalogue IGN
-Géoplateforme, mais à confirmer/ajuster via le GetCapabilities
-(`https://data.geopf.fr/wms-r/wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities`)
-si une couche reste vide en cochant la case.
 
 ### Démographie INSEE ("Mon territoire en chiffres")
 
@@ -1503,11 +1505,11 @@ les bonnes actualités - seule l'URL générée (`urlIllwapEmbed`) et son
 insertion dans le DOM au bon moment ont pu être testées.
 
 ## Ce qui reste à faire
-
-- **Couches ZNIEFF/Natura 2000/Forêts/Cours d'eau : noms de couches WMS
-  À VÉRIFIER EN CONDITIONS RÉELLES**, voir la section dédiée plus haut —
-  cocher chaque case une par une ; si une couche reste vide, consulter le
-  GetCapabilities et ajuster `wmsLayer` dans `js/config.js`.
+- **Vigicrues : endpoint et nom de champ À VÉRIFIER EN CONDITIONS
+  RÉELLES**, voir la section dédiée plus haut — cocher la couche ; si
+  rien ne s'affiche ou si tout reste gris (niveau non identifié),
+  inspecter la réponse réseau réelle et ajuster l'URL/les noms de
+  champs dans `js/config.js`/`js/popup.js`.
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.
 - Ajouter les commerces comme thématique dédiée sur la page d'accueil si
