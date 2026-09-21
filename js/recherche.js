@@ -162,9 +162,18 @@ const LABELS_SUP = {
     T1: "Voie ferrée", T5: "Aérodrome",
     INT1: "Cimetière"
 };
+/* ⚠️ Aucun des noms de champs devinés ci-dessous n'a été confirmé sur une
+   vraie réponse de l'API (voir plus haut) : élargi à plusieurs variantes
+   plausibles plutôt qu'une seule paire "categorie/type_sup", et le
+   console.warn permet de retrouver le nom exact du champ réel (ouvrir la
+   console du navigateur, F12) sans avoir à fouiller l'onglet Réseau. */
 function libelleSup(props) {
-    return premierChampValide(props, ["nomsuf", "libelle", "nom_sup", "generateur"])
-        || LABELS_SUP[props.categorie] || LABELS_SUP[props.type_sup] || props.categorie || props.type_sup || "Servitude";
+    const libelleAPI = premierChampValide(props, ["nomsuf", "libelle", "nom_sup", "generateur", "nom_generateur", "titre", "name"]);
+    if (libelleAPI) return libelleAPI;
+    const code = premierChampValide(props, ["categorie", "type_sup", "code", "code_sup", "type", "partition"]);
+    if (code && LABELS_SUP[code]) return LABELS_SUP[code];
+    console.warn("SUP : catégorie non reconnue, propriétés brutes reçues :", props);
+    return code ? `Servitude (${code})` : "Servitude (type non identifié - voir la console)";
 }
 
 /* Récupère les SUP dont l'assiette recoupe la géométrie de cette
@@ -179,13 +188,20 @@ function fetchSupPourParcelle(feature) {
         .then(r => r.ok ? r.json() : { features: [] })
         .then(data => {
             const features = extraireFeatures(data);
-            const parCategorie = {};
+            /* Dédoublonné par libellé final (pas par un nom de champ brut
+               deviné) : plusieurs assiettes de la même servitude peuvent
+               recouper la parcelle (ex. plusieurs segments de
+               canalisation), on ne veut qu'une seule ligne par servitude
+               réellement distincte à l'affichage. */
+            const libellesVus = new Set();
+            const resultat = [];
             features.forEach(f => {
-                const props = f.properties || {};
-                const categorie = props.categorie || props.type_sup || "?";
-                if (!parCategorie[categorie]) parCategorie[categorie] = libelleSup(props);
+                const libelle = libelleSup(f.properties || {});
+                if (libellesVus.has(libelle)) return;
+                libellesVus.add(libelle);
+                resultat.push({ libelle });
             });
-            return Object.entries(parCategorie).map(([categorie, libelle]) => ({ categorie, libelle }));
+            return resultat;
         })
         .catch(() => []);
 }

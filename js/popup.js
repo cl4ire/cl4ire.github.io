@@ -521,21 +521,22 @@ function construirePopupCadastre(props, infos) {
         </div>
     </div>` : "";
 
-    /* infos.sup : rempli par fetchSupPourParcelle (recherche.js), appelé
-       en parallèle par ouvrirPopupParcelle - absent (undefined) tant que
-       ce second appel réseau n'a pas répondu, pas seulement vide, d'où
-       le "|| []" plutôt qu'un simple .length. */
-    const sup = infos.sup || [];
-    const supHtml = sup.length ? `
-        <div class="popup-fiche-ligne"><span class="popup-fiche-badge info">🟠 ${sup.length} servitude${sup.length > 1 ? "s" : ""} d'utilité publique</span></div>
-        ${sup.map(s => `<div class="popup-fiche-precision">${echapperHtml(s.libelle)}</div>`).join("")}
-    ` : "";
-
-    const urbanisme = (infos.typezonePLUi || infos.niveauRGA || sup.length) ? `<div class="popup-fiche-section">
+    const urbanisme = (infos.typezonePLUi || infos.niveauRGA) ? `<div class="popup-fiche-section">
         <div class="popup-fiche-section-titre"><i class="fa-solid fa-building-shield"></i>Urbanisme</div>
         ${infos.typezonePLUi ? `<div class="popup-fiche-ligne">Zone ${echapperHtml(infos.typezonePLUi)}${infos.libellePLUi ? ` <span class="popup-fiche-precision">${echapperHtml(infos.libellePLUi)}</span>` : ""}</div>` : ""}
         ${infos.niveauRGA ? `<div class="popup-fiche-ligne">Aléa argiles : ${echapperHtml(LABELS_RGA[infos.niveauRGA] || String(infos.niveauRGA))}</div>` : ""}
-        ${supHtml}
+    </div>` : "";
+
+    /* infos.sup : rempli par fetchSupPourParcelle (recherche.js), appelé
+       en parallèle par ouvrirPopupParcelle - absent (undefined) tant que
+       ce second appel réseau n'a pas répondu, pas seulement vide, d'où
+       le "|| []" plutôt qu'un simple .length. Section à part entière
+       plutôt que noyée dans "Urbanisme" (retour direct : les deux
+       infos se mélangeaient visuellement sur la fiche). */
+    const sup = infos.sup || [];
+    const supSection = sup.length ? `<div class="popup-fiche-section">
+        <div class="popup-fiche-section-titre"><i class="fa-solid fa-scale-balanced"></i>Servitude${sup.length > 1 ? "s" : ""} d'utilité publique</div>
+        ${sup.map(s => `<div class="popup-fiche-ligne"><span class="popup-fiche-badge info">🟠 ${echapperHtml(s.libelle)}</span></div>`).join("")}
     </div>` : "";
 
     /* infos.proximite n'est déjà rempli par infosParcelle (recherche.js)
@@ -548,12 +549,12 @@ function construirePopupCadastre(props, infos) {
         ${infos.proximite.map(p => `<div class="popup-fiche-jour"><span>${echapperHtml(p.titre)}</span><strong>${formaterDistance(p.distance)}</strong></div>`).join("")}
     </div>` : "";
 
-    const rien = !bati && !ventes && !dpe && !urbanisme && !proximite
+    const rien = !bati && !ventes && !dpe && !urbanisme && !supSection && !proximite
         ? `<div class="popup-fiche-section"><div class="popup-fiche-vide">Aucune information supplémentaire disponible pour cette parcelle.</div></div>` : "";
 
     return `<div class="popup-fiche popup-fiche-parcelle">
         ${construirePopupCadastreEntete({ ...props, commune_nom: infos.adresse ? `${infos.adresse} · ${props.commune_nom}` : props.commune_nom })}
-        ${bati}${ventes}${dpe}${urbanisme}${proximite}${rien}
+        ${bati}${ventes}${dpe}${urbanisme}${supSection}${proximite}${rien}
     </div>`;
 }
 
