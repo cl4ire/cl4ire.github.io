@@ -142,11 +142,26 @@ function construireLegende(conf, map) {
 const VUES_PANNEAU = ["layers-normal-view", "results-view", "recherche-view"];
 
 function ouvrirVuePanneau(idVue) {
-    document.getElementById("layers-panel").classList.add("layers-panel-open");
+    /* Les deux classes ensemble, pas seulement "layers-panel-open" : si le
+       panneau avait été replié sur PC (togglerPanneauCouches, js/map.js),
+       "layers-panel-hidden" resterait sinon présente et masquerait quand
+       même le panneau (display:none) malgré l'ajout de "layers-panel-open" -
+       un raccourci "près de chez moi" ou "Recherche foncière" doit rouvrir
+       le panneau s'il était fermé, pas rester invisible. */
+    const panel = document.getElementById("layers-panel");
+    const etaitReplie = panel.classList.contains("layers-panel-hidden");
+    panel.classList.add("layers-panel-open");
+    panel.classList.remove("layers-panel-hidden");
     VUES_PANNEAU.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.hidden = (id !== idVue);
     });
+    /* Repris de togglerPanneauCouches (js/map.js) : le panneau reprend de
+       l'espace sur PC seulement s'il était effectivement replié - inutile
+       de redessiner les tuiles à chaque changement de vue interne au
+       panneau (résultats/recherche/liste normale) quand il était déjà
+       ouvert. */
+    if (etaitReplie) map.invalidateSize();
 }
 
 function fermerVuesPanneau() {

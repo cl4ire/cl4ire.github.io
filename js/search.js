@@ -45,7 +45,7 @@ function initRecherche(map, { onResultat } = {}) {
             map.setView(item.latlng, 18);
             marqueurRecherche = L.marker(item.latlng)
                 .addTo(map)
-                .bindPopup(construirePopupAdresse(item.titre, item.latlng.lat, item.latlng.lng))
+                .bindPopup(construirePopupAdresse(item.titre, item.latlng.lat, item.latlng.lng), OPTIONS_POPUP)
                 .openPopup();
         } else {
             /* Résultat de l'index local (mairie, commerce...) : rouvre
