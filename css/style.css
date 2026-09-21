@@ -188,11 +188,12 @@ button { font-family: inherit; cursor: pointer; }
 
 .rf-champ { display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; font-weight: 700; color: #2A2A28; margin-bottom: 10px; }
 .rf-champ:last-child { margin-bottom: 0; }
-.rf-champ select, .rf-champ input[type="number"] {
+.rf-champ select, .rf-champ input[type="number"], .rf-champ textarea {
     font-family: inherit; font-size: 13px; font-weight: 400;
     padding: 8px 10px; border: 1px solid var(--bordure); border-radius: 8px;
     background: var(--fond); width: 100%;
 }
+.rf-champ textarea { resize: vertical; min-height: 70px; }
 .rf-champ-plage .rf-plage { display: flex; align-items: center; gap: 8px; font-weight: 400; color: var(--ardoise); font-size: 12px; }
 .rf-champ-plage .rf-plage input { flex: 1; min-width: 0; }
 .rf-champ-inline { flex-direction: row; align-items: center; gap: 8px; }
@@ -408,6 +409,9 @@ button { font-family: inherit; cursor: pointer; }
 .modal-content h2 { font-family: var(--font-titre); color: var(--foret); }
 .about-source { font-size: 11.5px; color: var(--ardoise); }
 .info-close { position: absolute; top: 10px; right: 14px; background: none; border: none; font-size: 20px; color: var(--ardoise); }
+
+.contact-form { text-align: left; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--bordure); }
+.contact-titre { font-weight: 700; font-size: 13.5px; color: #2A2A28; margin-bottom: 10px; }
 
 @media (max-width: 780px) {
     #menu-button { display: inline-flex; align-items: center; justify-content: center; }

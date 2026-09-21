@@ -65,6 +65,20 @@ document.getElementById("about-close").addEventListener("click", () => {
     document.getElementById("about-modal").classList.remove("modal-open");
 });
 
+/* Formulaire de contact (bugs/idées) : pas de backend sur un site 100%
+   statique GitHub Pages, donc pas de vrai envoi depuis la page - le
+   bouton construit un lien mailto (type + message pré-remplis en sujet/
+   corps) et laisse le client mail du visiteur gérer l'envoi réel, comme
+   n'importe quel lien "contactez-nous" d'un site statique. */
+const EMAIL_CONTACT = "swallowage@proton.me";
+document.getElementById("contact-envoyer").addEventListener("click", () => {
+    const type = document.getElementById("contact-type").value;
+    const message = document.getElementById("contact-message").value.trim();
+    const sujet = type === "bug" ? "[GéoBercé] Signalement de bug" : "[GéoBercé] Proposition d'idée";
+    const corps = message || "(décrivez ici votre message)";
+    window.location.href = `mailto:${EMAIL_CONTACT}?subject=${encodeURIComponent(sujet)}&body=${encodeURIComponent(corps)}`;
+});
+
 document.getElementById("home-button").addEventListener("click", () => {
     fermerResultatsProximite();
     ouvrirAccueil();

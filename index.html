@@ -121,7 +121,23 @@
         <h2>GéoBercé</h2>
         <p>Un SIG local, gratuit et ouvert, qui regroupe au même endroit les informations utiles du territoire Loir-Lucé-Bercé : services, famille, commerces, mobilité, nature et patrimoine.</p>
         <p>Les couches marquées d'un point orange ● dans le panneau sont chargées à la demande, seulement quand vous les cochez : certaines interrogent des données en direct (OpenStreetMap, Géorisques...) plutôt qu'un fichier déjà présent sur le site, et peuvent donc prendre quelques secondes à s'afficher.</p>
-        <p class="about-source">Données : communes, EPCI, OpenStreetMap, data.gouv.fr, Vigieau, IGN Géoplateforme, prix-carburants.gouv.fr, Géorisques, ANCT.</p>
+        <p class="about-source">Données : communes, EPCI, OpenStreetMap, data.gouv.fr, Vigieau, IGN Géoplateforme, Géoportail de l'Urbanisme, prix-carburants.gouv.fr, Géorisques, ANCT.</p>
+
+        <div class="contact-form">
+            <div class="contact-titre">Un bug à signaler ? Une idée à proposer ?</div>
+            <div class="rf-champ">
+                <label for="contact-type">Type de message</label>
+                <select id="contact-type">
+                    <option value="bug">Signaler un bug</option>
+                    <option value="idee">Proposer une idée</option>
+                </select>
+            </div>
+            <div class="rf-champ">
+                <label for="contact-message">Votre message</label>
+                <textarea id="contact-message" rows="4" placeholder="Décrivez le bug (ce que vous avez fait, ce qui s'est passé) ou votre idée..."></textarea>
+            </div>
+            <button type="button" id="contact-envoyer" class="rf-bouton-principal">Envoyer par email</button>
+        </div>
     </div>
 </div>
 <!-- FIN MODALE À PROPOS -->

@@ -1187,8 +1187,160 @@ d'origine à chaque layer d'un `L.geoJSON`) sans rien stocker de plus
 dans l'index de recherche lui-même — mécanisme générique, réutilisable
 pour n'importe quel autre sous-type futur (ex. "boucherie", "coiffeur"...).
 
+## Formulaire de contact (bugs/idées)
+
+Bouton "Un bug à signaler ? Une idée à proposer ?" ajouté au bas de la
+modale "À propos" (pas un nouveau bouton dans la barre du haut, déjà
+chargée - voir la section précédente) : site 100% statique GitHub Pages,
+donc pas de vrai envoi de formulaire possible sans un service tiers.
+Choisi avec l'utilisatrice : un lien `mailto:` plutôt qu'un lien vers les
+issues GitHub du dépôt - accessible à n'importe quel visiteur du grand
+public sans compte GitHub, contrairement à la seconde option. Le
+sélecteur "Bug / Idée" et le message pré-remplissent le sujet/corps d'un
+mail vers `swallowage@proton.me` (`EMAIL_CONTACT` dans `js/map.js`) ;
+`window.location.href = "mailto:..."` laisse ensuite le client mail du
+visiteur gérer l'envoi réel, comme n'importe quel lien de contact d'un
+site statique.
+
+## Servitudes d'utilité publique (SUP), couches nature, démographie INSEE
+
+Trois ajouts suite à un brief détaillé de l'utilisatrice (issu d'un autre
+outil) évaluant les données pertinentes à croiser avec ce qui existe déjà
+plutôt que d'empiler de nouveaux points sur la carte. Plusieurs pistes du
+brief ont été écartées avant même d'être tentées, pour des raisons
+concrètes :
+- **Transport temps réel + calcul d'itinéraire "sans voiture"** : le
+  temps réel ALÉOP demande une clé API personnelle (même blocage déjà
+  rencontré et documenté plus haut dans ce fichier) ; un vrai calcul
+  d'itinéraire multimodal est un moteur de routing complet (type
+  OpenTripPlanner), hors de portée d'un site statique sans serveur.
+- **Base Permanente des Équipements (BPE) INSEE** : fichier national
+  volumineux, nécessiterait un extrait déjà filtré sur le territoire
+  fourni par l'utilisatrice (même contrainte que France Services) -
+  pas tenté faute d'extrait disponible pour l'instant.
+- **Chantiers/travaux de voirie locaux** : aucune source de données
+  ouverte identifiée qui couvrirait 24 communes rurales de cette taille
+  (contrairement à une grande ville) - la comcom/les mairies n'ont
+  vraisemblablement pas de flux public pour ça.
+
+### Servitudes d'utilité publique (fiche parcelle)
+
+Nouvelle section "Urbanisme" enrichie dans la fiche parcelle (couche
+`cadastre`) : en plus de la zone PLUi et de l'aléa RGA déjà affichés,
+un badge "🟠 N servitude(s) d'utilité publique" avec le libellé de
+chacune (monument historique à proximité, canalisation de gaz, risque
+naturel...) quand la parcelle en porte au moins une - rien du tout sinon,
+comme demandé ("affiche que si nécessaire").
+
+- **Source** : Géoportail de l'Urbanisme (GPU), via l'API Carto de l'IGN
+  (`https://apicarto.ign.fr/api/gpu/assiette-sup-s`), interrogée avec la
+  géométrie de la parcelle en paramètre (`fetchSupPourParcelle`,
+  `js/recherche.js`) - pas de préchargement pour tout le territoire
+  comme le cadastre : une servitude peut concerner n'importe quel point,
+  un filtre par bbox n'apporterait rien qu'un vrai filtre géométrique
+  par parcelle ne fasse déjà, pour un coût d'un seul petit appel réseau
+  par clic sur une parcelle plutôt qu'un flux volumineux à charger d'un
+  coup.
+- **Déclenchement** : en parallèle du reste des données foncières
+  (`Promise.all` dans `ouvrirPopupParcelle`, `js/popup.js`), pas après -
+  un appel réseau de plus qui ne doit pas retarder l'affichage des
+  infos déjà en local si le service SUP est lent ou injoignable.
+- **Nomenclature** : `LABELS_SUP` (`js/recherche.js`) traduit les codes
+  de catégorie officiels (AC1 = monument historique, I3 = canalisation
+  de gaz, PM1 = risque naturel...) les plus probables sur un territoire
+  rural, avec repli sur le libellé déjà fourni par l'API puis sur le
+  code brut si la catégorie n'est pas dans cette liste.
+- **Dégradation** : `.catch(() => [])` en cas d'échec (réseau, format de
+  réponse inattendu) - une section "Servitudes" simplement absente,
+  jamais une fiche cassée.
+
+⚠️ **Endpoint et noms de champs non vérifiables en conditions réelles**
+depuis cet environnement (accès réseau restreint pendant le
+développement, comme pour OLD/catnat/bâtiments documentés plus haut) :
+à confirmer une fois en ligne. Si aucune servitude n'apparaît jamais,
+même sur une parcelle dont on sait qu'elle en porte une (ex. à côté
+d'un des monuments historiques déjà cartographiés dans la couche
+`immeublesProteges`), inspecter la réponse réseau réelle de
+`fetchSupPourParcelle` et ajuster l'URL/les noms de propriétés lues
+(`categorie`, `type_sup`, `nomsuf`...) dans `js/recherche.js`.
+
+### Couches nature (ZNIEFF, Natura 2000, forêts, cours d'eau)
+
+Cinq nouvelles couches dans le groupe "Nature & rando" : ZNIEFF type 1,
+ZNIEFF type 2, Natura 2000 (zones de protection spéciale + sites
+d'importance communautaire combinés en une seule requête WMS plutôt que
+deux cases à cocher), Forêts (BD Forêt), Cours d'eau.
+
+Implémentées en flux **WMS** (`type: "wms"`, `data.geopf.fr/wms-r/wms`,
+même service déjà en place pour la couche OLD) plutôt qu'en WFS/GeoJSON
+à parser : un simple survol visuel sans fiche cliquable (comme OLD),
+qui évite d'avoir à deviner en plus les noms de champs de propriétés
+pour une popup - beaucoup moins de surface d'incertitude qu'un flux
+GeoJSON dont on ne connaîtrait ni le nom de couche ni le schéma.
+
+⚠️ **Noms de couches WMS non vérifiés en conditions réelles** (même
+limite qu'OLD) : `PROTECTEDAREAS.ZNIEFF1`/`ZNIEFF2`/`SIC`/`ZPS`,
+`LANDCOVER.FORESTINVENTORY.V2`, `HYDROGRAPHY.HYDROGRAPHY` sont les noms
+les plus probables au vu de la documentation du catalogue IGN
+Géoplateforme, mais à confirmer/ajuster via le GetCapabilities
+(`https://data.geopf.fr/wms-r/wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities`)
+si une couche reste vide en cochant la case.
+
+### Démographie INSEE ("Mon territoire en chiffres")
+
+Nouvelle couche choroplèthe `demographie` (groupe Habitat & urbanisme,
+à côté de "Prix immobilier par commune") : population, évolution sur 10
+ans, tranches d'âge, logements, revenu médian, nombre d'entreprises par
+commune. `construirePopupDemographie` (`js/popup.js`) n'affiche que les
+champs réellement présents dans la donnée, comme demandé - contrairement
+à la fiche parcelle où presque tout est généralement disponible,
+l'idée est ici de rester utilisable même avec un extrait partiel.
+Couleur de la choroplèthe : `couleurPopulation` (`js/layers.js`), une
+échelle séquentielle à une seule teinte plutôt que rouge/vert
+(`couleurPrix`) - une population plus ou moins nombreuse n'est pas
+"bonne" ou "mauvaise" comme peut l'être un prix au m², une échelle à
+jugement de valeur serait trompeuse ici.
+
+**Contrairement aux autres flux "à vérifier" ci-dessus, il ne s'agit pas
+ici d'un nom de couche incertain mais d'une vraie absence de source
+exploitable depuis cet environnement** : l'API INSEE (recensement,
+revenus fiscaux Filosofi, établissements) n'est pas joignable ici (accès
+réseau restreint) et n'a de toute façon pas d'endpoint public filtrable
+par commune sans clé personnelle, contrairement à Géorisques ou IGN
+Géoplateforme. **`couches/urbanisme/demographie_communes.geojson`
+n'existe donc pour l'instant qu'avec un tableau `features` vide** : la
+couche se charge sans erreur mais n'affiche rien tant que ce fichier
+n'est pas complété. Voir "Ce qui reste à faire" ci-dessous pour le
+détail des champs attendus et la marche à suivre.
+
 ## Ce qui reste à faire
 
+- **Couche `demographie` ("Mon territoire en chiffres") : fichier de
+  données à fournir**, voir la section dédiée plus haut — contrairement
+  aux autres éléments de cette liste, ce n'est pas un flux à vérifier
+  mais une vraie donnée manquante : `couches/urbanisme/demographie_communes.geojson`
+  n'a que des `features` vides pour l'instant. Pour l'activer, fournir un
+  extrait (CSV ou GeoJSON) filtré sur les 24 communes du territoire
+  (`COMMUNES_TERRITOIRE` dans `js/config.js`), avec une Feature par
+  commune (géométrie du contour communal, à reprendre de
+  `couches/communes.geojson`) et tout ou partie de ces propriétés :
+  `commune` (code INSEE), `commune_nom`, `population`, `evolution_10ans`
+  (variation en %), `pop_0_14`/`pop_65_plus` (%), `nb_logements`,
+  `revenu_median` (€/an), `nb_entreprises`. Sources possibles : API INSEE
+  Données locales (recensement, Filosofi, REE) ou téléchargement direct
+  sur insee.fr - même principe que le fichier France Services fourni
+  précédemment (un extrait déjà filtré, pas un accès direct à l'API
+  depuis le site).
+- **Couches ZNIEFF/Natura 2000/Forêts/Cours d'eau : noms de couches WMS
+  À VÉRIFIER EN CONDITIONS RÉELLES**, voir la section dédiée plus haut —
+  cocher chaque case une par une ; si une couche reste vide, consulter le
+  GetCapabilities et ajuster `wmsLayer` dans `js/config.js`.
+- **Servitudes d'utilité publique (fiche parcelle) : endpoint APICarto
+  GPU À VÉRIFIER EN CONDITIONS RÉELLES**, voir la section dédiée plus
+  haut — ouvrir la fiche d'une parcelle proche d'un monument historique
+  déjà cartographié (couche `immeublesProteges`) et vérifier qu'une
+  servitude AC1 apparaît bien ; sinon, inspecter la réponse réseau réelle
+  et ajuster `fetchSupPourParcelle`/`LABELS_SUP` dans `js/recherche.js`.
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.
 - Ajouter les commerces comme thématique dédiée sur la page d'accueil si

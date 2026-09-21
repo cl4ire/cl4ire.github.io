@@ -521,10 +521,21 @@ function construirePopupCadastre(props, infos) {
         </div>
     </div>` : "";
 
-    const urbanisme = (infos.typezonePLUi || infos.niveauRGA) ? `<div class="popup-fiche-section">
+    /* infos.sup : rempli par fetchSupPourParcelle (recherche.js), appelé
+       en parallèle par ouvrirPopupParcelle - absent (undefined) tant que
+       ce second appel réseau n'a pas répondu, pas seulement vide, d'où
+       le "|| []" plutôt qu'un simple .length. */
+    const sup = infos.sup || [];
+    const supHtml = sup.length ? `
+        <div class="popup-fiche-ligne"><span class="popup-fiche-badge info">🟠 ${sup.length} servitude${sup.length > 1 ? "s" : ""} d'utilité publique</span></div>
+        ${sup.map(s => `<div class="popup-fiche-precision">${echapperHtml(s.libelle)}</div>`).join("")}
+    ` : "";
+
+    const urbanisme = (infos.typezonePLUi || infos.niveauRGA || sup.length) ? `<div class="popup-fiche-section">
         <div class="popup-fiche-section-titre"><i class="fa-solid fa-building-shield"></i>Urbanisme</div>
         ${infos.typezonePLUi ? `<div class="popup-fiche-ligne">Zone ${echapperHtml(infos.typezonePLUi)}${infos.libellePLUi ? ` <span class="popup-fiche-precision">${echapperHtml(infos.libellePLUi)}</span>` : ""}</div>` : ""}
         ${infos.niveauRGA ? `<div class="popup-fiche-ligne">Aléa argiles : ${echapperHtml(LABELS_RGA[infos.niveauRGA] || String(infos.niveauRGA))}</div>` : ""}
+        ${supHtml}
     </div>` : "";
 
     /* infos.proximite n'est déjà rempli par infosParcelle (recherche.js)
@@ -553,8 +564,13 @@ function construirePopupCadastre(props, infos) {
 function ouvrirPopupParcelle(feature, layer) {
     if (layer._infosChargees) return;
     layer._infosChargees = true;
-    chargerDonneesFoncieres().then(() => {
+    /* SUP récupérées en parallèle du reste (pas après) : un appel réseau
+       de plus qui ne doit pas retarder l'affichage des infos déjà en
+       local (DVF/DPE/PLUi/RGA/bâti) si le service SUP est lent ou
+       injoignable - voir fetchSupPourParcelle (recherche.js). */
+    Promise.all([chargerDonneesFoncieres(), fetchSupPourParcelle(feature)]).then(([, sup]) => {
         const infos = infosParcelle(feature);
+        infos.sup = sup;
         const popup = layer.getPopup();
         if (popup) popup.setContent(injecterItineraire(construirePopupCadastre(feature.properties, infos), feature));
     });
@@ -1647,6 +1663,54 @@ function construirePopupPrixCommune(props) {
     </div>`;
 }
 
+/* "Mon territoire en chiffres" (démographie INSEE) : fichier pas encore
+   fourni (voir config.js), donc rien de vérifiable en conditions
+   réelles pour l'instant - chaque ligne est strictement conditionnelle
+   à la présence du champ correspondant, plutôt que de supposer que
+   l'extrait fourni un jour couvrira systématiquement tous les
+   indicateurs (le fichier France Services fourni précédemment, par
+   comparaison, ne couvrait déjà pas tous les champs imaginables). Noms
+   de champs volontairement simples/prévisibles (population,
+   evolution_10ans, pop_0_14, pop_65_plus, nb_logements, revenu_median,
+   nb_entreprises) : à documenter dans le README pour l'utilisatrice qui
+   préparera l'extrait. */
+function construirePopupDemographie(props) {
+    const nom = premierChampValide(props, ["commune_nom", "commune"]) || "Commune";
+    const couleur = couleurPopulation(props.population);
+    const evolution = typeof props.evolution_10ans === "number" ? props.evolution_10ans : null;
+
+    const lignes = [
+        typeof props.population === "number"
+            ? `<div class="popup-fiche-ligne"><i class="fa-solid fa-people-group"></i> ${props.population.toLocaleString("fr-FR")} habitants${evolution !== null ? ` <span class="popup-fiche-precision">(${evolution > 0 ? "+" : ""}${evolution}% sur 10 ans)</span>` : ""}</div>`
+            : null,
+        (typeof props.pop_0_14 === "number" || typeof props.pop_65_plus === "number")
+            ? `<div class="popup-fiche-ligne"><i class="fa-solid fa-child-reaching"></i> ${[
+                typeof props.pop_0_14 === "number" ? `${props.pop_0_14}% de 0-14 ans` : null,
+                typeof props.pop_65_plus === "number" ? `${props.pop_65_plus}% de 65 ans et +` : null
+            ].filter(Boolean).join(" · ")}</div>`
+            : null,
+        typeof props.nb_logements === "number"
+            ? `<div class="popup-fiche-ligne"><i class="fa-solid fa-house"></i> ${props.nb_logements.toLocaleString("fr-FR")} logements</div>` : null,
+        typeof props.revenu_median === "number"
+            ? `<div class="popup-fiche-ligne"><i class="fa-solid fa-sack-dollar"></i> Revenu médian : ${Math.round(props.revenu_median).toLocaleString("fr-FR")} €/an</div>` : null,
+        typeof props.nb_entreprises === "number"
+            ? `<div class="popup-fiche-ligne"><i class="fa-solid fa-building"></i> ${props.nb_entreprises.toLocaleString("fr-FR")} entreprises</div>` : null
+    ].filter(Boolean);
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${couleur}"><i class="fa-solid fa-chart-column"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${couleur}">Mon territoire en chiffres</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+            </div>
+        </div>
+        <div class="popup-fiche-section">
+            ${lignes.length ? lignes.join("") : `<div class="popup-fiche-vide">Aucun indicateur disponible pour cette commune.</div>`}
+        </div>
+    </div>`;
+}
+
 /* Zonage PLUi : LABELS_PLUI (recherche.js) déjà utilisé par la
    recherche foncière et la fiche parcelle, réutilisé ici pour rester
    cohérent partout où un code de zone PLUi est affiché. */
@@ -1805,6 +1869,7 @@ function construirePopup(feature, layerConf) {
     else if (layerConf.id === "arretsALEOP") html = construirePopupArretBus(props);
     else if (layerConf.id === "reseauALEOP") html = construirePopupLigneBus(props);
     else if (layerConf.id === "prixImmobilier") html = construirePopupPrixCommune(props);
+    else if (layerConf.id === "demographie") html = construirePopupDemographie(props);
     else if (layerConf.id === "zonagePLUi") html = construirePopupZonePLUi(props);
     else if (layerConf.id === "rga") html = construirePopupRga(props);
     else html = construirePopupGenerique(feature, layerConf);

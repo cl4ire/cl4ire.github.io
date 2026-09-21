@@ -877,6 +877,51 @@ const LAYERS = [
         subtitleFields: []
     },
 
+    /* ---------- NATURE (flux WMS IGN Géoplateforme/INPN) ----------
+       Même service que la couche OLD plus bas (data.geopf.fr/wms-r/wms,
+       déjà en place) : simples survols visuels sans fiche cliquable
+       (comme OLD), pas de flux WFS/GeoJSON à parser - beaucoup moins de
+       surface à deviner que des noms de champs de popup. ⚠️ Noms de
+       couches WMS non vérifiables en conditions réelles depuis cet
+       environnement (accès réseau restreint pendant le développement,
+       même limite qu'OLD) : à confirmer/ajuster une fois en ligne via le
+       GetCapabilities (voir OLD ci-dessous pour l'URL), voir le README. */
+    {
+        id: "znieff1", group: "tourisme", label: "ZNIEFF type 1",
+        type: "wms", wmsUrl: "https://data.geopf.fr/wms-r/wms", wmsLayer: "PROTECTEDAREAS.ZNIEFF1",
+        opacity: 0.35, attribution: "IGN / INPN", color: "#8BC34A",
+        lazy: true, searchable: false, cluster: false
+    },
+    {
+        id: "znieff2", group: "tourisme", label: "ZNIEFF type 2",
+        type: "wms", wmsUrl: "https://data.geopf.fr/wms-r/wms", wmsLayer: "PROTECTEDAREAS.ZNIEFF2",
+        opacity: 0.3, attribution: "IGN / INPN", color: "#689F38",
+        lazy: true, searchable: false, cluster: false
+    },
+    {
+        id: "natura2000", group: "tourisme", label: "Natura 2000",
+        /* Deux couches combinées en une seule requête WMS (séparées par
+           une virgule, syntaxe standard OGC) : les zones de protection
+           spéciale "oiseaux" (ZPS) ET les sites d'importance
+           communautaire "habitats" (SIC), plutôt que deux cases à cocher
+           pour une distinction que peu de visiteurs feront la différence. */
+        type: "wms", wmsUrl: "https://data.geopf.fr/wms-r/wms", wmsLayer: "PROTECTEDAREAS.SIC,PROTECTEDAREAS.ZPS",
+        opacity: 0.3, attribution: "IGN / INPN", color: "#33691E",
+        lazy: true, searchable: false, cluster: false
+    },
+    {
+        id: "foretsIgn", group: "tourisme", label: "Forêts (BD Forêt)",
+        type: "wms", wmsUrl: "https://data.geopf.fr/wms-r/wms", wmsLayer: "LANDCOVER.FORESTINVENTORY.V2",
+        opacity: 0.4, attribution: "IGN", color: PALETTE.foret,
+        lazy: true, searchable: false, cluster: false
+    },
+    {
+        id: "coursDeau", group: "tourisme", label: "Cours d'eau",
+        type: "wms", wmsUrl: "https://data.geopf.fr/wms-r/wms", wmsLayer: "HYDROGRAPHY.HYDROGRAPHY",
+        opacity: 0.6, attribution: "IGN", color: PALETTE.riviere,
+        lazy: true, searchable: false, cluster: false
+    },
+
     /* ---------- URBANISME (fichiers lourds => chargement différé) ---------- */
     {
         id: "prixImmobilier", group: "urbanisme", label: "Prix immobilier par commune",
@@ -886,6 +931,30 @@ const LAYERS = [
         valueField: "prix_m2_median",
         titleFields: ["commune"],
         subtitleFields: ["prix_m2_median", "nb_ventes"]
+    },
+    {
+        id: "demographie", group: "urbanisme", label: "Mon territoire en chiffres",
+        /* ⚠️ Fichier attendu mais pas encore fourni. Contrairement aux
+           autres flux "à vérifier" du site (OLD, catnat, SUP...), il ne
+           s'agit pas ici d'un nom de couche incertain mais d'une vraie
+           absence de source exploitable depuis cet environnement :
+           l'API INSEE (recensement, revenus fiscaux Filosofi, logements)
+           n'est pas joignable ici (accès réseau restreint) et n'a de
+           toute façon pas d'endpoint public filtrable par commune sans
+           clé personnelle - contrairement à Géorisques/data.geopf.fr.
+           Même solution que pour France Services : un extrait CSV/GeoJSON
+           déjà filtré sur les 24 communes du territoire, à fournir par
+           l'utilisatrice. Tant que ce fichier n'existe pas, la couche se
+           charge sans erreur (chargerCouche gère un 404 proprement) mais
+           reste vide - voir le README, "Ce qui reste à faire", pour le
+           détail des champs attendus par construirePopupDemographie. */
+        file: "couches/urbanisme/demographie_communes.geojson", type: "choropleth",
+        color: PALETTE.terracotta,
+        styleFn: feature => ({ color: "#fff", weight: 1, fillColor: couleurPopulation(feature.properties.population), fillOpacity: 0.65 }),
+        lazy: false, searchable: true, cluster: false,
+        valueField: "population",
+        titleFields: ["commune_nom", "commune"],
+        subtitleFields: ["population", "revenu_median"]
     },
     {
         id: "dpe", group: "urbanisme", label: "Diagnostics énergétiques (DPE)",

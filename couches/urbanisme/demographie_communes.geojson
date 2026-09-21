@@ -1,0 +1,5 @@
+{
+  "_lisezmoi": "Fichier attendu par la couche 'demographie' (Mon territoire en chiffres) mais pas encore fourni - voir le README pour le détail. Une Feature par commune, même géométrie que couches/communes.geojson (polygone du contour communal, à copier/adapter depuis ce fichier), avec dans 'properties' tout ou partie de : commune (code INSEE), commune_nom, population (nombre), evolution_10ans (variation en %, ex. 3.2 ou -1.5), pop_0_14 (%), pop_65_plus (%), nb_logements, revenu_median (€/an), nb_entreprises. Tous ces champs sont optionnels un par un : construirePopupDemographie (js/popup.js) n'affiche que ceux réellement présents. Source possible : API INSEE Données locales (recensement, Filosofi revenus, REE établissements) ou l'Insee.fr, filtrée sur les 24 communes du territoire (COMMUNES_TERRITOIRE dans js/config.js).",
+  "type": "FeatureCollection",
+  "features": []
+}
