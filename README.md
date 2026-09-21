@@ -1300,37 +1300,40 @@ si une couche reste vide en cochant la case.
 
 ### Démographie INSEE ("Mon territoire en chiffres")
 
-Nouvelle couche choroplèthe `demographie` (groupe Habitat & urbanisme,
-à côté de "Prix immobilier par commune") : population, évolution sur 10
-ans, tranches d'âge, logements, revenu médian, nombre d'entreprises par
-commune. `construirePopupDemographie` (`js/popup.js`) n'affiche que les
-champs réellement présents dans la donnée, comme demandé - contrairement
-à la fiche parcelle où presque tout est généralement disponible,
-l'idée est ici de rester utilisable même avec un extrait partiel.
-Couleur de la choroplèthe : `couleurPopulation` (`js/layers.js`), une
-échelle séquentielle à une seule teinte plutôt que rouge/vert
-(`couleurPrix`) - une population plus ou moins nombreuse n'est pas
-"bonne" ou "mauvaise" comme peut l'être un prix au m², une échelle à
-jugement de valeur serait trompeuse ici.
+Couche choroplèthe `demographie` (groupe Habitat & urbanisme, à côté de
+"Prix immobilier par commune"), **complète pour les 24 communes** grâce
+à deux extraits Insee - Statistiques locales fournis par l'utilisatrice
+(complétant la population déjà disponible via `couches/communes.geojson`,
+IGN ADMIN-EXPRESS) :
+- `population` (2023), `revenu_median` (médiane du niveau de vie 2023,
+  €/an), `nb_entreprises` (nombre d'établissements Insee/REE 2024 - pas
+  le nombre de sociétés au sens strict, terminologie la plus courante
+  utilisée par les communes pour ce type de chiffre)
+- `nb_logements` (2023) et `part_logements_vacants` (%)
+- `evolution_annuelle_2017_2023` (%, taux **annuel moyen** Insee sur la
+  période - pas une variation cumulée sur 10 ans, étiqueté avec sa
+  vraie période dans la popup plutôt que d'afficher "sur 10 ans" comme
+  une première version du code le faisait avant d'avoir de vraies
+  données)
+- `part_moins_25`/`part_25_64`/`part_65_plus` (%, calculés à partir des
+  effectifs Insee par tranche d'âge - moins de 25 ans / 25-64 ans / 65
+  ans et plus, pas la répartition 0-14/65+ imaginée dans une première
+  version du schéma avant d'avoir les vraies tranches disponibles)
 
-**Mise à jour : la population est maintenant renseignée pour les 24
-communes**, sans attendre un extrait INSEE séparé - `couches/communes.geojson`
-(IGN ADMIN-EXPRESS, millésime 2023-01-01) contenait déjà un champ
-`population` fiable, réutilisé tel quel pour peupler
-`couches/urbanisme/demographie_communes.geojson` (voir son `_lisezmoi`).
-La choroplèthe et le dashboard commune (voir plus bas) affichent donc
-déjà un chiffre réel par commune.
+Deux extraits vérifiés avant fusion (24 codes INSEE correspondant
+exactement à `COMMUNES_TERRITOIRE`, population/revenu/établissements
+identiques entre les deux fichiers) - voir le `_lisezmoi` de
+`couches/urbanisme/demographie_communes.geojson`.
 
-**Les autres champs restent une vraie absence de source exploitable
-depuis cet environnement**, pas juste "à vérifier" : `evolution_10ans`,
-`pop_0_14`/`pop_65_plus`, `nb_logements`, `revenu_median`,
-`nb_entreprises` n'ont pas d'équivalent dans `communes.geojson`, et
-l'API INSEE (recensement complet, revenus fiscaux Filosofi,
-établissements REE) n'est pas joignable ici (accès réseau restreint) ni
-dotée d'un endpoint public filtrable par commune sans clé personnelle,
-contrairement à Géorisques ou IGN Géoplateforme. Voir "Ce qui reste à
-faire" ci-dessous pour le détail des champs attendus et la marche à
-suivre.
+`construirePopupDemographie` (`js/popup.js`) n'affiche que les champs
+réellement présents, comme demandé à l'origine - reste vrai même
+maintenant que l'extrait est complet : un futur extrait partiel (une
+seule des deux sources par exemple) continuerait de s'afficher
+correctement. Couleur de la choroplèthe : `couleurPopulation`
+(`js/layers.js`), une échelle séquentielle à une seule teinte plutôt que
+rouge/vert (`couleurPrix`) - une population plus ou moins nombreuse
+n'est pas "bonne" ou "mauvaise" comme peut l'être un prix au m², une
+échelle à jugement de valeur serait trompeuse ici.
 
 ## Popups qui se fermaient près des bords de carte
 
@@ -1488,18 +1491,6 @@ insertion dans le DOM au bon moment ont pu être testées.
 
 ## Ce qui reste à faire
 
-- **Couche `demographie` ("Mon territoire en chiffres") : champs
-  au-delà de la population à fournir**, voir la section dédiée plus
-  haut — `couches/urbanisme/demographie_communes.geojson` a désormais
-  une Feature par commune avec `commune` (code INSEE), `commune_nom` et
-  `population` (réelle, reprise de `couches/communes.geojson`). Pour
-  compléter, ajouter à chaque Feature tout ou partie de ces propriétés :
-  `evolution_10ans` (variation en %), `pop_0_14`/`pop_65_plus` (%),
-  `nb_logements`, `revenu_median` (€/an), `nb_entreprises`. Sources
-  possibles : API INSEE Données locales (recensement, Filosofi, REE) ou
-  téléchargement direct sur insee.fr - même principe que le fichier
-  France Services fourni précédemment (un extrait déjà filtré, pas un
-  accès direct à l'API depuis le site).
 - **Couches ZNIEFF/Natura 2000/Forêts/Cours d'eau : noms de couches WMS
   À VÉRIFIER EN CONDITIONS RÉELLES**, voir la section dédiée plus haut —
   cocher chaque case une par une ; si une couche reste vide, consulter le
