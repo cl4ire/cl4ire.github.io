@@ -2837,6 +2837,58 @@ le haut (`scrollTop = 0`), pareil pour le titre de l'accueil - capture
 d'écran vérifiée visuellement, tout le contenu du haut est maintenant
 atteignable.
 
+## Popups qui se ferment aussitôt sur mobile (suite), cluster inutile sur les tuiles filtrées
+
+Deux retours directs de l'utilisatrice.
+
+**Popups qui se referment aussitôt à l'ouverture sur mobile** : le
+correctif précédent (retrait de `width: ... !important` en CSS, voir
+"Popups qui se fermaient près des bords de carte" plus haut)
+n'a pas suffi - persiste toujours. Cette section-là avait déjà anticipé
+la suite sans pouvoir la confirmer ("un gestionnaire de clic global qui
+fermerait la popup par erreur"). Coupable trouvé cette fois :
+`closePopupOnClick` de Leaflet lui-même (option du niveau de la carte,
+`true` par défaut, jamais explicitement réglée jusqu'ici) - un clic
+n'importe où ailleurs sur la carte referme la popup ouverte. Sur
+certains navigateurs mobiles, un simple tap sur un marqueur peut
+déclencher à la fois le clic du marqueur (ouvre la popup) ET,
+quasi simultanément, un clic synthétique sur la carte juste en dessous,
+que Leaflet interprète comme "cliquer ailleurs" et referme donc la
+popup aussitôt - avant même que l'œil ait le temps de la voir.
+
+Corrigé en désactivant `closePopupOnClick` à l'initialisation de la
+carte (`js/map.js`). Contrepartie acceptée : un tap en dehors d'une
+popup ne la referme plus tout seul, il faut désormais son propre bouton
+× ou ouvrir un autre marqueur (`autoClose`, resté activé, referme
+l'ancienne popup dans ce cas - mécanisme différent, pas concerné par ce
+changement) - léger changement d'habitude, largement préférable à des
+popups qui se ferment sans prévenir.
+
+⚠️ **Non vérifiable dans ce sandbox** (Leaflet n'y charge pas, et le
+bug lui-même ne s'est jamais reproduit dans cet environnement de
+développement même avant ce correctif - seulement rapporté en
+conditions réelles) : correction basée sur la cause la plus probable
+au vu du code et du comportement documenté de Leaflet, à confirmer une
+fois déployé. Si le problème persiste malgré tout, il faudra creuser du
+côté de MarkerClusterGroup (spiderfy) ou d'un conflit spécifique entre
+les gestionnaires tactiles de Leaflet et ceux de ce site.
+
+**Cluster inutile sur une tuile filtrée** : cliquer sur "Restaurants" à
+Jupilles (2 résultats) regroupait les 2 marqueurs en un seul rond de
+cluster à ouvrir en plus, plutôt que de les afficher directement -
+`afficherCoucheFiltreeCommune` (voir plus haut) construisait sa couche
+temporaire avec la même config que la vraie couche territoriale,
+`cluster: true` compris. Le clustering sert à absorber des centaines de
+marqueurs sur tout le territoire, plus lieu d'être une fois réduit à
+une poignée d'entités précises par le clic sur une tuile. Corrigé en
+passant une copie de la config avec `cluster: false` forcé (`{
+...layerConf, cluster: false }`, jamais modifiée sur `layerConf`
+lui-même, partagé avec la vraie couche).
+
+Testé (Playwright) : confirmé que la couche temporaire reçoit bien
+`cluster: false` alors que la config `LAYERS` partagée garde
+`cluster: true` intact (aucune fuite d'état entre les deux usages).
+
 ## Ce qui reste à faire
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.

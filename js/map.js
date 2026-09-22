@@ -3,7 +3,25 @@
    ========================================================= */
 
 /* ---------- 1. Carte + fond de carte ---------- */
-const map = L.map("map", { zoomControl: false }).setView([47.791528, 0.412223], 12);
+/* closePopupOnClick: false - retour direct de l'utilisatrice, une popup
+   se refermait "aussitôt" à l'ouverture sur mobile. Comportement par
+   défaut de Leaflet (closePopupOnClick, true par défaut) : un clic
+   n'importe où ailleurs sur la carte referme la popup ouverte - sur
+   certains navigateurs mobiles, un simple tap sur un marqueur peut
+   déclencher à la fois le clic du marqueur (ouvre la popup) ET,
+   quasi simultanément, un clic synthétique sur la carte en dessous
+   (Leaflet le referme aussitôt), sans qu'aucun code de ce site n'y
+   soit pour quelque chose - déjà pressenti dans une correction
+   précédente ("un gestionnaire de clic global qui fermerait la popup
+   par erreur", voir README, "Popups qui se fermaient près des bords de
+   carte") sans avoir pu être confirmé faute d'un vrai navigateur mobile
+   pendant le développement. Contrepartie acceptée : un tap en dehors
+   d'une popup ne la referme plus tout seul, il faut son propre bouton
+   × ou ouvrir un autre marqueur (qui referme l'ancienne popup via
+   autoClose, resté activé, un mécanisme différent de celui-ci) - léger
+   changement d'habitude, largement préférable à des popups qui se
+   ferment sans prévenir. */
+const map = L.map("map", { zoomControl: false, closePopupOnClick: false }).setView([47.791528, 0.412223], 12);
 
 L.control.zoom({ position: "topright" }).addTo(map);
 
