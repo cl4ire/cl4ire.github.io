@@ -379,22 +379,29 @@ function construireElus(texte) {
 
 function construirePopupCommerce(props) {
     const cat = categorieCommerce(props.type);
+    const fermeture = COMMERCES_FERMES[props.osm_id];
+    const couleur = fermeture ? "#B8C0BD" : cat.color;
     const nom = premierChampValide(props, ["name", "brand"]) || cat.label;
     const adresse = [props.address, props.com_nom].filter(Boolean).join(" · ");
-    const horaires = parserHorairesOsm(props.opening_hours);
-    const contacts = construireContacts(props);
+    /* Horaires/contact masqués si fermé : les afficher quand même serait
+       trompeur (un numéro qui ne répondra plus, des horaires qui ne
+       s'appliquent plus) - remplacés par la mention de fermeture. */
+    const horaires = fermeture ? null : parserHorairesOsm(props.opening_hours);
+    const contacts = fermeture ? [] : construireContacts(props);
     const lignesHoraires = construireLignesHoraires(horaires);
 
     return `<div class="popup-fiche">
         <div class="popup-fiche-entete">
-            <div class="popup-fiche-icon" style="background:${cat.color}"><i class="${cat.icon}"></i></div>
+            <div class="popup-fiche-icon" style="background:${couleur}"><i class="${cat.icon}"></i></div>
             <div class="popup-fiche-titre-wrap">
-                <div class="popup-fiche-tag" style="color:${cat.color}">${echapperHtml(cat.label)}</div>
+                <div class="popup-fiche-tag" style="color:${couleur}">${echapperHtml(cat.label)}</div>
                 <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
                 ${adresse ? `<div class="popup-fiche-adresse">${echapperHtml(adresse)}</div>` : ""}
             </div>
-            ${construireBadgeOuvert(horaires)}
+            ${fermeture ? `<span class="popup-fiche-badge ferme-def"><span></span>Fermé définitivement</span>` : construireBadgeOuvert(horaires)}
         </div>
+
+        ${fermeture ? `<div class="popup-fiche-section"><div class="popup-fiche-precision">Repéré comme fermé${fermeture.depuis ? ` depuis ${echapperHtml(fermeture.depuis)}` : ""}${fermeture.note ? ` — ${echapperHtml(fermeture.note)}` : ""}. Le point reste affiché au cas où un nouveau commerce reprendrait le local.</div></div>` : ""}
 
         ${contacts.length ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Contact</div><div class="popup-fiche-contacts">${contacts.join("")}</div></div>` : ""}
 

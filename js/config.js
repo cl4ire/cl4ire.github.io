@@ -206,6 +206,22 @@ const TYPES_COMMERCES = [
 ];
 const TYPE_COMMERCE_DEFAUT = { id: "autre", label: "Autres commerces", icon: "fa-solid fa-store", color: PALETTE.ardoise };
 
+/* Retour direct de l'utilisatrice : un commerce définitivement fermé ne
+   doit pas disparaître de la carte (un repreneur peut toujours arriver un
+   jour) - juste être signalé comme tel plutôt que supprimé. Liste tenue à
+   la main, par osm_id (déjà présent dans chaque fiche de
+   couches/commerces/commerces.geojson, stable d'un export à l'autre)
+   plutôt qu'un fichier séparé à fetcher : même convention que les autres
+   petites listes manuelles de ce fichier (COMMUNES_TERRITOIRE,
+   TYPES_COMMERCES...), pas de latence réseau/course avec le rendu des
+   marqueurs à gérer pour une poignée d'entrées. Pour signaler une
+   fermeture : ajouter une entrée ici avec l'osm_id du commerce (visible
+   dans les propriétés de sa fiche popup) ; pour un rétablissement,
+   retirer l'entrée. */
+const COMMERCES_FERMES = {
+    // "node/XXXXXXXXX": { depuis: "2025-06", note: "" }
+};
+
 function categorieCommerce(typeBrut) {
     if (!typeBrut) return TYPE_COMMERCE_DEFAUT;
     const valeurs = String(typeBrut).split(/[;,/]/).map(v => v.trim().toLowerCase());
@@ -214,9 +230,15 @@ function categorieCommerce(typeBrut) {
 
 /* Point d'extension utilisé par icons.js/layers.js : renvoie l'icône et
    la couleur à utiliser pour CE commerce précis plutôt que celles, fixes,
-   de la couche "commerces". */
+   de la couche "commerces". Gris neutre (ni la couleur de la catégorie, ni
+   un rouge d'alerte) pour un commerce fermé : reste identifiable par son
+   icône (toujours une boulangerie sur la carte) mais visuellement en
+   retrait, sans donner l'impression d'un problème/danger. */
 function iconeCommerce(feature) {
     const cat = categorieCommerce((feature.properties || {}).type);
+    if (COMMERCES_FERMES[(feature.properties || {}).osm_id]) {
+        return { icon: cat.icon, color: "#B8C0BD" };
+    }
     return { icon: cat.icon, color: cat.color };
 }
 
