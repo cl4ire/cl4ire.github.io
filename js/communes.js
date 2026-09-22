@@ -267,7 +267,7 @@ function construireCarteDecompte(codeInsee) {
                 <div class="commune-decompte-groupe-titre">${echapperHtml(g.titre)}</div>
                 <div class="commune-tuiles">
                     ${g.lignes.map(l => `
-                        <div class="commune-tuile" data-couche="${l.layerId}" title="Voir sur la carte">
+                        <div class="commune-tuile" data-couche="${l.layerId}" data-label="${echapperHtml(l.label)}" title="Voir sur la carte">
                             <div class="commune-tuile-icone" style="background:${l.color}"><i class="${l.icon}"></i></div>
                             <div class="commune-tuile-nombre">${l.n}</div>
                             <div class="commune-tuile-label">${echapperHtml(l.label)}</div>
@@ -381,7 +381,17 @@ let ecouteurTuilesBranche = false;
    chaque clic. */
 let coucheFiltreeCommuneActuelle = null;
 
-function afficherCoucheFiltreeCommune(map, layerId, codeInsee) {
+/* label (optionnel) : une tuile ne représente pas TOUTE la couche mais
+   une sous-catégorie précise à l'intérieur (ex. "Restaurants & bars"
+   parmi tous les commerces) - retour direct de l'utilisatrice, cliquer
+   sur "Restaurants" à Jupilles affichait tous les commerces de la
+   commune, pas seulement les restaurants. Refiltré avec exactement le
+   même grouper() que celui qui a produit cette tuile (decompteEntitesCommune)
+   pour garantir que "ce qui s'affiche au clic" corresponde pile à "ce
+   que la tuile comptait" - pas de logique de comparaison dupliquée à
+   maintenir en double. Sans grouper (ex. airesJeu, tuile = couche
+   entière déjà) : label ignoré, tout le filtrage commune suffit. */
+function afficherCoucheFiltreeCommune(map, layerId, codeInsee, label) {
     const layerConf = LAYERS.find(l => l.id === layerId);
     /* La configuration de filtrage (parGeometrie ou non) vient de
        COUCHES_DECOMPTE_COMMUNE, pas de LAYERS : c'est elle qui sait
@@ -396,14 +406,31 @@ function afficherCoucheFiltreeCommune(map, layerId, codeInsee) {
             map.removeLayer(coucheFiltreeCommuneActuelle);
             coucheFiltreeCommuneActuelle = null;
         }
-        const features = featuresCommune(decompteConf, codeInsee);
-        if (!features.length) return;
+        let features = featuresCommune(decompteConf, codeInsee);
+        if (label && decompteConf.grouper) {
+            features = features.filter(f => decompteConf.grouper(f).label === label);
+        }
+        if (!features.length) {
+            /* Filet de sécurité seulement (ne devrait pas arriver en
+               pratique, une tuile n'existe que pour un décompte > 0) :
+               recentre au moins sur la commune plutôt que de ne rien
+               faire du tout. */
+            if (typeof zoomerSurCommune === "function") zoomerSurCommune(map, codeInsee);
+            return;
+        }
         /* construireCoucheDonnees (js/layers.js) : même construction
            (style, popup, index de recherche) que la vraie couche, pour
            un rendu identique - juste un sous-ensemble de features en
            entrée plutôt que le fichier complet. */
         coucheFiltreeCommuneActuelle = construireCoucheDonnees({ type: "FeatureCollection", features }, layerConf);
         coucheFiltreeCommuneActuelle.addTo(map);
+        /* Zoome sur l'étendue réelle du résultat filtré (pas juste la
+           commune entière) : "ça zoome dessus", retour direct de
+           l'utilisatrice - un seul restaurant à Jupilles doit recentrer
+           serré dessus, pas laisser deviner où il est dans toute la
+           commune. maxZoom : un résultat unique (bounds ponctuelles)
+           irait sinon au zoom maximal de la carte. */
+        map.fitBounds(coucheFiltreeCommuneActuelle.getBounds(), { maxZoom: 16 });
     });
 }
 
@@ -416,8 +443,7 @@ function initClicTuilesDecompte(map) {
         const codeInsee = document.getElementById("commune-page").dataset.codeInsee;
         if (!codeInsee) return;
         fermerVueCommune();
-        if (typeof zoomerSurCommune === "function") zoomerSurCommune(map, codeInsee);
-        afficherCoucheFiltreeCommune(map, tuile.dataset.couche, codeInsee);
+        afficherCoucheFiltreeCommune(map, tuile.dataset.couche, codeInsee, tuile.dataset.label);
     });
 }
 
