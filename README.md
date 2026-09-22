@@ -2597,6 +2597,61 @@ du masque (panes, ordre d'empilement visuel) non vérifiable dans ce
 sandbox (Leaflet n'y charge pas, limite déjà documentée) - capture
 d'écran à confirmer une fois déployé.
 
+## Raccourcis réordonnés, tri des carburants par prix, sous-titres lisibles
+
+Trois retours directs de l'utilisatrice.
+
+**Ordre des raccourcis d'accueil** (`RACCOURCIS`, `js/config.js`) : les
+5 jugés les plus utiles au quotidien en premier, dans l'ordre demandé -
+carburant, boulangerie, courrier, casier colis, assistante maternelle.
+Ce dernier n'existait pas encore comme raccourci : filtre sur
+`properties.type === "Assistant maternel"` de la couche `petiteEnfance`
+(valeur confirmée sur les 63 assistants maternels du fichier), même
+principe que le filtre déjà existant pour "La boulangerie la plus
+proche" (`type === "bakery"`).
+
+**Tri des résultats carburant par prix** : le filtre par type de
+carburant existait déjà (`filtreCarburantActif`), mais le tri restait
+toujours par distance. Nouveau bloc `#results-tri-carburant`
+("Plus proche"/"Moins cher", `index.html`), visible seulement pour les
+résultats carburant (même logique d'affichage conditionnel que le
+filtre par type) : `triCarburantActif` (`js/proximite.js`) pilote le tri
+final dans `rendreResultatsProximite`, réinitialisé à "distance" à
+chaque nouvelle recherche.
+
+**Sous-titres illisibles dans les résultats** ("bakery", horaires au
+format OSM brut "Mo-Fr 08:00-19:00...") : `ajouterAuIndex`
+(`js/layers.js`) construisait le sous-titre des résultats de recherche/
+"près de chez moi" en concaténant tels quels les champs bruts de
+`subtitleFields` - directement exploitable pour des champs déjà en
+français (ex. `com_nom`), mais pas pour un type OSM ou des horaires au
+format machine. Nouveau point d'extension optionnel
+`layerConf.sousTitrePourFeature(feature)` (même principe que
+`iconePourFeature` déjà existant), qui prend le dessus sur
+`subtitleFields` quand présent :
+
+- **`sousTitreCommerce`** (`js/config.js`) : catégorie déjà traduite
+  (`categorieCommerce`, la même que celle affichée sur l'icône/dans la
+  popup) + statut "Ouvert maintenant"/"Fermé actuellement" résumé en un
+  mot (le détail complet des horaires reste dans la popup au clic) -
+  "Fermé définitivement" à la place pour un commerce dans
+  `COMMERCES_FERMES`.
+- **`sousTitreBanque`** : corrige au passage un vrai bug d'affichage
+  trouvé en testant - `subtitleFields: ["com_nom", "has_atm"]`
+  affichait le mot "true" en toutes lettres pour un distributeur
+  (`has_atm` est un booléen, pas du texte), et rien du tout pour une
+  agence (`has_atm: false`, traité comme une valeur vide par le filtre
+  générique). Remplacé par "Distributeur"/"Agence bancaire" en clair.
+
+Testé (Playwright) : ordre des 5 premiers raccourcis vérifié, tri
+carburant vérifié dans les deux sens (3 stations de test, ordre par
+distance puis par prix puis retour à la distance, tous corrects) ;
+sous-titres vérifiés pour un commerce ouvert, un commerce fermé
+(catalogué dans `COMMERCES_FERMES`), un commerce sans horaires, un DAB
+et une agence bancaire - aucun ne laisse plus fuiter de valeur brute
+("bakery", "true") ; confirmé que `ajouterAuIndex` utilise bien
+`sousTitrePourFeature` quand la config d'une couche le déclare.
+
 ## Ce qui reste à faire
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.

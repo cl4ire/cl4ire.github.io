@@ -77,6 +77,12 @@ let derniersResultatsProximite = [];
 let dernierTitreProximite = "";
 let filtreOuvertActif = false;
 let filtreCarburantActif = LISTE_CARBURANTS[0].champ; // Gazole par défaut, le plus répandu
+/* Retour direct de l'utilisatrice : pouvoir trier les stations par prix,
+   pas seulement par distance - "distance" reste le tri par défaut
+   (comme pour toutes les autres recherches "près de chez moi"), "prix"
+   un choix explicite propre aux carburants (seule couche à porter un
+   prix comparable d'un résultat à l'autre). */
+let triCarburantActif = "distance";
 
 function rendreResultatsProximite(map) {
     const estCarburant = derniersResultatsProximite.length > 0 && derniersResultatsProximite[0].layerId === "carburants";
@@ -99,6 +105,9 @@ function rendreResultatsProximite(map) {
                 return { ...item, carburantChoisi: (entree && entree.statut === "Disponible") ? entree : null };
             })
             .filter(item => item.carburantChoisi)
+            .sort((a, b) => triCarburantActif === "prix"
+                ? a.carburantChoisi.prix - b.carburantChoisi.prix
+                : a.distance - b.distance)
             .slice(0, 15);
     }
 
@@ -141,6 +150,7 @@ function rendreResultatsProximite(map) {
 }
 
 let ecouteursFiltreProximiteBranches = false;
+let ecouteursTriCarburantBranches = false;
 
 /* Le filtre "Ouvert maintenant" n'a de sens que si au moins un résultat
    porte une info d'horaires exploitable - sans ça (ex. "Où déposer mon
@@ -154,6 +164,7 @@ function afficherResultatsProximite(map, titre, resultats) {
     dernierTitreProximite = titre;
     derniersResultatsProximite = resultats.map(item => ({ ...item, ouvert: estOuvertItem(item) }));
     filtreOuvertActif = false;
+    triCarburantActif = "distance";
 
     ouvrirVueResultats(titre);
 
@@ -187,6 +198,22 @@ function afficherResultatsProximite(map, titre, resultats) {
             bouton.addEventListener("click", () => {
                 filtreCarburantActif = bouton.dataset.carburant;
                 filtreCarburantConteneur.querySelectorAll(".results-filtre-btn").forEach(b => b.classList.toggle("actif", b === bouton));
+                rendreResultatsProximite(map);
+            });
+        });
+    }
+
+    const triCarburantConteneur = document.getElementById("results-tri-carburant");
+    triCarburantConteneur.hidden = !estCarburant;
+    triCarburantConteneur.querySelectorAll(".results-filtre-btn").forEach(bouton => {
+        bouton.classList.toggle("actif", bouton.dataset.tri === "distance");
+    });
+    if (!ecouteursTriCarburantBranches) {
+        ecouteursTriCarburantBranches = true;
+        triCarburantConteneur.querySelectorAll(".results-filtre-btn").forEach(bouton => {
+            bouton.addEventListener("click", () => {
+                triCarburantActif = bouton.dataset.tri;
+                triCarburantConteneur.querySelectorAll(".results-filtre-btn").forEach(b => b.classList.toggle("actif", b === bouton));
                 rendreResultatsProximite(map);
             });
         });
