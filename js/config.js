@@ -53,6 +53,33 @@ function couleurVigieau(feature) {
     return { color: "#fff", weight: 1, fillColor: remplissage, fillOpacity: 0.5 };
 }
 
+/* Une couleur par itinéraire (randonnées, itinéraires cyclables) plutôt
+   qu'une seule couleur fixe pour toute la couche - retour direct de
+   l'utilisatrice ("ils se mélangent tous entre eux"). Attribution dans
+   l'ordre d'apparition (par couche, pas mélangé entre rando et vélo)
+   plutôt qu'un hash du "id" : un hash peut faire retomber deux
+   itinéraires sur la même couleur même avec très peu d'entrées
+   (constaté en testant : 8 tracés vélo ne donnaient que 5 couleurs
+   distinctes) - ici, tant que le nombre d'itinéraires d'une couche ne
+   dépasse pas la taille de la palette, chacun est garanti unique.
+   Rouge volontairement absent de cette palette : déjà réservé aux
+   couleurs d'alerte/risque ailleurs sur le site (Vigieau, Vigicrues),
+   inutile de prêter à confusion sur un simple tracé de randonnée. */
+const PALETTE_ITINERAIRES = ["#1D9E75", "#378ADD", "#D85A30", "#8E44AD", "#E1B12C", "#16A085", "#D63384", "#2C3E50"];
+const compteurCouleurItineraires = {}; // id de couche -> nombre déjà attribués
+const couleurParItineraire = {}; // "idCouche|idTrace" -> couleur déjà attribuée
+function couleurItineraire(feature, idCouche) {
+    const props = feature.properties || {};
+    const idTrace = String(props.id ?? props.ref ?? props.name ?? "");
+    const cle = idCouche + "|" + idTrace;
+    if (!(cle in couleurParItineraire)) {
+        const position = compteurCouleurItineraires[idCouche] || 0;
+        couleurParItineraire[cle] = PALETTE_ITINERAIRES[position % PALETTE_ITINERAIRES.length];
+        compteurCouleurItineraires[idCouche] = position + 1;
+    }
+    return couleurParItineraire[cle];
+}
+
 /* Même principe que couleurVigieau ci-dessus (nom de champ distant non
    vérifiable en conditions réelles depuis cet environnement), mais avec
    un repli plus précis en priorité : NivSituVigiCruEnt est le nom de
@@ -574,6 +601,27 @@ function styleCatnat(feature) {
     return { color: "#fff", weight: 1, fillColor: couleurCatnat(nb), fillOpacity: 0.55 };
 }
 
+/* Couleur par opérateur pour les antennes-relais (couches/services/antennes.geojson) :
+   comparaison par mot-clé plutôt que valeur exacte du champ "operator",
+   dont les variantes réelles observées dans ce fichier sont multiples
+   pour un même opérateur (ex. "Orange" et "Orange Services Fixes",
+   "Free Mobile" et "IFW-Free") - vérifié sur les 33 features du fichier
+   avant d'écrire cette liste, pas une supposition. Les opérateurs
+   d'infrastructure (TDF, ATC France, Itas Tim - propriétaires du
+   pylône, pas forcément l'opérateur qui l'exploite) et les antennes
+   sans "operator" renseigné (1/3 du fichier) tombent dans "autres". */
+const OPERATEURS_ANTENNES = [
+    { motCle: "orange", color: "#FF7900" },
+    { motCle: "bouygues", color: PALETTE.riviere },
+    { motCle: "sfr", color: "#D6193C" },
+    { motCle: "free", color: PALETTE.ardoise }
+];
+function iconeAntenne(feature) {
+    const operateur = (feature.properties.operator || "").toLowerCase();
+    const trouve = OPERATEURS_ANTENNES.find(o => operateur.includes(o.motCle));
+    return { icon: "fa-solid fa-tower-cell", color: trouve ? trouve.color : "#B8C0BD" };
+}
+
 /* =========================================================
    COUCHES
    type: "point" | "line" | "polygon" | "choropleth"
@@ -646,8 +694,13 @@ const LAYERS = [
     },
     {
         id: "airesJeu", group: "services", label: "Aires de jeux",
+        /* sansPopup : voir fontaines/parkings/antennes plus haut, même
+           raison - vérifié sur les 14 features du fichier, aucune n'a de
+           "name" renseigné et min_age/max_age/access ne le sont chacun
+           que sur 1 seule. */
         file: "couches/services/airesJeu.geojson", type: "point",
         icon: "fa-solid fa-child-reaching", color: PALETTE.terracotta,
+        sansPopup: true,
         lazy: false, searchable: true, cluster: true,
         titleFields: ["name"],
         subtitleFields: ["min_age", "max_age"]
@@ -725,6 +778,7 @@ const LAYERS = [
            absent des données OSM. */
         file: "couches/services/antennes.geojson",
         type: "point", icon: "fa-solid fa-tower-cell", color: PALETTE.ardoise,
+        iconePourFeature: iconeAntenne,
         sansPopup: true,
         lazy: false, searchable: true, cluster: true,
         titleFields: ["operator", "ref"],
@@ -877,6 +931,7 @@ const LAYERS = [
         file: ["couches/tourisme/randonnees_osm.geojson", "couches/tourisme/randonnees.geojson"],
         transform: fusionnerFeatureCollections,
         type: "line", color: PALETTE.feuille,
+        styleFn: feature => ({ color: couleurItineraire(feature, "randonnees"), weight: 3, opacity: 0.8 }),
         lazy: false, searchable: false, cluster: false,
         titleFields: ["name", "id"],
         subtitleFields: ["distance", "dureeEstim"]
@@ -888,6 +943,7 @@ const LAYERS = [
            voir le README. */
         file: "couches/tourisme/velo.geojson",
         type: "line", color: PALETTE.terracotta,
+        styleFn: feature => ({ color: couleurItineraire(feature, "velo"), weight: 3, opacity: 0.8 }),
         lazy: false, searchable: false, cluster: false,
         titleFields: ["name", "ref"],
         subtitleFields: ["network"]

@@ -142,6 +142,27 @@ function jourOsmAujourdhui() {
     return ORDRE_JOURS_OSM[(new Date().getDay() + 6) % 7]; // getDay() : 0 = dimanche
 }
 
+/* Horaires saisonniers ("Apr-Sep: Mo-Sa 09:00-19:00; Oct-Mar: Mo-Sa
+   09:00-17:00", motif courant pour les déchèteries été/hiver) : à
+   vérifier si la date actuelle tombe dans une plage "Mmm[ jj]-Mmm[ jj]:"
+   en tête d'un bloc, gère aussi les plages à cheval sur l'année civile
+   (Oct-Mar). Le jour du mois est optionnel ("Jun 15-Sep 15:" pour un
+   changement en cours de mois, comme "Apr-Sep:" pour un mois entier) -
+   représenté en un seul entier "mois*100+jour" pour comparer les deux
+   d'un coup (ex. 15 juin = 5*100+15 = 515, mai = mois 4 → 4*100+1 à
+   4*100+31 par défaut si aucun jour n'est précisé). */
+const ORDRE_MOIS_OSM = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+function dateOsmDansPlage(mois1, jour1, mois2, jour2, moisActuel, jourActuel) {
+    const i = ORDRE_MOIS_OSM.indexOf(mois1.toUpperCase());
+    const j = ORDRE_MOIS_OSM.indexOf(mois2.toUpperCase());
+    if (i === -1 || j === -1) return true; // motif non reconnu : ne filtre pas plutôt que de tout masquer
+    const debut = i * 100 + (jour1 ? Number(jour1) : 1);
+    const fin = j * 100 + (jour2 ? Number(jour2) : 31);
+    const actuel = moisActuel * 100 + jourActuel;
+    if (debut <= fin) return actuel >= debut && actuel <= fin;
+    return actuel >= debut || actuel <= fin; // plage à cheval sur l'année (ex. Oct-Mar)
+}
+
 /* Développe "Mo-Fr" ou "Mo,We,Fr" en liste de jours OSM. Ne couvre pas
    toute la spécification opening_hours (jours fériés "PH", horaires sur
    plusieurs semaines...), seulement les motifs les plus courants dans
@@ -175,10 +196,25 @@ function parserHorairesOsm(valeur) {
         ORDRE_JOURS_OSM.forEach(j => { tous[j] = ["00:00-24:00"]; });
         return tous;
     }
+    const maintenant = new Date();
+    const moisActuel = maintenant.getMonth(); // 0-11, aligné sur l'index de ORDRE_MOIS_OSM
+    const jourActuel = maintenant.getDate(); // 1-31
     const horaires = {};
     let auMoinsUn = false;
     valeur.split(";").forEach(bloc => {
         bloc = bloc.trim();
+        /* Plage saisonnière optionnelle en tête du bloc ("Apr-Sep: ..."
+           ou "Jun 15-Sep 15: ..." pour un changement en cours de mois,
+           motif courant déchèteries été/hiver) : un bloc hors saison
+           actuelle est simplement ignoré, pas affiché en dehors de sa
+           période - le reste du bloc (jours + horaires) est traité
+           normalement une fois la plage retirée. */
+        const saison = bloc.match(/^([A-Za-z]{3})(?:\s+(\d{1,2}))?\s*-\s*([A-Za-z]{3})(?:\s+(\d{1,2}))?\s*:\s*(.+)$/);
+        if (saison) {
+            const [, mois1, jour1, mois2, jour2, reste] = saison;
+            if (!dateOsmDansPlage(mois1, jour1, mois2, jour2, moisActuel, jourActuel)) return;
+            bloc = reste.trim();
+        }
         const espace = bloc.indexOf(" ");
         if (espace === -1) return;
         const jours = developperJoursOsm(bloc.slice(0, espace));
@@ -1050,6 +1086,16 @@ function construirePopupDechet(props) {
 
 function construirePopupDecheterie(props) {
     const operateur = operateurDechet(props.operator);
+    /* opening_hours pas encore renseigné dans le fichier source au
+       moment d'écrire ce code (voir README) : géré exactement comme
+       les commerces (parserHorairesOsm/construireBadgeOuvert/
+       construireLignesHoraires, y compris les horaires saisonnières
+       été/hiver, ex. "Apr-Sep: Mo-Sa 09:00-19:00; Oct-Mar: Mo-Sa
+       09:00-17:00") - n'affiche simplement rien tant que le champ est
+       vide, comme partout ailleurs sur le site. */
+    const horaires = parserHorairesOsm(props.opening_hours);
+    const lignesHoraires = construireLignesHoraires(horaires);
+
     return `<div class="popup-fiche">
         <div class="popup-fiche-entete">
             <div class="popup-fiche-icon" style="background:${PALETTE.foret}"><i class="fa-solid fa-warehouse"></i></div>
@@ -1059,7 +1105,10 @@ function construirePopupDecheterie(props) {
                 ${props.com_nom ? `<div class="popup-fiche-adresse">${echapperHtml(props.com_nom)}</div>` : ""}
                 ${operateur ? `<div class="popup-fiche-puce" style="color:${PALETTE.foret}"><i class="fa-solid fa-building"></i>Gérée par ${echapperHtml(operateur)}</div>` : ""}
             </div>
+            ${construireBadgeOuvert(horaires)}
         </div>
+
+        ${lignesHoraires ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Horaires</div>${lignesHoraires}</div>` : ""}
     </div>`;
 }
 

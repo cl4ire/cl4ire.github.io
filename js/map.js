@@ -69,6 +69,7 @@ initFiltrePanneau();
 construireEcranAccueil(map);
 construireRaccourcis(map);
 construireSelecteurCommunes(map);
+initHeroParcelle(map);
 demarrerVisiteSiPremiereFois();
 
 initRecherche(map, {

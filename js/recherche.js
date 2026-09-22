@@ -24,6 +24,17 @@
    territoire entier : ça allège à la fois le calcul (jointures
    géométriques avec DPE/PLUi/RGA) et reste cohérent avec ce qu'on voit
    sur la carte. Il faut donc être zoomé sur une zone avant de chercher.
+
+   Exception : la recherche rapide de l'écran d'accueil (#hero-parcelle,
+   voir lancerRechercheRapide plus bas) demande une commune précise, pas
+   "ce qui est affiché" - borner à une seule commune (quelques centaines
+   à quelques milliers de parcelles, pas les dizaines de milliers du
+   territoire entier) reste assez léger pour s'en passer, donc pas
+   besoin d'être déjà zoomé dessus. chargerEtEnrichirCommune reprend
+   directement donneesBrutes["cadastre"] (déjà chargé en entier pour
+   toute la comcom, featuresDansVue n'en filtre qu'un sous-ensemble par
+   la vue) plutôt que de zoomer la carte artificiellement pour retomber
+   dans le cas général.
    ========================================================= */
 
 const COUCHES_RECHERCHE = ["cadastre", "mutations", "dpe", "zonagePLUi", "rga"];
@@ -424,7 +435,8 @@ function correspond(r, c) {
     if (c.commune && r.commune !== c.commune) return false;
     if (c.surfaceMin != null && (r.surface == null || r.surface < c.surfaceMin)) return false;
     if (c.surfaceMax != null && (r.surface == null || r.surface > c.surfaceMax)) return false;
-    if (c.typezonePLUi && r.typezonePLUi !== c.typezonePLUi) return false;
+    if (c.typezonePLUi === "constructible" && !ZONES_PLUI_CONSTRUCTIBLES.includes(r.typezonePLUi)) return false;
+    if (c.typezonePLUi && c.typezonePLUi !== "constructible" && r.typezonePLUi !== c.typezonePLUi) return false;
     if (c.niveauRGA != null && r.niveauRGA !== c.niveauRGA) return false;
     if (c.aEuUneVente && !r.dvf) return false;
     if (c.prixMin != null && (r.prixVente == null || r.prixVente < c.prixMin)) return false;
@@ -513,6 +525,7 @@ function construireFormulaire() {
                     <span>Zone PLUi</span>
                     <select id="rf-plui">
                         <option value="">Toutes les zones</option>
+                        <option value="constructible">Constructible dès aujourd'hui (U + AUc)</option>
                         ${Object.keys(LABELS_PLUI).map(k => `<option value="${k}">${LABELS_PLUI[k]}</option>`).join("")}
                     </select>
                 </label>
@@ -611,7 +624,7 @@ function reinitialiserFormulaire() {
    ailleurs dans le site n'a aucun rapport avec la recherche foncière. */
 let ecouteurDeplacementRechercheBranche = false;
 
-function ouvrirRecherche(map) {
+function ouvrirRecherche(map, codeInseeCible) {
     fermerAccueil();
     ouvrirVuePanneau("recherche-view");
     construireFormulaire();
@@ -639,7 +652,7 @@ function ouvrirRecherche(map) {
         });
     }
 
-    chargerEtEnrichirVueActuelle(map);
+    return codeInseeCible ? chargerEtEnrichirCommune(codeInseeCible) : chargerEtEnrichirVueActuelle(map);
 }
 
 /* Charge (si besoin, chargerDonneesFoncieres est idempotente) et
@@ -655,17 +668,84 @@ function chargerEtEnrichirVueActuelle(map) {
     if (map.getZoom() < zoomMin) {
         statut.textContent = `Zoomez sur une zone du territoire (niveau ${zoomMin} ou plus) pour lancer une recherche : elle ne porte que sur les parcelles affichées à l'écran.`;
         document.getElementById("rf-appliquer").disabled = true;
-        return;
+        return Promise.resolve(false);
     }
 
-    chargerDonneesFoncieres().then(() => {
+    return chargerDonneesFoncieres().then(() => {
         const visibles = featuresDansVue("cadastre", map);
         enrichirParcelles(visibles);
         document.getElementById("rf-appliquer").disabled = false;
         mettreAJourStatut();
+        return true;
+    });
+}
+
+/* Voir la note en tête de fichier : contourne volontairement la limite
+   "vue actuelle" pour une commune précise, en repartant de
+   donneesBrutes["cadastre"] (déjà chargé en entier) plutôt que de
+   featuresDansVue (limité à la vue carte). */
+function chargerEtEnrichirCommune(codeInsee) {
+    const bouton = document.getElementById("rf-ici");
+    if (bouton) bouton.hidden = true;
+
+    return chargerDonneesFoncieres().then(() => {
+        const parcelles = (donneesBrutes["cadastre"] || []).filter(f => f.properties && f.properties.commune === codeInsee);
+        enrichirParcelles(parcelles);
+        document.getElementById("rf-appliquer").disabled = false;
+        mettreAJourStatut();
+        return true;
     });
 }
 
 function rechercherIci(map) {
     chargerEtEnrichirVueActuelle(map);
+}
+
+/* =========================================================
+   RECHERCHE RAPIDE (écran d'accueil, #hero-parcelle)
+   Quatre champs simplifiés (commune, surface min, constructible,
+   DPE connu) qui préremplissent le panneau complet plutôt que de
+   dupliquer sa logique de filtrage - "DPE connu" coche les 7 classes
+   à la fois (peu importe laquelle, du moment qu'une étiquette existe),
+   "constructible" réutilise l'option "constructible" du champ Zone
+   PLUi ajoutée ci-dessus pour l'occasion (utilisable aussi directement
+   depuis le panneau complet, pas seulement via ce raccourci).
+   ========================================================= */
+function initHeroParcelle(map) {
+    const selectCommune = document.getElementById("hp-commune");
+    if (!selectCommune) return;
+    Object.keys(COMMUNES_TERRITOIRE)
+        .sort((a, b) => COMMUNES_TERRITOIRE[a].localeCompare(COMMUNES_TERRITOIRE[b], "fr"))
+        .forEach(code => {
+            const option = document.createElement("option");
+            option.value = code;
+            option.textContent = COMMUNES_TERRITOIRE[code];
+            selectCommune.appendChild(option);
+        });
+
+    document.getElementById("hero-parcelle-form").addEventListener("submit", event => {
+        event.preventDefault();
+        lancerRechercheRapide(map, {
+            commune: document.getElementById("hp-commune").value || null,
+            surfaceMin: document.getElementById("hp-surface-min").value || null,
+            constructible: document.getElementById("hp-constructible").checked,
+            dpeConnu: document.getElementById("hp-dpe-connu").checked
+        });
+    });
+}
+
+function lancerRechercheRapide(map, criteres) {
+    ouvrirRecherche(map, criteres.commune).then(succes => {
+        document.getElementById("rf-commune").value = criteres.commune || "";
+        if (criteres.surfaceMin) document.getElementById("rf-surface-min").value = criteres.surfaceMin;
+        if (criteres.constructible) document.getElementById("rf-plui").value = "constructible";
+        if (criteres.dpeConnu) CLASSES_DPE.forEach(c => { document.getElementById("rf-dpe-" + c).checked = true; });
+        mettreAJourStatut();
+        /* succes=false : soit pas de commune choisie et carte pas assez
+           zoomée (message déjà affiché par chargerEtEnrichirVueActuelle),
+           soit un souci de chargement - dans les deux cas les critères
+           restent préremplis, à l'utilisatrice de zoomer/cliquer
+           "Afficher les parcelles correspondantes" elle-même. */
+        if (succes) afficherResultatsRecherche(map, filtrerParcelles(lireCriteres()));
+    });
 }

@@ -967,6 +967,18 @@ concrètes détaillées ci-dessous.
   concret et fiable (position réelle des pylônes/antennes), même
   mécanique Overpass que toutes les autres couches du site.
 
+  **Symbologie par opérateur** (retour de l'utilisatrice) : `iconeAntenne`
+  (`js/config.js`) colore chaque marqueur selon le champ `operator` -
+  Orange, Bouygues (bleu), SFR (rouge), Free (gris), et un gris clair
+  distinct pour "autres" (opérateurs d'infrastructure comme TDF/ATC
+  France/Itas Tim - propriétaires du pylône, pas forcément l'opérateur
+  qui l'exploite - et les antennes sans `operator` renseigné, environ un
+  tiers du fichier). Comparaison par mot-clé (`operator.includes(...)`)
+  plutôt que valeur exacte, vérifiée sur les 33 features réelles du
+  fichier avant d'écrire la liste : plusieurs variantes existent pour un
+  même opérateur ("Orange" et "Orange Services Fixes", "Free Mobile" et
+  "IFW-Free").
+
 **Pistes évaluées mais écartées** (documentées ici plutôt que de laisser
 une trace uniquement dans la conversation) :
 - **SITADEL (permis de construire)** — la donnée officielle existe, mais
@@ -1171,6 +1183,17 @@ n'est pas concerné) - seul `onEachFeature` (`layers.js`) saute l'appel
 simplement rien. Les fonctions `construirePopupFontaine`/
 `construirePopupParking`/`construirePopupAntenne` devenues inutilisées
 ont été supprimées plutôt que laissées en code mort.
+
+**Aires de jeux** a rejoint la liste plus tard (même retour, même
+raison) : vérifié sur les 14 features du fichier, aucune n'a de `name`
+renseigné, `min_age`/`max_age`/`access` chacun sur une seule. En
+vérifiant, `searchable: true` s'est avéré déjà inerte pour cette couche
+avant même ce changement : `ajouterAuIndex` (`layers.js`) exige un
+titre non vide (issu de `titleFields`, donc `name` ici) pour indexer une
+entrée - `name` étant systématiquement absent, aucune des 14 aires de
+jeux n'a jamais été indexée. Laissé tel quel (le flag redevient actif de
+lui-même si `name` finit par être renseigné un jour dans OSM), pas
+retiré pour ce que ça change concrètement aujourd'hui.
 
 D'autres couches au contenu parfois tout aussi pauvre (toilettes
 publiques, petit patrimoine rural) ont volontairement été **gardées**
@@ -1549,6 +1572,39 @@ petit écran (icône seule, `@media max-width: 780px`), l'infobulle
 comble ce manque de clarté sans reprendre la place qu'occuperait un
 libellé toujours visible.
 
+### Boutons mal alignés sur mobile (+ débordement à 320px)
+
+Retour direct de l'utilisatrice ("les boutons en haut sont pas très
+bien alignés sur mobile"). En mesurant les cinq boutons de
+`#topbar-actions` sur plusieurs largeurs réelles (320 à 414px), deux
+causes distinctes :
+- **Accueil/Couches/Actualités** sont en icône seule à taille fixe
+  (38×38, `border-radius:999px`/`10px`) depuis le début, mais
+  **Recherche foncière** et **À propos** n'avaient jamais reçu le même
+  traitement : tailles en `padding` variable selon leur contenu texte
+  (29px de haut pour Recherche foncière, 30 à **42px** pour "À propos"
+  selon que son texte tienne sur une ou deux lignes à telle largeur
+  précise) - cinq boutons côte à côte à des hauteurs différentes, d'où
+  le désalignement visuel.
+- Corrigé en alignant `#recherche-button`/`#about-button` sur le même
+  gabarit icône-seule 38×38 que les trois autres dans
+  `@media (max-width: 780px)` (`#about-button` a gagné une icône
+  `fa-circle-info`, comme Recherche foncière avait déjà `fa-sliders` -
+  texte masqué, infobulle au survol à la place). Un texte de taille fixe
+  ne peut plus jamais passer à la ligne : plus aucune variation de
+  hauteur possible, quelle que soit la largeur exacte de l'écran.
+
+**Débordement découvert en testant la correction** (pas présent avant,
+mais pas non plus créé par elle : déjà là, juste plus visible une fois
+les boutons uniformisés) : à 320px de large (iPhone SE, bas de gamme
+Android), même une fois la barre de recherche réduite à zéro, la simple
+somme des cinq boutons + leurs espacements dépassait encore la largeur
+de l'écran de 27px - "À propos" se retrouvait hors champ, nécessitant
+un défilement horizontal pour l'atteindre. Resserré dans
+`@media (max-width: 420px)` (boutons à 34×34 au lieu de 38×38,
+espacements réduits) : plus aucun débordement horizontal vérifié de
+320px à 1920px.
+
 ## Visite guidée (première visite)
 
 Suite de bulles qui met en avant quelques éléments clés (recherche,
@@ -1580,6 +1636,156 @@ reste du site et ne pas ajouter de dépendance externe de plus.
   l'écran, seuls les boutons "Suivant"/"Passer" de la bulle restent
   cliquables - un visiteur pressé peut passer la visite en un clic à
   n'importe quelle étape.
+
+## Itinéraires (randonnées, vélo) : couleurs distinctes, clic plus tolérant, surbrillance
+
+Trois retours groupés de l'utilisatrice sur ces deux couches en ligne :
+les tracés se mélangeaient tous dans la même couleur, cliquer dessus
+retombait souvent sur le contour de la commune en dessous, et rien
+n'indiquait quel tracé était sélectionné.
+
+- **Couleur par itinéraire** : `couleurItineraire` (`js/config.js`)
+  attribue une couleur distincte à chaque tracé, dans l'ordre
+  d'apparition et par couche (rando et vélo ont chacune leur propre
+  compteur, pas mélangés). Une première version utilisait un hash de
+  l'identifiant du tracé plutôt qu'un compteur - testé, et un hash peut
+  faire retomber deux itinéraires sur la même couleur même avec très peu
+  d'entrées (8 tracés vélo ne donnaient que 5 couleurs distinctes en
+  pratique) ; le compteur garantit une couleur unique tant que le nombre
+  d'itinéraires d'une couche ne dépasse pas la taille de la palette (8
+  teintes, rouge volontairement exclu - déjà réservé aux couleurs
+  d'alerte/risque ailleurs sur le site).
+- **Zone de clic élargie** : une ligne fine (3px visible) est difficile
+  à cliquer précisément, et sans marge un clic à côté retombait sur le
+  contour de commune en dessous (lui-même rendu cliquable depuis le
+  dashboard par commune) plutôt que sur l'itinéraire. `construireCoucheDonnees`
+  (`js/layers.js`) superpose désormais, pour toute couche `type: "line"`,
+  une polyligne invisible bien plus large (`weight: 16`, `opacity: 0`)
+  sur la ligne visible d'origine (devenue `interactive: false`, purement
+  décorative) : toute l'interaction (popup, surbrillance) passe par
+  cette zone de clic élargie, sans rien changer à l'apparence. Générique
+  à toutes les couches en ligne du site (randonnées, vélo, lignes
+  ALÉOP, Vigicrues), pas seulement aux deux couches concernées par le
+  retour initial.
+- **Surbrillance au clic** : `surbrillerLigne`/`retirerSurbrillanceLigne`
+  (fermées sur chaque appel de `construireCoucheDonnees`, donc une
+  sélection en cours côté rando n'efface pas une sélection en cours côté
+  vélo) épaississent et opacifient la ligne visible du tracé sélectionné
+  (`bringToFront` en plus, pour qu'elle passe au-dessus des tracés
+  voisins), remise à son style d'origine à la fermeture de la popup ou
+  au clic sur un autre tracé - une seule surbrillance active à la fois
+  par couche.
+
+## Refonte de l'écran d'accueil : dashboard commune, raccourcis en une ligne, recherche de parcelle rapide
+
+Trois retours groupés de l'utilisatrice : la recherche foncière n'était
+pas mentionnée dans la visite guidée ("il va falloir faire un truc à
+part pour elle"), les raccourcis thématiques prenaient trop de place, et
+elle voulait un accès plus direct à la recherche de parcelle depuis
+l'accueil plutôt que de passer par le bouton dédié.
+
+**Nouvel ordre de l'accueil** (`index.html`) : sélecteur de commune
+(dashboard) → raccourcis thématiques → "Rechercher une parcelle" → "Voir
+plus de thématiques" → "Voir la carte complète".
+
+- **Raccourcis en une seule ligne** : `#hero-raccourcis` passé d'une
+  grille qui s'étalait sur plusieurs lignes à une rangée à défilement
+  horizontal (`overflow-x: auto`, `scroll-snap-type: x proximity`) -
+  tous les raccourcis restent accessibles, juste par un glissement
+  latéral plutôt qu'en scrollant toute la page verticalement. "Voir plus
+  de thématiques" (`#hero-tiles`) garde sa grille classique, inchangée.
+- **Recherche de parcelle rapide** (`#hero-parcelle`, `js/recherche.js`) :
+  quatre champs simplifiés (commune, surface minimale, constructible,
+  DPE connu) plutôt qu'un formulaire complet en double sur l'accueil -
+  au clic sur "Rechercher", ils préremplissent le panneau "Recherche
+  foncière" existant (tous ses filtres avancés restent disponibles pour
+  affiner) et lancent la recherche immédiatement, sans réutiliser de
+  logique de filtrage dupliquée :
+  - **"Constructible"** réutilise `ZONES_PLUI_CONSTRUCTIBLES` (déjà
+    présent dans le code pour la fiche parcelle) via une nouvelle option
+    `constructible` ajoutée au champ "Zone PLUi" du panneau complet
+    (`correspond()` la traite comme un raccourci pour "U ou AUc") -
+    utilisable aussi directement depuis le panneau complet, pas
+    seulement via ce raccourci.
+  - **"DPE connu"** coche les 7 classes DPE à la fois dans le panneau :
+    `correspond()` exclut déjà une parcelle sans étiquette DPE dès qu'au
+    moins une classe est cochée, donc cocher les 7 revient exactement à
+    "n'importe quelle classe, du moment qu'elle existe".
+  - **Contournement volontaire de la limite "vue actuelle"** : la
+    recherche foncière ne porte normalement que sur les parcelles
+    affichées à l'écran (voir l'en-tête de `js/recherche.js`), pour ne
+    pas charger les dizaines de milliers de parcelles du territoire
+    entier d'un coup. Une recherche rapide avec une commune choisie n'a
+    pas ce problème (quelques centaines à quelques milliers de parcelles
+    par commune, pas le territoire entier) : `chargerEtEnrichirCommune`
+    filtre directement `donneesBrutes["cadastre"]` (déjà chargé en
+    entier) par code INSEE, sans avoir besoin d'être déjà zoomé dessus.
+    Sans commune choisie ("Toutes les communes"), la recherche rapide
+    retombe sur le comportement habituel (vue actuelle) : si la carte
+    n'est pas assez zoomée, le même message d'invite à zoomer s'affiche
+    que dans le panneau complet - pas une limitation nouvelle, celle qui
+    existe déjà pour tout le monde.
+- **Visite guidée mise à jour** (`js/tour.js`) : réordonnée pour suivre
+  le nouvel ordre de l'accueil, avec une étape dédiée à
+  `#hero-parcelle`.
+
+Testé (données mockées) : recherche rapide avec commune + surface min
+affiche exactement les parcelles attendues sur la carte (vérifié avec
+trois parcelles de test, deux exclues à raison - mauvaise commune, ou
+surface insuffisante) ; les trois autres champs (préremplissage
+commune/surface/plui, "constructible" et "DPE connu") vérifiés
+directement sur `correspond()` avec des cas couvrant chaque branche.
+
+## Horaires saisonnières (été/hiver) pour les déchèteries
+
+L'utilisatrice enrichit ses couches depuis le projet QGIS livré plus
+haut, et voulait savoir comment différencier les horaires été/hiver
+d'une déchèterie dans le champ `opening_hours`.
+
+`parserHorairesOsm` (`js/popup.js`) ne couvrait volontairement qu'un
+sous-ensemble de la syntaxe OSM (jours de la semaine + plages horaires,
+voir "Ne couvre pas toute la spécification..." dans son commentaire) -
+ni les jours fériés (`PH`), ni les plages saisonnières. Étendu pour
+gérer ces dernières : un bloc peut désormais commencer par une plage de
+mois ("`Apr-Sep: Mo-Sa 09:00-19:00`"), qui n'est retenue que si la date
+actuelle y tombe - `dateOsmDansPlage` gère aussi les plages à cheval sur
+l'année civile ("`Oct-Mar`"). Exemple complet pour une déchèterie :
+`Apr-Sep: Mo-Sa 09:00-19:00; Oct-Mar: Mo-Sa 09:00-17:00`.
+
+**Mise à jour** : retour de l'utilisatrice - un changement de saison ne
+tombe pas toujours pile au 1er du mois ("à partir du 15 juin", horaires
+d'été des déchèteries typiquement mi-juin à mi-septembre). Le jour du
+mois est maintenant lui aussi optionnel dans la plage ("`Jun 15-Sep
+15: Mo-Sa 09:00-19:00`"), représenté en un entier "mois×100+jour" pour
+comparer date de début/fin et date du jour d'un coup - un mois seul
+("`Apr-Sep:`") reste valide, équivalent à "du 1er au dernier jour de
+ces mois" (jour par défaut 1 pour le début, 31 pour la fin).
+
+Le format renvoyé par `parserHorairesOsm` ne change pas (toujours
+`{Mo: [...], ...}` pour la semaine en cours) : tous les appelants
+existants (mairies, commerces...) affichent donc automatiquement la
+bonne saison sans aucune modification de leur côté - seule la fiche
+qui reçoit le résultat n'a pas connaissance des saisons, elle voit
+simplement "les horaires de cette semaine". Pas d'indication visuelle
+du genre "vous consultez les horaires d'été" : sur simple demande si
+besoin plus tard.
+
+**Trouvé en implémentant** : `construirePopupDecheterie` n'affichait en
+fait jamais les horaires, même quand le champ est renseigné - contact/
+opérateur oui, mais pas `opening_hours`. Corrigé au passage (même
+mécanique que les commerces : badge "Ouvert"/"Fermé" +
+`construireLignesHoraires`) puisque sans ça, les horaires que
+l'utilisatrice s'apprêtait à ajouter ne se seraient affichés nulle
+part.
+
+Testé (horaires mockées, en changeant artificiellement la date système)
+sur les deux granularités : mois entiers (juillet et avril → été,
+décembre et février → hiver, y compris "Oct-Mar" à cheval sur l'année
+civile) et jour précis (`Jun 15-Sep 15:`/`Sep 16-Jun 14:` - le 14 juin
+encore en hiver, le 15 déjà en été, le 15 septembre encore en été, le
+16 déjà en hiver, vérifiés un par un). Un format non saisonnier
+existant, et des plages non reconnues, continuent de fonctionner comme
+avant (testés en non-régression).
 
 ## Ce qui reste à faire
 - **Vigicrues : endpoint et nom de champ À VÉRIFIER EN CONDITIONS
