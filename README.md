@@ -2018,6 +2018,51 @@ attente d'une capture des propriétés réelles d'une zone fournie par
 l'utilisatrice pour construire une fiche complète plutôt que deviner
 une nouvelle fois des noms de champs.
 
+**Mise à jour** : schéma réel fourni par l'utilisatrice
+(`donneesBrutes["vigieau"][0].properties` copié depuis la console).
+Champs confirmés : `nom` (nom de zone), `code`, `type` ("AEP"/"SUP"/
+"SOU"), `niveauGravite` (chaîne, ex. "vigilance"), `departement`
+(objet `{code, nom}`), `arreteRestriction` (objet : `numero`,
+`dateDebut`, `dateFin`, `dateSignature`, `fichier` - lien PDF vers
+l'arrêté), `restrictions` (tableau de ~20 à ~25 usages réglementés,
+chacun avec `nom`/`thematique`/`description` et un booléen
+`concerneXxx` par public concerné). Confirme au passage l'hypothèse
+initiale : les clés `IdSandre`/`ArreteRestriction`/`Restrictions` en
+PascalCase vues dans la première capture d'écran n'étaient que
+l'habillage de la popup générique (`humaniser()`), pas la vraie casse
+des champs (`idSandre`/`arreteRestriction`/`restrictions`, camelCase).
+
+`niveauVigieau` (`js/config.js`) : classification par mot-clé
+(vigilance/alerte/alerte renforcée/crise) partagée entre la couleur du
+polygone (`couleurVigieau`) ET le badge de la popup, pour qu'ils ne
+puissent jamais afficher deux niveaux différents pour la même zone -
+`couleurVigieau` déjà écrite ainsi avant la confirmation du champ,
+gardée volontairement tolérante à une valeur composée ou renommée
+plutôt que de basculer sur une égalité stricte maintenant que le nom
+exact est connu.
+
+`construirePopupVigieau` (`js/popup.js`) remplace la popup générique
+pour cette couche : titre + niveau (badge coloré) + type d'eau/
+département en sous-titre, numéro d'arrêté + date d'entrée en vigueur
++ lien vers le PDF complet, et le détail des usages réglementés dans un
+`<details>` repliable (`.popup-fiche-repliable`, renommée depuis
+`.popup-fiche-elus` - générique dès le départ dans son CSS, seul le nom
+de classe supposait le conseil municipal ; `construireElus` mis à jour
+en même temps, aucun changement de comportement). Limité aux usages où
+`concerneParticulier` est vrai (public de ce site) plutôt que les ~23
+usages complets, souvent majoritairement agricoles/professionnels à ce
+niveau de gravité - le lien PDF reste le repli pour le détail complet.
+`titleFields`/`subtitleFields` retirés de la config de la couche
+(devenus inutiles, seule couche à les avoir jamais utilisés).
+
+Testé sur le vrai payload fourni (zone "LATHAN", Maine-et-Loire,
+niveau "vigilance", arrêté avec date et lien PDF, 4 usages dont 3
+concernant les particuliers) : rendu HTML complet vérifié, aucun
+"[object Object]", couleur du badge et du polygone identiques pour les
+5 niveaux de gravité connus + un niveau inconnu (repli gris "Niveau non
+identifié" vérifié). Conseil municipal (`construireElus`) revérifié
+après le renommage de classe partagée : rendu identique.
+
 ## Décompte d'entités par commune
 
 Retour direct de l'utilisatrice : compléter le dashboard commune avec
