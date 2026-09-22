@@ -1008,6 +1008,51 @@ function construirePopupCatnat(props) {
     </div>`;
 }
 
+/* Couleur fixe de l'en-tête (feuille), pas la couleur conditionnelle de
+   l'aplat sur la carte (styleQualiteEau, js/config.js) : même raison que
+   construirePopupDemographie, la teinte rouge d'un aplat "non conforme"
+   resterait lisible mais une icône de section entière dans cette couleur
+   serait plus criarde que nécessaire ici. */
+function construirePopupQualiteEau(props) {
+    const nom = premierChampValide(props, ["nom_offici"]) || "Commune";
+    const resultat = props.qualite_eau_resultat;
+    const couleur = PALETTE.feuille;
+
+    if (!resultat || !resultat.conclusion_conformite_prelevement) {
+        return `<div class="popup-fiche">
+            <div class="popup-fiche-entete">
+                <div class="popup-fiche-icon" style="background:${couleur}"><i class="fa-solid fa-droplet"></i></div>
+                <div class="popup-fiche-titre-wrap">
+                    <div class="popup-fiche-tag" style="color:${couleur}">Qualité de l'eau potable</div>
+                    <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+                </div>
+            </div>
+            <div class="popup-fiche-section">
+                <div class="popup-fiche-vide">Aucun résultat récent disponible pour cette commune (source : Hub'Eau).</div>
+            </div>
+        </div>`;
+    }
+
+    const nonConforme = qualiteEauNonConforme(resultat);
+    const reseau = resultat.reseaux && resultat.reseaux[0] && resultat.reseaux[0].nom;
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${couleur}"><i class="fa-solid fa-droplet"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${couleur}">Qualité de l'eau potable</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+            </div>
+        </div>
+        <div class="popup-fiche-section">
+            <div class="popup-fiche-ligne"><i class="fa-solid ${nonConforme ? "fa-triangle-exclamation" : "fa-circle-check"}" style="color:${nonConforme ? "#AD4826" : PALETTE.feuille}"></i> ${echapperHtml(resultat.conclusion_conformite_prelevement)}</div>
+            ${reseau ? `<div class="popup-fiche-ligne"><i class="fa-solid fa-water"></i> Réseau ${echapperHtml(reseau)}</div>` : ""}
+            ${resultat.date_prelevement ? `<div class="popup-fiche-ligne"><i class="fa-regular fa-calendar"></i> Dernier contrôle le ${formaterDateSeule(resultat.date_prelevement)}</div>` : ""}
+        </div>
+        <div class="popup-fiche-section"><div class="popup-fiche-precision">Source : Hub'Eau (ministère de la Santé), dernier prélèvement analysé.</div></div>
+    </div>`;
+}
+
 const LABELS_INTERNET_BIBLIOTHEQUE = { yes: "Accès Internet", wlan: "Wifi disponible", terminal: "Poste informatique" };
 function construirePopupBibliotheque(props) {
     const nom = premierChampValide(props, ["name"]) || "Bibliothèque";
@@ -2043,6 +2088,7 @@ function construirePopup(feature, layerConf) {
     else if (layerConf.id === "reseauALEOP") html = construirePopupLigneBus(props);
     else if (layerConf.id === "prixImmobilier") html = construirePopupPrixCommune(props);
     else if (layerConf.id === "demographie") html = construirePopupDemographie(props);
+    else if (layerConf.id === "qualiteEau") html = construirePopupQualiteEau(props);
     else if (layerConf.id === "zonagePLUi") html = construirePopupZonePLUi(props);
     else if (layerConf.id === "rga") html = construirePopupRga(props);
     else if (layerConf.id === "vigieau") html = construirePopupVigieau(props);

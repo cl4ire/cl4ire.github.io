@@ -45,7 +45,10 @@ function chargerDemographieCommunes() {
    chacune de ses lignes, vérifié dans l'exemple réel), donc la plus
    récente ligne toutes couches confondues donne directement le dernier
    verdict sans avoir à tout agréger côté client. */
-const URL_HUBEAU_EAU_POTABLE = "https://hubeau.eaufrance.fr/api/v1/qualite_eau_potable/resultats_dis";
+/* URL_HUBEAU_EAU_POTABLE : déclarée dans js/config.js (avec la couche
+   carte "qualiteEau", qui interroge la même API pour les 24 communes du
+   territoire) - une seule constante partagée plutôt que deux URLs à
+   maintenir en double. */
 const qualiteEauEnCache = {}; // code_insee -> Promise
 function chargerQualiteEauCommune(codeInsee) {
     if (qualiteEauEnCache[codeInsee]) return qualiteEauEnCache[codeInsee];

@@ -638,6 +638,88 @@ function styleCatnat(feature) {
     return { color: "#fff", weight: 1, fillColor: couleurCatnat(nb), fillOpacity: 0.55 };
 }
 
+/* =========================================================
+   QUALITÉ DE L'EAU POTABLE (Hub'Eau)
+   Retour direct de l'utilisatrice : au départ une carte du dashboard
+   commune uniquement (chargerQualiteEauCommune, js/communes.js - une
+   seule commune à la fois, appelée à la demande à l'ouverture du
+   dashboard). Demande ensuite d'une vraie couche sur la carte - mais
+   Hub'Eau ne renvoie pas de coordonnées précises (un résultat est
+   rattaché à une commune/UDI, pas à un point), un marqueur ponctuel
+   inventerait donc une localisation qui n'existe pas dans la donnée.
+   Même solution que pour CATNAT juste au-dessus (même souci : une
+   valeur par commune, pas de géométrie propre) : choroplèthe sur les
+   polygones de couches/communes.geojson (déjà dans le dépôt), un appel
+   Hub'Eau par commune du territoire (24 appels, code_commune par
+   code_commune - l'API ne filtre pas sur plusieurs communes à la fois).
+   Cache localStorage 24h comme CATNAT : un contrôle sanitaire ne change
+   pas d'un chargement de page à l'autre, inutile de refaire les 24
+   appels à chaque fois. */
+const CACHE_QUALITE_EAU_CLE = "geoberce-cache-qualite-eau";
+const CACHE_QUALITE_EAU_DUREE_MS = 24 * 60 * 60 * 1000;
+const URL_HUBEAU_EAU_POTABLE = "https://hubeau.eaufrance.fr/api/v1/qualite_eau_potable/resultats_dis";
+
+function lireCacheQualiteEau() {
+    try {
+        const brut = localStorage.getItem(CACHE_QUALITE_EAU_CLE);
+        if (!brut) return null;
+        const { horodatage, donnees } = JSON.parse(brut);
+        if (!horodatage || Date.now() - horodatage > CACHE_QUALITE_EAU_DUREE_MS) return null;
+        return donnees;
+    } catch (_) {
+        return null;
+    }
+}
+function ecrireCacheQualiteEau(donnees) {
+    try {
+        localStorage.setItem(CACHE_QUALITE_EAU_CLE, JSON.stringify({ horodatage: Date.now(), donnees }));
+    } catch (_) {
+        // silencieux : le cache est un confort, pas un besoin
+    }
+}
+function recupererQualiteEauTerritoire() {
+    const enCache = lireCacheQualiteEau();
+    if (enCache) return Promise.resolve(enCache);
+
+    const parCommune = Object.keys(COMMUNES_TERRITOIRE).map(code =>
+        fetch(`${URL_HUBEAU_EAU_POTABLE}?code_commune=${code}&size=1&sort=desc`)
+            .then(r => r.ok ? r.json() : null)
+            .then(d => ({ insee: code, resultat: (d && d.data && d.data[0]) || null }))
+            .catch(() => ({ insee: code, resultat: null }))
+    );
+    return Promise.all(parCommune).then(resultats => { ecrireCacheQualiteEau(resultats); return resultats; });
+}
+function fetchQualiteEauTerritoire() {
+    return Promise.all([
+        fetch("couches/communes.geojson").then(r => r.json()),
+        recupererQualiteEauTerritoire()
+    ]).then(([communes, resultats]) => ({ communes, resultats }));
+}
+function geojsonDepuisQualiteEau(data) {
+    const parInsee = {};
+    (data.resultats || []).forEach(r => { parInsee[r.insee] = r.resultat; });
+    const features = ((data.communes && data.communes.features) || []).map(f => ({
+        ...f,
+        properties: { ...f.properties, qualite_eau_resultat: parInsee[f.properties.code_insee] || null }
+    }));
+    return { type: "FeatureCollection", features };
+}
+/* Même test de mot-clé que construireCarteQualiteEau (js/communes.js,
+   carte du dashboard) sur conclusion_conformite_prelevement - seul champ
+   fiable confirmé en conditions réelles pour ce flux (voir ce fichier),
+   partagé ici pour que la couleur de la couche et le texte de la popup
+   ne puissent jamais se contredire. */
+function qualiteEauNonConforme(resultat) {
+    return !!(resultat && resultat.conclusion_conformite_prelevement && /non\s+conforme/i.test(resultat.conclusion_conformite_prelevement));
+}
+function styleQualiteEau(feature) {
+    const resultat = feature.properties.qualite_eau_resultat;
+    if (!resultat || !resultat.conclusion_conformite_prelevement) {
+        return { color: "#fff", weight: 1, fillColor: "#D8D6D0", fillOpacity: 0.5 };
+    }
+    return { color: "#fff", weight: 1, fillColor: qualiteEauNonConforme(resultat) ? "#AD4826" : PALETTE.feuille, fillOpacity: 0.55 };
+}
+
 /* Couleur par opérateur pour les antennes-relais (couches/services/antennes.geojson) :
    comparaison par mot-clé plutôt que valeur exacte du champ "operator",
    dont les variantes réelles observées dans ce fichier sont multiples
@@ -1069,6 +1151,18 @@ const LAYERS = [
         valueField: "population",
         titleFields: ["commune_nom", "commune"],
         subtitleFields: ["population", "revenu_median"]
+    },
+    {
+        id: "qualiteEau", group: "urbanisme", label: "Qualité de l'eau potable",
+        /* Hub'Eau (API publique sans clé), un contrôle sanitaire par
+           commune - voir plus haut dans ce fichier pour le détail du
+           chargement/cache (fetchQualiteEauTerritoire) et pourquoi un
+           choroplèthe plutôt qu'un marqueur ponctuel. */
+        fetchPersonnalise: fetchQualiteEauTerritoire, transform: geojsonDepuisQualiteEau,
+        type: "polygon", color: PALETTE.feuille, styleFn: styleQualiteEau,
+        lazy: true, searchable: false, cluster: false,
+        titleFields: ["nom_offici"],
+        subtitleFields: []
     },
     {
         id: "dpe", group: "urbanisme", label: "Diagnostics énergétiques (DPE)",
