@@ -1820,34 +1820,6 @@ function construirePopupRga(props) {
     </div>`;
 }
 
-/* Vigilance crues (Vigicrues) : LABELS_VIGICRUES traduit le niveau
-   numérique documenté par Vigicrues (1 à 4, même échelle que la
-   vigilance météo) en libellé lisible - contrairement aux noms des
-   champs eux-mêmes (non vérifiables en conditions réelles ici), cette
-   échelle 1-4 est une norme officielle stable, pas une supposition. */
-const LABELS_VIGICRUES = { 1: "Vigilance verte", 2: "Vigilance jaune", 3: "Vigilance orange", 4: "Vigilance rouge" };
-const COULEURS_VIGICRUES = { 1: "#31B44C", 2: "#FFD500", 3: "#FF8300", 4: "#C9182C" };
-function construirePopupVigicrues(props) {
-    const niveau = Number(premierChampValide(props, ["NivSituVigiCruEnt", "niveau", "NivSitu", "niveau_vigilance"]));
-    const label = LABELS_VIGICRUES[niveau] || "Niveau de vigilance non identifié";
-    const couleur = COULEURS_VIGICRUES[niveau] || PALETTE.riviere;
-    const nom = premierChampValide(props, ["NomEntVigiCru", "nom", "nom_troncon", "libelle"]);
-    const code = premierChampValide(props, ["CdEntVigiCru", "code", "code_troncon"]);
-
-    return `<div class="popup-fiche">
-        <div class="popup-fiche-entete">
-            <div class="popup-fiche-icon" style="background:${couleur}"><i class="fa-solid fa-water"></i></div>
-            <div class="popup-fiche-titre-wrap">
-                <div class="popup-fiche-tag" style="color:${couleur}">Vigicrues</div>
-                <div class="popup-fiche-titre">${echapperHtml(nom || code || "Tronçon de cours d'eau")}</div>
-            </div>
-        </div>
-        <div class="popup-fiche-section">
-            <div class="popup-fiche-ligne"><span class="popup-fiche-badge" style="background:${couleur}20;color:${couleur}">${echapperHtml(label)}</span></div>
-        </div>
-    </div>`;
-}
-
 /* =========================================================
    POPUP GÉNÉRIQUE — dernier repli pour toute couche sans fiche dédiée
    (aujourd'hui : Vigieau uniquement, dont les noms de champs exacts ne
@@ -1874,19 +1846,30 @@ function construirePopupAdresse(titre, lat, lon) {
     </div>`;
 }
 
+/* Un champ distant non documenté (voir plus haut) peut très bien être un
+   objet ou un tableau imbriqué (ex. Vigieau : ArreteRestriction,
+   Restrictions) plutôt qu'un simple texte/nombre - affiché tel quel via
+   un template string, ça donne "[object Object]" à l'écran plutôt qu'une
+   erreur qui alerterait. Filtré en amont pour ne jamais afficher ça :
+   mieux vaut omettre un champ que montrer du texte incompréhensible. */
+function estValeurSimple(v) {
+    return typeof v === "string" || typeof v === "number" || typeof v === "boolean";
+}
+
 function construirePopupGenerique(feature, layerConf) {
     const props = feature.properties || {};
     const { icon, color } = resoudreIconeCouleur(feature, layerConf);
     const iconeAffichee = icon || (layerConf.type === "line" ? "fa-solid fa-route" : "fa-solid fa-draw-polygon");
     const couleurAffichee = color || PALETTE.ardoise;
 
-    const titre = premierChampValide(props, layerConf.titleFields || []) || layerConf.label;
+    const titreBrut = premierChampValide(props, layerConf.titleFields || []);
+    const titre = estValeurSimple(titreBrut) ? titreBrut : layerConf.label;
     const sousInfos = (layerConf.subtitleFields || [])
         .map(c => props[c])
-        .filter(v => v !== undefined && v !== null && v !== "" && v !== "NULL");
+        .filter(v => v !== undefined && v !== null && v !== "" && v !== "NULL" && estValeurSimple(v));
 
     const reste = Object.keys(props)
-        .filter(k => !CHAMPS_MASQUES.has(k) && !(layerConf.titleFields || []).includes(k) && !(layerConf.subtitleFields || []).includes(k) && props[k] !== null && props[k] !== "" && props[k] !== "NULL")
+        .filter(k => !CHAMPS_MASQUES.has(k) && !(layerConf.titleFields || []).includes(k) && !(layerConf.subtitleFields || []).includes(k) && props[k] !== null && props[k] !== "" && props[k] !== "NULL" && estValeurSimple(props[k]))
         .slice(0, 6);
     const details = reste.length ? `<div class="popup-fiche-section">
         ${reste.map(k => `<div class="popup-fiche-jour"><span>${echapperHtml(humaniser(k))}</span><strong>${echapperHtml(props[k])}</strong></div>`).join("")}
@@ -1972,7 +1955,6 @@ function construirePopup(feature, layerConf) {
     else if (layerConf.id === "demographie") html = construirePopupDemographie(props);
     else if (layerConf.id === "zonagePLUi") html = construirePopupZonePLUi(props);
     else if (layerConf.id === "rga") html = construirePopupRga(props);
-    else if (layerConf.id === "vigicrues") html = construirePopupVigicrues(props);
     else html = construirePopupGenerique(feature, layerConf);
     return injecterItineraire(html, feature);
 }

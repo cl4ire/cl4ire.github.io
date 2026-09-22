@@ -43,25 +43,13 @@ carburants, **Habitat & urbanisme** pour le cadastre) :
   jaune, alerte → orange, alerte renforcée → rouge, crise → rouge foncé) est
   déduite par mots-clés (`couleurVigieau` dans `config.js`) plutôt que par un
   nom de champ figé, pour rester robuste si le fournisseur change ses noms
-  d'attributs.
-- **Vigicrues** (`id: "vigicrues"`) — même principe que Vigieau, pour la
-  vigilance crues (SCHAPI/DREAL) cette fois : tronçons de cours d'eau sous
-  surveillance, colorés selon leur niveau de vigilance courant (vert/jaune/
-  orange/rouge). Flux GeoJSON public :
-  `https://www.vigicrues.gouv.fr/services/1/InfoVigiCru.geojson`.
-  Contrairement au reste du contenu de cette section, l'échelle de niveau
-  elle-même (1 = vert à 4 = rouge, champ documenté `NivSituVigiCruEnt`)
-  n'est pas une supposition - c'est la norme officielle Vigicrues,
-  identique au principe de la vigilance météo. `couleurVigicrues` et
-  `construirePopupVigicrues` (`js/config.js`/`js/popup.js`) s'appuient
-  dessus en priorité, avec un repli par mots-clés (comme Vigieau) si le
-  nom de champ attendu venait à changer.
-  ⚠️ **Endpoint et nom de champ non vérifiables en conditions réelles**
-  depuis cet environnement (accès réseau restreint, même limite que pour
-  Vigieau/OLD/SUP avant leur vérification) : à confirmer une fois en
-  ligne (cocher la couche - si rien ne s'affiche ou si toutes les lignes
-  restent grises "niveau inconnu", inspecter la réponse réseau réelle et
-  ajuster l'URL/les noms de champs).
+  d'attributs. Filtré à la boîte englobante du territoire depuis
+  `couches/epci.geojson` (`clipperAuTerritoire`, voir plus bas "Filtrage
+  territorial de Vigieau") : le flux couvre toute la France, inutile de
+  construire des centaines de polygones hors zone.
+- **Vigicrues** — retiré (voir "Vigicrues : retiré (CORS)" plus bas) : le
+  flux distant bloque les requêtes venant d'un autre site (CORS), aucun
+  fix possible côté code sur un site 100% statique sans serveur relais.
 - **Obligations légales de débroussaillement** (`id: "old"`) — flux WMS de
   l'IGN Géoplateforme (`type: "wms"`, géré par `construireCoucheWMS` dans
   `layers.js`). ⚠️ Le nom de couche WMS (`wmsLayer: "DEBROUSSAILLEMENT"`)
@@ -1895,12 +1883,105 @@ Testé : fermeture par la flèche retour (removeLayer appelé, bouton
 deux cas (vue recherche affichée → vide ; vue normale affichée → ne
 touche à rien).
 
+## Vigicrues : retiré (CORS)
+
+Retour direct de l'utilisatrice ("vigieau et vigicrue ne fonctionnent
+pas"). Confirmé en conditions réelles (console du navigateur, capture
+d'écran fournie par l'utilisatrice) :
+
+```
+Access to fetch at 'https://www.vigicrues.gouv.fr/services/1/InfoVigiCru.geojson'
+from origin 'https://cl4ire.github.io' has been blocked by CORS policy:
+No 'Access-Control-Allow-Origin' header is present on the requested resource.
+```
+
+`vigicrues.gouv.fr` ne renvoie pas l'en-tête CORS nécessaire pour être
+interrogé en JavaScript depuis un site tiers (le contraire de Vigieau ou
+des autres flux du site, tous conçus pour la réutilisation externe) :
+son service `InfoVigiCru.geojson` est fait pour son propre site, pas
+pour être consommé par d'autres. Aucun correctif possible côté code sur
+un site 100% statique GitHub Pages, sans serveur pour servir de relais
+(proxy) entre le navigateur et ce flux - contrairement à une simple
+erreur de nom de champ, ce n'est pas quelque chose qu'on peut corriger
+en ajustant `js/config.js`.
+
+Couche entièrement retirée (`couleurVigicrues`/`construirePopupVigicrues`
+supprimées de `js/config.js`/`js/popup.js`, entrée retirée de `LAYERS`)
+plutôt que laissée dans le panneau à échouer systématiquement au clic -
+même logique que le retrait de ZNIEFF/Natura2000/forêts plus haut.
+
+Alternative envisagée avec l'utilisatrice : Hub'Eau
+(`hubeau.eaufrance.fr`), l'API officielle française conçue pour l'usage
+externe (contrairement à celle de Vigicrues) - propose bien plus que la
+seule vigilance crues (hydrométrie, qualité de l'eau, piézométrie...).
+Non vérifiable depuis cet environnement (accès réseau restreint au
+moment d'écrire ceci) : reste à explorer en conditions réelles pour
+confirmer les endpoints/schémas exacts avant toute implémentation.
+
+## Filtrage territorial de Vigieau
+
+Retour direct de l'utilisatrice : Vigieau finit par s'afficher mais
+prend "un temps assez long" (flux national, plusieurs centaines de
+zones pour toute la France) - elle demandait s'il était possible de le
+limiter à notre territoire pour alléger le chargement.
+
+`bboxTerritoire` (`js/layers.js`), calculée une fois dans le fetch de
+`couches/epci.geojson` déjà existant (`js/map.js`, via `bboxFeature`
+déjà utilisé pour `featuresDansVue`), donne la boîte englobante du
+territoire. `clipperAuTerritoire` (`js/config.js`, branché en
+`transform` sur la couche `vigieau`) ne garde que les features dont la
+boîte englobante touche cette zone (+ 0,15° de marge, environ 15-17km)
+: un simple test d'intersection de rectangles plutôt qu'un filtre exact
+sur le polygone précis de l'EPCI (4000+ sommets, inutilement coûteux
+pour un filtre de performance) - les zones Vigieau étant souvent à
+l'échelle du bassin versant ou du département, bien plus grandes que
+notre territoire, la marge évite d'en exclure une par excès de
+précision. Si `bboxTerritoire` n'est pas encore prêt (epci.geojson pas
+encore résolu au moment du clic sur la couche), ne filtre rien plutôt
+que de tout masquer.
+
+Le filtrage réduit le nombre d'objets Leaflet construits (donc le temps
+de rendu), pas la taille du fichier téléchargé lui-même : le flux reste
+un seul gros GeoJSON national à récupérer en entier avant de pouvoir le
+filtrer côté client, aucune pagination/filtre côté serveur disponible
+sur ce flux public.
+
+Testé : une zone dans le territoire et une juste à la marge sont
+conservées, une zone très éloignée (region parisienne/alpes) est
+exclue ; sans `bboxTerritoire` disponible, rien n'est filtré (repli de
+sécurité vérifié).
+
+## Popup Vigieau : "[object Object]" au lieu des horaires/restrictions
+
+Retour direct de l'utilisatrice, avec capture d'écran : la popup
+Vigieau affichait des `[object Object]` à la place de certains champs
+(`ArreteRestriction`, `Restrictions`). Cause : `construirePopupGenerique`
+(`js/popup.js`) - seul appelant restant de la popup "générique" -
+affichait n'importe quelle propriété restante via un simple template
+string, sans distinguer un texte/nombre d'un objet ou tableau imbriqué;
+`${valeur}` sur un objet JS donne littéralement le texte "[object
+Object]" plutôt qu'une erreur qui aurait alerté plus tôt. Les données
+Vigieau réelles imbriquent justement les restrictions par usage dans
+`Restrictions` (tableau d'objets) et les infos de l'arrêté dans
+`ArreteRestriction` (objet).
+
+`estValeurSimple` (`js/popup.js`) filtre désormais toute valeur qui
+n'est pas un texte/nombre/booléen, aussi bien pour le titre, le
+sous-titre que le tableau de détails restants - mieux vaut omettre un
+champ imbriqué que d'afficher du texte incompréhensible. Une fiche
+dédiée qui présenterait le détail des restrictions par usage (le
+contenu le plus utile de `Restrictions`) reste possible, mais demande
+de connaître le schéma exact des objets imbriqués - non vérifiable
+depuis cet environnement (accès réseau restreint), à faire depuis une
+capture des propriétés réelles d'une zone si voulu plus tard.
+
+Testé sur une feature simulée reprenant les champs réels observés dans
+la capture d'écran (`IdSandre`, `Code`, `Type`, `ArreteRestriction`
+objet, `Restrictions` tableau d'objets) : plus aucun "[object Object]"
+dans le HTML généré, les champs simples (IdSandre/Code/Type) s'affichent
+normalement.
+
 ## Ce qui reste à faire
-- **Vigicrues : endpoint et nom de champ À VÉRIFIER EN CONDITIONS
-  RÉELLES**, voir la section dédiée plus haut — cocher la couche ; si
-  rien ne s'affiche ou si tout reste gris (niveau non identifié),
-  inspecter la réponse réseau réelle et ajuster l'URL/les noms de
-  champs dans `js/config.js`/`js/popup.js`.
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.
 - Ajouter les commerces comme thématique dédiée sur la page d'accueil si
