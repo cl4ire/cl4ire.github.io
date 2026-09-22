@@ -2478,6 +2478,52 @@ entrée de test (badge, note, date, horaires/contact masqués), commerce
 non concerné inchangé, icône revenue à la normale après retrait de
 l'entrée.
 
+## Cours d'eau : tronçons fusionnés par cours d'eau
+
+Retour direct de l'utilisatrice : le tracé OSM des cours d'eau (voir
+plus haut) était morcelé en de nombreux petits tronçons (un `way` par
+section entre deux intersections/changements de tag, convention OSM
+normale) - un même cours d'eau nommé pouvait ainsi apparaître en une
+douzaine de bouts distincts, chacun avec sa propre popup/zone de clic.
+
+Script Python jetable (`shapely.ops.linemerge`, même esprit "hors
+dépôt" que le script de filtrage territorial) : regroupe les 401
+tronçons par `name` (172 tronçons nommés, 25 noms distincts - les 229
+tronçons sans nom, en général de petits fossés isolés, n'ont rien pour
+être identifiés comme faisant partie du même cours d'eau, donc jamais
+fusionnés), puis recolle bout à bout tous les tronçons d'un même nom
+qui se touchent exactement. Résultat : **401 tronçons → 297** ; les
+rivières simples deviennent une seule ligne continue (L'Yre : 21 → 1,
+Ruisseau de Dauvers : 20 → 1, Le Dinan : 12 → 1, Le Ponceau : 12 → 1).
+
+Le Loir (25 → 19) et La Dême (11 → 11, aucune fusion) ne se réduisent
+pas complètement à une seule ligne : deux raisons différentes, toutes
+les deux réelles plutôt qu'un problème de méthode : (1) de vrais
+embranchements à trois tronçons ou plus au même point (bras de moulin,
+courants sur l'histoire de ces rivières - vérifié : 5 points à degré 3
+rien que sur La Dême), où `linemerge` refuse à raison de choisir une
+direction plutôt qu'une autre ; (2) de vrais trous dans le tracé OSM
+(deux tronçons voisins du même cours d'eau qui ne se touchent pas du
+tout, jusqu'à 3,6 km d'écart mesuré sur un cas du Loir) - un maillage
+incomplet côté OpenStreetMap, rien à fusionner sans inventer une
+géométrie qui n'existe pas dans la donnée source.
+
+Propriétés recalculées par nom (pas par ligne fusionnée individuelle -
+un embranchement partage son point de jonction entre plusieurs bras,
+réattribuer fiablement chaque tronçon d'origine à son bras exact
+n'aurait servi à rien vu la donnée : `waterway`/`intermittent` ne
+varient quasiment jamais en cours de route pour un même cours d'eau
+nommé) : `waterway` le plus fréquent du groupe, `intermittent=yes`
+seulement si TOUS les tronçons du nom le sont, `ref:sandre` gardé s'il
+est identique partout dans le groupe. Le champ `tunnel` (passage busé)
+est en revanche abandonné à la fusion - resterait pertinent seulement
+sur le petit tronçon concerné, pas sur toute une rivière fusionnée.
+
+Testé (Playwright, même suite que plus haut rejouée sur le fichier
+fusionné) : 297 tronçons confirmés, styles et popups toujours corrects
+après la fusion (rivière épaisse, tronçon intermittent en pointillé
+clair, fossé fin, popup nom/type).
+
 ## Ce qui reste à faire
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.
