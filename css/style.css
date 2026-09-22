@@ -274,10 +274,99 @@ button { font-family: inherit; cursor: pointer; }
 }
 #commune-titre { font-weight: 700; font-size: 18px; color: var(--primaire); display: flex; align-items: center; gap: 8px; }
 #commune-page-corps { flex: 1; overflow-y: auto; padding: 24px 24px 40px; }
-#commune-page-corps #commune-contenu { max-width: 640px; margin: 0 auto; }
+/* 1200px (pas 640px comme la 1ère version, une simple colonne de lecture
+   empilant tout à la verticale - "illisible, tout en longueur", retour
+   direct de l'utilisatrice) : la page exploite maintenant vraiment la
+   largeur disponible via .commune-grille ci-dessous. */
+#commune-page-corps #commune-contenu { max-width: 1200px; margin: 0 auto; }
 @media (max-width: 780px) {
     #commune-page-header { padding: 12px 16px; }
     #commune-page-corps { padding: 16px 16px 32px; }
+}
+
+/* ---------- GRILLE DE CARTES DU DASHBOARD COMMUNE ---------- */
+/* Retour direct de l'utilisatrice sur la 1ère version de la page plein
+   écran ("illisible, tout en longueur, exploite la place, fais de
+   jolies choses") : vraie grille de cartes (même motif que .hero-tile/
+   #hero-parcelle déjà établis ailleurs sur le site - fond blanc, bordure
+   fine, 14px de rayon - plutôt qu'une nouvelle esthétique à part) qui
+   se réorganise seule selon la largeur d'écran, au lieu d'empiler tout
+   le contenu de l'ancien panneau latéral verticalement. */
+.commune-grille {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px;
+}
+.commune-carte {
+    background: #fff; border: 1px solid var(--bordure); border-radius: 14px;
+    padding: 20px;
+}
+/* Prend toute la largeur de la grille, quel que soit le nombre de
+   colonnes actuel (décompte, actualités - contenu naturellement plus
+   large que les cartes compactes mairie/démographie/eau). */
+.commune-carte-large { grid-column: 1 / -1; }
+.commune-carte-titre {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px; font-weight: 800; color: var(--ardoise);
+    text-transform: uppercase; letter-spacing: .05em; margin-bottom: 14px;
+}
+.commune-carte-titre i { color: var(--primaire); }
+.commune-carte-vide { color: var(--ardoise); font-size: 12px; }
+
+/* Lignes d'info (mairie, qualité eau) : même motif que .popup-fiche-ligne
+   mais sans l'habillage ".popup-fiche-section" (padding/bordure pensés
+   pour l'empilement dans une popup étroite, redondants ici où .commune-carte
+   porte déjà son propre padding). */
+.commune-carte-mairie-nom { font-family: var(--font-titre); font-weight: 700; font-size: 15px; color: #2A2A28; margin-bottom: 10px; }
+.commune-ligne { font-size: 12.5px; color: #2A2A28; display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.commune-ligne i { color: var(--primaire); width: 14px; text-align: center; flex-shrink: 0; }
+.commune-ligne a { color: inherit; }
+.commune-ligne:last-child { margin-bottom: 0; }
+
+/* Carte "hero" démographie : gros chiffre population en avant-plan
+   plutôt qu'une liste de lignes égales entre elles - c'est le chiffre
+   qu'on cherche en premier en arrivant sur une commune. */
+.commune-carte-hero { background: linear-gradient(160deg, #fff, var(--fond)); }
+.commune-hero-nombre {
+    font-family: var(--font-titre); font-weight: 700; color: var(--primaire);
+    font-size: 40px; line-height: 1; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+}
+.commune-hero-nombre span { font-family: var(--font-texte); font-size: 13px; font-weight: 600; color: var(--ardoise); }
+.commune-hero-evolution { font-size: 11.5px; color: var(--feuille); font-weight: 700; margin-top: 6px; }
+.commune-stats-secondaires { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--bordure); }
+.commune-stat-mini { display: flex; flex-direction: column; }
+.commune-stat-mini strong { font-size: 16px; font-weight: 700; color: #2A2A28; }
+.commune-stat-mini span { font-size: 10.5px; color: var(--ardoise); }
+
+/* Carte qualité de l'eau : petit badge coloré (conforme/non conforme),
+   même motif pastille que .layer-legend-pastille/.popup-fiche-badge
+   ailleurs sur le site. */
+.commune-eau-badge { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: 12.5px; margin-bottom: 10px; }
+.commune-eau-badge span { width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+/* Carte "Ce qu'on trouve ici" : sous-sections groupées par thématique
+   (Commerces & services / Éducation & petite enfance / Sport & loisirs),
+   chacune une grille de tuiles icône+chiffre+libellé - remplace la
+   longue liste à plat de la 1ère version (retour direct : "illisible").
+   Même motif que .hero-tile déjà établi ailleurs (fond clair, coin
+   arrondi), en plus compact pour tenir plusieurs dizaines de tuiles
+   sans dominer la page. */
+.commune-decompte-groupe:not(:last-child) { margin-bottom: 20px; }
+.commune-decompte-groupe-titre { font-size: 12.5px; font-weight: 700; color: #2A2A28; margin-bottom: 10px; }
+.commune-tuiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
+.commune-tuile { background: var(--fond); border-radius: 12px; padding: 12px 8px; text-align: center; }
+.commune-tuile-icone {
+    display: flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; margin: 0 auto 6px; border-radius: 50%; color: #fff; font-size: 12px;
+}
+.commune-tuile-nombre { font-weight: 700; font-size: 17px; color: #2A2A28; line-height: 1.2; }
+.commune-tuile-label { font-size: 10px; color: var(--ardoise); line-height: 1.25; margin-top: 2px; }
+
+.commune-carte .illiwap-embed { margin: 0; }
+
+@media (max-width: 600px) {
+    .commune-hero-nombre { font-size: 32px; }
+    .commune-tuiles { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); }
 }
 
 .rf-groupe { border-top: 1px solid var(--bordure); padding: 14px 0; }
