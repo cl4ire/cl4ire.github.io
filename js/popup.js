@@ -1673,7 +1673,13 @@ function construirePopupPrixCommune(props) {
    exemple, ne sont pas dans tous les extraits Insee). */
 function construirePopupDemographie(props) {
     const nom = premierChampValide(props, ["commune_nom", "commune"]) || "Commune";
-    const couleur = couleurPopulation(props.population);
+    /* Couleur fixe (terracotta, déjà la couleur déclarée pour cette
+       couche dans config.js) plutôt que couleurPopulation(), dont les
+       teintes les plus claires (petites communes) sont illisibles en
+       texte/icône sur fond blanc - couleurPopulation() reste pertinente
+       pour l'aplat de la choroplèthe sur la carte (une grande zone
+       remplie n'a pas ce problème de contraste), mais pas ici. */
+    const couleur = PALETTE.terracotta;
     /* evolution_annuelle_2017_2023 : taux ANNUEL moyen (Insee), pas une
        variation cumulée sur 10 ans - étiqueté avec sa vraie période
        plutôt que de laisser deviner ou d'afficher "sur 10 ans" comme une
@@ -1684,9 +1690,10 @@ function construirePopupDemographie(props) {
         typeof props.population === "number"
             ? `<div class="popup-fiche-ligne"><i class="fa-solid fa-people-group"></i> ${props.population.toLocaleString("fr-FR")} habitants${evolution !== null ? ` <span class="popup-fiche-precision">(${evolution > 0 ? "+" : ""}${evolution}%/an en moyenne 2017-2023)</span>` : ""}</div>`
             : null,
-        (typeof props.part_moins_25 === "number" || typeof props.part_65_plus === "number")
+        (typeof props.part_moins_25 === "number" || typeof props.part_25_64 === "number" || typeof props.part_65_plus === "number")
             ? `<div class="popup-fiche-ligne"><i class="fa-solid fa-child-reaching"></i> ${[
                 typeof props.part_moins_25 === "number" ? `${props.part_moins_25}% de moins de 25 ans` : null,
+                typeof props.part_25_64 === "number" ? `${props.part_25_64}% de 25 à 64 ans` : null,
                 typeof props.part_65_plus === "number" ? `${props.part_65_plus}% de 65 ans et +` : null
             ].filter(Boolean).join(" · ")}</div>`
             : null,
