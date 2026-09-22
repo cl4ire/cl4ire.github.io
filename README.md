@@ -2889,6 +2889,54 @@ Testé (Playwright) : confirmé que la couche temporaire reçoit bien
 `cluster: false` alors que la config `LAYERS` partagée garde
 `cluster: true` intact (aucune fuite d'état entre les deux usages).
 
+## Couleurs officielles ALÉOP et couleurs de marque pour les lockers, légende par enseigne
+
+Deux retours directs de l'utilisatrice.
+
+**Lignes ALÉOP : couleur officielle par ligne** ("il y a un code
+couleur à respecter") - `couches/mobilite/reseauALEOP.geojson` porte
+déjà `route_color`/`route_text_color` (flux GTFS/OSM, vérifié réel :
+`rgb(243,151,93)` pour la ligne 216, orange), jusqu'ici ignorés pour le
+TRACÉ de la ligne sur la carte (seulement utilisés pour l'icône de sa
+popup, `construirePopupLigneBus`, déjà correcte). Nouveau `styleLigneALEOP`
+(`js/config.js`) : reprend `route_color` (converti en hex via
+`couleurDepuisRgb`, déjà utilisée par la popup - même conversion, pas
+de code dupliqué), repli sur le bleu générique du site seulement si la
+donnée manque. Une seule ligne dessert aujourd'hui le territoire, mais
+le code s'applique déjà correctement ligne par ligne si la desserte
+s'étoffe.
+
+**Lockers : couleur de marque réelle + différenciation en légende**
+("une couleur correspondant au logo... et les différencier dans la
+légende") :
+
+- **Couleurs corrigées** (`TYPES_LOCKERS`, `js/config.js`) : Mondial
+  Relay (`#E2001A`, rouge d'enseigne) et Colissimo/La Poste (`#FFCD00`,
+  jaune d'enseigne) utilisaient à tort une couleur de palette générique
+  du site (bleu/vert) plutôt que leur vraie couleur de marque ; Amazon
+  Locker (`#FF9900`) l'avait déjà. Les autres enseignes déjà
+  répertoriées (InPost, Chronopost, DPD, UPS, Hermes/Evri, Vinted Go,
+  Relais Colis) gardent leur couleur, déjà correcte.
+- **Légende par enseigne** : la couche `lockers` n'avait encore aucune
+  légende (contrairement aux commerces) - `legend: TYPES_LOCKERS,
+  legendDefaut: TYPE_LOCKER_DEFAUT, categoriser:
+  categorieLockerPourFeature` ajouté à sa config, même mécanisme déjà
+  établi pour les commerces (une sous-couche Leaflet par enseigne,
+  case à cocher indépendante dans le panneau). `icon` (nouveau champ,
+  absent jusqu'ici de `TYPES_LOCKERS`) ajouté à chaque entrée,
+  nécessaire à `construireLegende` pour dessiner la pastille de
+  couleur de la légende - uniforme (icône "casier") pour toutes les
+  enseignes, le marqueur réel sur la carte garde sa propre distinction
+  casier automatique / point relais en commerce
+  (`iconeLocker`/`estPointRelaisCommerce`, inchangée).
+
+Testé (Playwright, données réelles) : couleur ALÉOP vérifiée
+(`rgb(243,151,93)` → `#f3975d`) ; répartition réelle des 12 lockers du
+territoire confirmée par enseigne (8 Mondial Relay, 3 Colissimo/La
+Poste, 1 Amazon Locker - aucun classé "Autre opérateur" par erreur) ;
+config `lockers` vérifiée avec légende et fonction de catégorisation
+branchées, chaque entrée de légende porte bien une icône.
+
 ## Ce qui reste à faire
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.

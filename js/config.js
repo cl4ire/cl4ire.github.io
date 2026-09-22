@@ -361,6 +361,17 @@ const LABELS_COURS_EAU = {
    visuel que la ligne pointillée de l'EPCI (js/map.js) - distingue d'un
    coup d'œil un vrai ruisseau permanent d'un fossé qui ne coule qu'en
    hiver. */
+/* route_color (et route_text_color, utilisé dans construirePopupLigneBus)
+   viennent directement du flux GTFS/OSM ALÉOP (couches/mobilite/
+   reseauALEOP.geojson), déjà au format CSS "rgb(r,g,b)" - vérifié réel
+   sur le fichier (216 : rgb(243,151,93), orange), pas une valeur
+   inventée. Repli sur le bleu générique du site seulement si jamais
+   absent (donnée manquante pour une ligne). */
+function styleLigneALEOP(feature) {
+    const couleur = (typeof couleurDepuisRgb === "function" && couleurDepuisRgb((feature.properties || {}).route_color)) || PALETTE.riviere;
+    return { color: couleur, weight: 3, opacity: 0.8 };
+}
+
 function styleCoursEau(feature) {
     const type = feature.properties.waterway;
     const weight = type === "river" ? 3 : type === "canal" ? 2.5 : type === "stream" ? 1.5 : 1;
@@ -569,19 +580,30 @@ function fusionnerFeatureCollections(reponses) {
     return { type: "FeatureCollection", features: reponses.flatMap(r => (r && r.features) || []) };
 }
 
+/* Couleur = couleur d'enseigne réelle de chaque opérateur (logo), pas une
+   couleur de palette générique du site - retour direct de l'utilisatrice
+   ("une couleur correspondant au logo"), pour repérer une enseigne au
+   coup d'œil sur la carte sans avoir à ouvrir chaque point. Mondial
+   Relay et Colissimo/La Poste corrigées (rouge/jaune d'enseigne
+   réels, remplaçant à tort le bleu/vert générique du site) ; les
+   autres avaient déjà leur vraie couleur de marque. `icon` (nouveau
+   champ) sert uniquement à la légende du panneau (construireLegende,
+   js/panel.js) - le marqueur sur la carte garde sa propre logique
+   d'icône (casier automatique vs point relais en commerce, voir
+   iconeLocker plus bas), indépendante de l'enseigne. */
 const TYPES_LOCKERS = [
-    { id: "mondialrelay", label: "Mondial Relay", color: PALETTE.riviere, motifs: ["mondial relay", "mondialrelay", "point relais"] },
-    { id: "amazon", label: "Amazon Locker", color: "#FF9900", motifs: ["amazon"] },
-    { id: "vintedgo", label: "Vinted Go", color: "#09B1BA", motifs: ["vinted"] },
-    { id: "inpost", label: "InPost", color: "#FFC700", motifs: ["inpost"] },
-    { id: "chronopost", label: "Chronopost", color: "#001E62", motifs: ["chronopost"] },
-    { id: "colissimo", label: "Colissimo / La Poste", color: PALETTE.foret, motifs: ["colissimo", "la poste", "laposte"] },
-    { id: "relaiscolis", label: "Relais Colis / Pickup", color: PALETTE.terracotta, motifs: ["relais colis", "pickup"] },
-    { id: "dpd", label: "DPD Pickup", color: "#DC0032", motifs: ["dpd"] },
-    { id: "ups", label: "UPS Access Point", color: "#351C15", motifs: ["ups"] },
-    { id: "hermes", label: "Hermes / Evri", color: "#6E2585", motifs: ["hermes", "evri"] }
+    { id: "mondialrelay", label: "Mondial Relay", color: "#E2001A", icon: "fa-solid fa-box", motifs: ["mondial relay", "mondialrelay", "point relais"] },
+    { id: "amazon", label: "Amazon Locker", color: "#FF9900", icon: "fa-solid fa-box", motifs: ["amazon"] },
+    { id: "vintedgo", label: "Vinted Go", color: "#09B1BA", icon: "fa-solid fa-box", motifs: ["vinted"] },
+    { id: "inpost", label: "InPost", color: "#FFC700", icon: "fa-solid fa-box", motifs: ["inpost"] },
+    { id: "chronopost", label: "Chronopost", color: "#001E62", icon: "fa-solid fa-box", motifs: ["chronopost"] },
+    { id: "colissimo", label: "Colissimo / La Poste", color: "#FFCD00", icon: "fa-solid fa-box", motifs: ["colissimo", "la poste", "laposte"] },
+    { id: "relaiscolis", label: "Relais Colis / Pickup", color: PALETTE.terracotta, icon: "fa-solid fa-box", motifs: ["relais colis", "pickup"] },
+    { id: "dpd", label: "DPD Pickup", color: "#DC0032", icon: "fa-solid fa-box", motifs: ["dpd"] },
+    { id: "ups", label: "UPS Access Point", color: "#351C15", icon: "fa-solid fa-box", motifs: ["ups"] },
+    { id: "hermes", label: "Hermes / Evri", color: "#6E2585", icon: "fa-solid fa-box", motifs: ["hermes", "evri"] }
 ];
-const TYPE_LOCKER_DEFAUT = { id: "autre", label: "Autre opérateur", color: PALETTE.ardoise };
+const TYPE_LOCKER_DEFAUT = { id: "autre", label: "Autre opérateur", color: PALETTE.ardoise, icon: "fa-solid fa-box" };
 
 /* Enseigne reconnue par mots-clés plutôt que par une liste de valeurs
    exactes : OSM ne normalise pas parfaitement ces champs (variantes de
@@ -612,6 +634,13 @@ function iconeLocker(feature) {
         icon: estPointRelaisCommerce(props) ? "fa-solid fa-store" : "fa-solid fa-box",
         color: categorieLocker(props).color
     };
+}
+/* Point d'extension utilisé par layers.js pour répartir les lockers en
+   sous-couches indépendantes par enseigne (légende à cases à cocher,
+   même mécanisme que les commerces/categoriePourFeature) - retour
+   direct de l'utilisatrice ("les différencier dans la légende"). */
+function categorieLockerPourFeature(feature) {
+    return categorieLocker(feature.properties || {}).id;
 }
 
 function categoriePatrimoineRural(props) {
@@ -891,6 +920,7 @@ const LAYERS = [
         transform: fusionnerFeatureCollections,
         type: "point", icon: "fa-solid fa-box", color: PALETTE.ardoise,
         iconePourFeature: iconeLocker,
+        legend: TYPES_LOCKERS, legendDefaut: TYPE_LOCKER_DEFAUT, categoriser: categorieLockerPourFeature,
         lazy: false, searchable: true, cluster: true,
         titleFields: ["name", "brand", "ref"],
         subtitleFields: ["brand", "operator"]
@@ -1057,8 +1087,15 @@ const LAYERS = [
     },
     {
         id: "reseauALEOP", group: "mobilite", label: "Lignes ALÉOP",
+        /* Couleur officielle par ligne (route_color, déjà dans le fichier
+           GTFS/OSM - vérifié réel, pas une supposition) plutôt qu'une
+           seule couleur bleue pour tout le réseau - retour direct de
+           l'utilisatrice ("il y a un code couleur à respecter"). Une
+           seule ligne dessert aujourd'hui le territoire (216, orange),
+           mais le code s'applique déjà correctement ligne par ligne si
+           la desserte s'étoffe un jour. */
         file: "couches/mobilite/reseauALEOP.geojson", type: "line",
-        color: PALETTE.riviere,
+        color: PALETTE.riviere, styleFn: styleLigneALEOP,
         lazy: false, searchable: false, cluster: false,
         titleFields: ["route_long_name", "route_short_name", "name"],
         subtitleFields: []
