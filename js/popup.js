@@ -144,16 +144,23 @@ function jourOsmAujourdhui() {
 
 /* Horaires saisonniers ("Apr-Sep: Mo-Sa 09:00-19:00; Oct-Mar: Mo-Sa
    09:00-17:00", motif courant pour les déchèteries été/hiver) : à
-   vérifier si le mois actuel tombe dans une plage "Mmm-Mmm:" en tête
-   d'un bloc, gère aussi les plages à cheval sur l'année civile
-   (Oct-Mar). */
+   vérifier si la date actuelle tombe dans une plage "Mmm[ jj]-Mmm[ jj]:"
+   en tête d'un bloc, gère aussi les plages à cheval sur l'année civile
+   (Oct-Mar). Le jour du mois est optionnel ("Jun 15-Sep 15:" pour un
+   changement en cours de mois, comme "Apr-Sep:" pour un mois entier) -
+   représenté en un seul entier "mois*100+jour" pour comparer les deux
+   d'un coup (ex. 15 juin = 5*100+15 = 515, mai = mois 4 → 4*100+1 à
+   4*100+31 par défaut si aucun jour n'est précisé). */
 const ORDRE_MOIS_OSM = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-function moisOsmDansPlage(debut, fin, moisActuel) {
-    const i = ORDRE_MOIS_OSM.indexOf(debut.toUpperCase());
-    const j = ORDRE_MOIS_OSM.indexOf(fin.toUpperCase());
+function dateOsmDansPlage(mois1, jour1, mois2, jour2, moisActuel, jourActuel) {
+    const i = ORDRE_MOIS_OSM.indexOf(mois1.toUpperCase());
+    const j = ORDRE_MOIS_OSM.indexOf(mois2.toUpperCase());
     if (i === -1 || j === -1) return true; // motif non reconnu : ne filtre pas plutôt que de tout masquer
-    if (i <= j) return moisActuel >= i && moisActuel <= j;
-    return moisActuel >= i || moisActuel <= j; // plage à cheval sur l'année (ex. Oct-Mar)
+    const debut = i * 100 + (jour1 ? Number(jour1) : 1);
+    const fin = j * 100 + (jour2 ? Number(jour2) : 31);
+    const actuel = moisActuel * 100 + jourActuel;
+    if (debut <= fin) return actuel >= debut && actuel <= fin;
+    return actuel >= debut || actuel <= fin; // plage à cheval sur l'année (ex. Oct-Mar)
 }
 
 /* Développe "Mo-Fr" ou "Mo,We,Fr" en liste de jours OSM. Ne couvre pas
@@ -189,20 +196,24 @@ function parserHorairesOsm(valeur) {
         ORDRE_JOURS_OSM.forEach(j => { tous[j] = ["00:00-24:00"]; });
         return tous;
     }
-    const moisActuel = new Date().getMonth(); // 0-11, aligné sur l'index de ORDRE_MOIS_OSM
+    const maintenant = new Date();
+    const moisActuel = maintenant.getMonth(); // 0-11, aligné sur l'index de ORDRE_MOIS_OSM
+    const jourActuel = maintenant.getDate(); // 1-31
     const horaires = {};
     let auMoinsUn = false;
     valeur.split(";").forEach(bloc => {
         bloc = bloc.trim();
-        /* Plage saisonnière optionnelle en tête du bloc ("Apr-Sep: ...",
+        /* Plage saisonnière optionnelle en tête du bloc ("Apr-Sep: ..."
+           ou "Jun 15-Sep 15: ..." pour un changement en cours de mois,
            motif courant déchèteries été/hiver) : un bloc hors saison
            actuelle est simplement ignoré, pas affiché en dehors de sa
            période - le reste du bloc (jours + horaires) est traité
            normalement une fois la plage retirée. */
-        const saison = bloc.match(/^([A-Za-z]{3})-([A-Za-z]{3})\s*:\s*(.+)$/);
+        const saison = bloc.match(/^([A-Za-z]{3})(?:\s+(\d{1,2}))?\s*-\s*([A-Za-z]{3})(?:\s+(\d{1,2}))?\s*:\s*(.+)$/);
         if (saison) {
-            if (!moisOsmDansPlage(saison[1], saison[2], moisActuel)) return;
-            bloc = saison[3].trim();
+            const [, mois1, jour1, mois2, jour2, reste] = saison;
+            if (!dateOsmDansPlage(mois1, jour1, mois2, jour2, moisActuel, jourActuel)) return;
+            bloc = reste.trim();
         }
         const espace = bloc.indexOf(" ");
         if (espace === -1) return;

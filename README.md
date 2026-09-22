@@ -1747,10 +1747,19 @@ sous-ensemble de la syntaxe OSM (jours de la semaine + plages horaires,
 voir "Ne couvre pas toute la spécification..." dans son commentaire) -
 ni les jours fériés (`PH`), ni les plages saisonnières. Étendu pour
 gérer ces dernières : un bloc peut désormais commencer par une plage de
-mois ("`Apr-Sep: Mo-Sa 09:00-19:00`"), qui n'est retenue que si le mois
-actuel y tombe - `moisOsmDansPlage` gère aussi les plages à cheval sur
+mois ("`Apr-Sep: Mo-Sa 09:00-19:00`"), qui n'est retenue que si la date
+actuelle y tombe - `dateOsmDansPlage` gère aussi les plages à cheval sur
 l'année civile ("`Oct-Mar`"). Exemple complet pour une déchèterie :
 `Apr-Sep: Mo-Sa 09:00-19:00; Oct-Mar: Mo-Sa 09:00-17:00`.
+
+**Mise à jour** : retour de l'utilisatrice - un changement de saison ne
+tombe pas toujours pile au 1er du mois ("à partir du 15 juin", horaires
+d'été des déchèteries typiquement mi-juin à mi-septembre). Le jour du
+mois est maintenant lui aussi optionnel dans la plage ("`Jun 15-Sep
+15: Mo-Sa 09:00-19:00`"), représenté en un entier "mois×100+jour" pour
+comparer date de début/fin et date du jour d'un coup - un mois seul
+("`Apr-Sep:`") reste valide, équivalent à "du 1er au dernier jour de
+ces mois" (jour par défaut 1 pour le début, 31 pour la fin).
 
 Le format renvoyé par `parserHorairesOsm` ne change pas (toujours
 `{Mo: [...], ...}` pour la semaine en cours) : tous les appelants
@@ -1769,13 +1778,14 @@ mécanique que les commerces : badge "Ouvert"/"Fermé" +
 l'utilisatrice s'apprêtait à ajouter ne se seraient affichés nulle
 part.
 
-Testé (horaires mockées, en changeant artificiellement la date système
-dans plusieurs mois de test) : juillet et avril affichent les horaires
-d'été (09:00-19:00), décembre et février les horaires d'hiver
-(09:00-17:00) - y compris pour la plage "Oct-Mar" à cheval sur l'année
-civile. Un format non saisonnier existant, et des plages de mois non
-reconnues, continuent de fonctionner comme avant (testés en
-non-régression).
+Testé (horaires mockées, en changeant artificiellement la date système)
+sur les deux granularités : mois entiers (juillet et avril → été,
+décembre et février → hiver, y compris "Oct-Mar" à cheval sur l'année
+civile) et jour précis (`Jun 15-Sep 15:`/`Sep 16-Jun 14:` - le 14 juin
+encore en hiver, le 15 déjà en été, le 15 septembre encore en été, le
+16 déjà en hiver, vérifiés un par un). Un format non saisonnier
+existant, et des plages non reconnues, continuent de fonctionner comme
+avant (testés en non-régression).
 
 ## Ce qui reste à faire
 - **Vigicrues : endpoint et nom de champ À VÉRIFIER EN CONDITIONS
