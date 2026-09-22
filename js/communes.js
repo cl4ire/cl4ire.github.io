@@ -144,14 +144,56 @@ function construireCarteMairie(mairies) {
    précédente, une longue liste à plat "illisible") - même couleur que
    celle déjà utilisée pour cette couche sur la carte (config.js), pour
    rester cohérent plutôt que d'inventer une palette à part.
+   grouper renvoie désormais {label, icon} par sous-catégorie plutôt
+   qu'un simple libellé (retour direct de l'utilisatrice : "les icones
+   de chaque service en fonction de leur catégorie" - une boulangerie
+   et un distributeur bancaire ne doivent pas porter la même icône que
+   toute leur couche). categorieCommerce (config.js) porte déjà une
+   icône par catégorie de commerce, réutilisée telle quelle ; les
+   autres couches n'en avaient pas, complétées ci-dessous
+   (ICONES_ECOLE/ICONES_PETITE_ENFANCE/ICONES_SPORT).
    LABELS_TYPE_ECOLE : réutilise la constante déjà définie dans
    js/popup.js pour construirePopupEcole, pas de doublon. */
+const ICONES_ECOLE = {
+    "École maternelle": "fa-solid fa-child", "École primaire": "fa-solid fa-book",
+    "École élémentaire": "fa-solid fa-book-open", "Collège": "fa-solid fa-graduation-cap",
+    "Lycée": "fa-solid fa-graduation-cap", SEGPA: "fa-solid fa-graduation-cap"
+};
+const ICONES_PETITE_ENFANCE = {
+    "Assistant maternel": "fa-solid fa-baby", "Crèche": "fa-solid fa-house-chimney-window",
+    "Relais Petite Enfance": "fa-solid fa-people-roof"
+};
+const ICONES_SPORT = {
+    "Football": "fa-solid fa-futbol", "Basketball": "fa-solid fa-basketball",
+    "Volleyball": "fa-solid fa-volleyball", "Tennis de table": "fa-solid fa-table-tennis-paddle-ball",
+    "Natation": "fa-solid fa-person-swimming", "Course à pied": "fa-solid fa-person-running",
+    "Cyclisme": "fa-solid fa-person-biking", "Équitation": "fa-solid fa-horse",
+    "Motocross": "fa-solid fa-motorcycle", "Aviation légère (ULM)": "fa-solid fa-plane",
+    "Boules / pétanque": "fa-solid fa-bowling-ball"
+};
 const COUCHES_DECOMPTE_COMMUNE = [
-    { id: "commerces", titreGroupe: "Commerces & services", icon: "fa-solid fa-basket-shopping", color: PALETTE.feuille, grouper: f => categorieCommerce(f.properties.type).label },
-    { id: "banques", titreGroupe: "Commerces & services", icon: "fa-solid fa-money-bill-wave", color: PALETTE.ardoise, grouper: f => f.properties.type === "atm" ? "Distributeur (DAB)" : "Agence bancaire" },
-    { id: "education", titreGroupe: "Éducation & petite enfance", icon: "fa-solid fa-graduation-cap", color: PALETTE.terracotta, grouper: f => LABELS_TYPE_ECOLE[f.properties.type_fr] || "École" },
-    { id: "petiteEnfance", titreGroupe: "Éducation & petite enfance", icon: "fa-solid fa-baby", color: PALETTE.terracotta, parGeometrie: true, grouper: f => f.properties.type || "Petite enfance" },
-    { id: "equipementSportif", titreGroupe: "Sport & loisirs", icon: "fa-solid fa-futbol", color: PALETTE.riviere, grouper: f => labelSport(f.properties.sport) || "Équipement sportif" },
+    {
+        id: "commerces", titreGroupe: "Commerces & services", color: PALETTE.feuille,
+        grouper: f => { const cat = categorieCommerce(f.properties.type); return { label: cat.label, icon: cat.icon }; }
+    },
+    {
+        id: "banques", titreGroupe: "Commerces & services", color: PALETTE.ardoise,
+        grouper: f => f.properties.type === "atm"
+            ? { label: "Distributeur (DAB)", icon: "fa-solid fa-credit-card" }
+            : { label: "Agence bancaire", icon: "fa-solid fa-building-columns" }
+    },
+    {
+        id: "education", titreGroupe: "Éducation & petite enfance", color: PALETTE.terracotta,
+        grouper: f => { const label = LABELS_TYPE_ECOLE[f.properties.type_fr] || "École"; return { label, icon: ICONES_ECOLE[label] || "fa-solid fa-graduation-cap" }; }
+    },
+    {
+        id: "petiteEnfance", titreGroupe: "Éducation & petite enfance", color: PALETTE.terracotta, parGeometrie: true,
+        grouper: f => { const label = f.properties.type || "Petite enfance"; return { label, icon: ICONES_PETITE_ENFANCE[label] || "fa-solid fa-baby" }; }
+    },
+    {
+        id: "equipementSportif", titreGroupe: "Sport & loisirs", color: PALETTE.riviere,
+        grouper: f => { const label = labelSport(f.properties.sport) || "Équipement sportif"; return { label, icon: ICONES_SPORT[label] || "fa-solid fa-medal" }; }
+    },
     { id: "airesJeu", titreGroupe: "Sport & loisirs", icon: "fa-solid fa-child-reaching", color: PALETTE.riviere, label: "Aires de jeux" }
 ];
 
@@ -186,20 +228,32 @@ function decompteEntitesCommune(codeInsee) {
         }
         const lignes = groupes[conf.titreGroupe];
         if (!conf.grouper) {
-            lignes.push({ icon: conf.icon, color: conf.color, label: conf.label, n: features.length });
+            lignes.push({ icon: conf.icon, color: conf.color, label: conf.label, n: features.length, layerId: conf.id });
             return;
         }
+        /* grouper renvoie {label, icon} par feature : l'icône est la même
+           pour toutes les features d'un même label (catégorie), gardée du
+           premier passage plutôt que recalculée. */
         const compte = {};
         features.forEach(f => {
-            const cle = conf.grouper(f);
-            compte[cle] = (compte[cle] || 0) + 1;
+            const { label, icon } = conf.grouper(f);
+            if (!compte[label]) compte[label] = { n: 0, icon };
+            compte[label].n++;
         });
-        Object.keys(compte).sort((a, b) => compte[b] - compte[a])
-            .forEach(cle => lignes.push({ icon: conf.icon, color: conf.color, label: cle, n: compte[cle] }));
+        Object.keys(compte).sort((a, b) => compte[b].n - compte[a].n)
+            .forEach(label => lignes.push({ icon: compte[label].icon, color: conf.color, label, n: compte[label].n, layerId: conf.id }));
     });
     return ordreGroupes.map(titre => ({ titre, lignes: groupes[titre] }));
 }
 
+/* Chaque tuile porte data-couche (id de couche, config.js) : un clic
+   ferme le dashboard et affiche cette couche sur la carte, recentrée
+   sur la commune - retour direct de l'utilisatrice ("est-ce que quand
+   on clique sur un service ça peut nous ouvrir la carte avec ces
+   services ?"). Gestion du clic par délégation sur #commune-contenu
+   (voir initClicTuilesDecompte, branché une seule fois par
+   ouvrirDashboardCommune), pas un addEventListener par tuile : le
+   contenu est entièrement régénéré (innerHTML) à chaque ouverture. */
 function construireCarteDecompte(codeInsee) {
     const groupes = decompteEntitesCommune(codeInsee);
     if (!groupes.length) return "";
@@ -210,7 +264,7 @@ function construireCarteDecompte(codeInsee) {
                 <div class="commune-decompte-groupe-titre">${echapperHtml(g.titre)}</div>
                 <div class="commune-tuiles">
                     ${g.lignes.map(l => `
-                        <div class="commune-tuile">
+                        <div class="commune-tuile" data-couche="${l.layerId}" title="Voir sur la carte">
                             <div class="commune-tuile-icone" style="background:${l.color}"><i class="${l.icon}"></i></div>
                             <div class="commune-tuile-nombre">${l.n}</div>
                             <div class="commune-tuile-label">${echapperHtml(l.label)}</div>
@@ -256,6 +310,24 @@ function construireCarteDemographie(props) {
     </div>`;
 }
 
+/* Retour direct de l'utilisatrice : combler l'espace vide à côté de la
+   carte "Qualité de l'eau" plutôt que de le laisser vide - reprend la
+   couche "Prix immobilier par commune" (prixImmobilier, config.js),
+   déjà chargée au démarrage du site (lazy:false, comme les couches du
+   décompte), aucune donnée ni appel réseau supplémentaire. */
+function construireCartePrixImmobilier(codeInsee) {
+    const feature = (donneesBrutes["prixImmobilier"] || []).find(f => f.properties && String(f.properties.code_insee) === codeInsee);
+    if (!feature) return "";
+    const props = feature.properties;
+    if (typeof props.prix_m2_median !== "number") return "";
+
+    return `<div class="commune-carte">
+        <div class="commune-carte-titre"><i class="fa-solid fa-house-chimney"></i>Prix immobilier</div>
+        <div class="commune-hero-nombre" style="font-size:28px;">${props.prix_m2_median.toLocaleString("fr-FR")}<span>€/m² médian</span></div>
+        ${typeof props.nb_ventes === "number" ? `<div class="popup-fiche-precision" style="margin-top:8px;">${props.nb_ventes.toLocaleString("fr-FR")} vente(s)${props.periode ? ` sur ${echapperHtml(props.periode)}` : ""}</div>` : ""}
+    </div>`;
+}
+
 function construireCarteActualites(codeInsee) {
     return `<div class="commune-carte commune-carte-large">
         <div class="commune-carte-titre"><i class="fa-solid fa-bullhorn"></i>Actualités (Illiwap)</div>
@@ -281,9 +353,34 @@ function construireDashboardCommune(codeInsee, mairies, demographieFeature) {
         ${carteDemographie}
         ${carteMairie}
         <div id="commune-qualite-eau"><!-- Rempli séparément une fois Hub'Eau résolu, voir ouvrirDashboardCommune --></div>
+        ${construireCartePrixImmobilier(codeInsee)}
         ${carteDecompte}
         ${construireCarteActualites(codeInsee)}
     </div>`;
+}
+
+/* Clic sur une tuile du décompte ("Ce qu'on trouve ici") : ouvre la carte
+   directement sur la couche concernée plutôt que de laisser deviner
+   dans quel groupe du panneau la chercher (retour direct de
+   l'utilisatrice). Délégation sur #commune-contenu, branchée une seule
+   fois (ecouteurTuilesBranche) : le contenu de ce conteneur est
+   entièrement réécrit via innerHTML à chaque ouverture de commune, donc
+   un addEventListener direct sur chaque tuile serait reperdu à chaque
+   fois pour rien - la délégation évite d'avoir à rebrancher quoi que ce
+   soit après chaque construireDashboardCommune. */
+let ecouteurTuilesBranche = false;
+function initClicTuilesDecompte(map) {
+    if (ecouteurTuilesBranche) return;
+    ecouteurTuilesBranche = true;
+    document.getElementById("commune-contenu").addEventListener("click", event => {
+        const tuile = event.target.closest(".commune-tuile");
+        if (!tuile || !tuile.dataset.couche) return;
+        const codeInsee = document.getElementById("commune-page").dataset.codeInsee;
+        if (!codeInsee) return;
+        fermerVueCommune();
+        if (typeof zoomerSurCommune === "function") zoomerSurCommune(map, codeInsee);
+        chargerEtAfficherCouche(map, tuile.dataset.couche);
+    });
 }
 
 function ouvrirDashboardCommune(map, codeInsee) {
@@ -295,6 +392,13 @@ function ouvrirDashboardCommune(map, codeInsee) {
     document.getElementById("commune-titre").innerHTML = `<i class="fa-solid fa-signs-post"></i> ${echapperHtml(nom)}`;
     document.getElementById("commune-contenu").innerHTML = `<div class="popup-fiche-vide" style="padding:16px 18px;">Chargement...</div>`;
     document.getElementById("commune-page").hidden = false;
+    /* Mémorisé pour le clic délégué sur les tuiles du décompte
+       (initClicTuilesDecompte, branché une seule fois plus bas) : lui
+       permet de retrouver la commune actuellement affichée sans avoir à
+       le passer en paramètre depuis un event listener posé une seule
+       fois pour toute la durée de vie de la page. */
+    document.getElementById("commune-page").dataset.codeInsee = codeInsee;
+    initClicTuilesDecompte(map);
 
     /* Hub'Eau (qualité de l'eau) démarré tout de suite, en parallèle du
        Promise.all ci-dessous, pour ne pas perdre de temps - mais

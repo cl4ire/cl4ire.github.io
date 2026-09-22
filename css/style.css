@@ -299,12 +299,20 @@ button { font-family: inherit; cursor: pointer; }
 }
 .commune-carte {
     background: #fff; border: 1px solid var(--bordure); border-radius: 14px;
-    padding: 20px;
+    padding: 20px; height: 100%;
 }
 /* Prend toute la largeur de la grille, quel que soit le nombre de
    colonnes actuel (décompte, actualités - contenu naturellement plus
    large que les cartes compactes mairie/démographie/eau). */
 .commune-carte-large { grid-column: 1 / -1; }
+/* #commune-qualite-eau est un simple <div> (pas .commune-carte) : la
+   vraie carte y est injectée après coup une fois Hub'Eau résolu, voir
+   ouvrirDashboardCommune - sans ces deux règles, la grille étire bien
+   ce <div> à la hauteur de la ligne (comportement par défaut de
+   CSS Grid), mais pas la carte injectée à l'intérieur, qui ne prend
+   que la hauteur de son propre contenu : d'où la carte "Qualité de
+   l'eau" plus courte que ses voisines - retour direct de l'utilisatrice. */
+#commune-qualite-eau, #commune-qualite-eau .commune-carte { height: 100%; }
 .commune-carte-titre {
     display: flex; align-items: center; gap: 8px;
     font-size: 11px; font-weight: 800; color: var(--ardoise);
@@ -354,7 +362,11 @@ button { font-family: inherit; cursor: pointer; }
 .commune-decompte-groupe:not(:last-child) { margin-bottom: 20px; }
 .commune-decompte-groupe-titre { font-size: 12.5px; font-weight: 700; color: #2A2A28; margin-bottom: 10px; }
 .commune-tuiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
-.commune-tuile { background: var(--fond); border-radius: 12px; padding: 12px 8px; text-align: center; }
+.commune-tuile {
+    background: var(--fond); border-radius: 12px; padding: 12px 8px; text-align: center;
+    cursor: pointer; transition: transform .15s, box-shadow .15s;
+}
+.commune-tuile:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.12); }
 .commune-tuile-icone {
     display: flex; align-items: center; justify-content: center;
     width: 30px; height: 30px; margin: 0 auto 6px; border-radius: 50%; color: #fff; font-size: 12px;
