@@ -2327,6 +2327,74 @@ vérifié : appelle bien `chargerEtAfficherCouche` avec l'id de couche
 attendu et referme le dashboard. Capture d'écran envoyée à
 l'utilisatrice.
 
+## Qualité de l'eau potable : vraie couche sur la carte
+
+Retour direct de l'utilisatrice sur la carte "Qualité de l'eau
+potable" du dashboard commune (ci-dessus) : elle s'attendait à une
+vraie couche sur la carte, pas seulement une carte dans le dashboard.
+Après discussion sur la pertinence (Hub'Eau ne renvoie pas de
+coordonnées précises, un résultat est rattaché à une commune/UDI, pas
+à un point) : choroplèthe sur les polygones communaux existants
+(`couches/communes.geojson`) plutôt qu'un marqueur ponctuel qui
+inventerait une localisation absente de la donnée - même solution déjà
+retenue pour "Historique des catastrophes naturelles" (CATNAT), un cas
+identique (donnée par commune, pas de géométrie propre). Chargement en
+direct (pas de fichier statique pré-généré) : retour direct de
+l'utilisatrice après avoir pesé les deux options, jugé pas assez lourd
+pour justifier un fichier à régénérer périodiquement.
+
+Nouvelle couche `qualiteEau` (`js/config.js`, groupe "urbanisme", à
+côté de démographie/prix immobilier) :
+
+- **`fetchQualiteEauTerritoire`** : récupère `couches/communes.geojson`
+  (géométrie, déjà dans le dépôt) et `recupererQualiteEauTerritoire`
+  (un appel Hub'Eau par commune du territoire - 24 appels, l'API ne
+  filtre pas sur plusieurs communes à la fois) en parallèle, même
+  construction que `fetchCatnat`.
+- **Cache localStorage 24h** (`CACHE_QUALITE_EAU_CLE`, même mécanisme
+  que `CACHE_CATNAT_CLE`) : un contrôle sanitaire ne change pas d'un
+  chargement de page à l'autre, évite de refaire les 24 appels à
+  chaque visite/session.
+- **`geojsonDepuisQualiteEau`** : fusionne le résultat Hub'Eau de
+  chaque commune dans les propriétés de son polygone
+  (`qualite_eau_resultat`), une Feature par commune.
+- **`styleQualiteEau`** : vert si conforme, rouge (`#AD4826`) si non
+  conforme (même test de mot-clé que `construireCarteQualiteEau` du
+  dashboard, sur `conclusion_conformite_prelevement` -
+  `qualiteEauNonConforme` partagée entre couleur de couche et texte de
+  popup pour qu'elles ne puissent jamais se contredire), gris si aucun
+  résultat récent pour la commune.
+- **`construirePopupQualiteEau`** (`js/popup.js`) : même contenu que la
+  carte du dashboard (statut, réseau, date du dernier contrôle),
+  adapté au gabarit popup (`popup-fiche`) plutôt qu'au gabarit carte
+  (`commune-carte`).
+
+**Trouvé en implémentant** : `URL_HUBEAU_EAU_POTABLE` était déjà
+déclarée dans `js/communes.js` (carte du dashboard, ajoutée dans un
+tour précédent) - la redéclarer dans `js/config.js` pour la nouvelle
+couche provoquait une vraie `SyntaxError` ("Identifier ... has already
+been declared") au chargement du site, les scripts du site partageant
+tous le même global (pas de modules ES). Corrigé en gardant une seule
+déclaration, dans `js/config.js` (chargé avant `js/communes.js`, donc
+avant que le dashboard en ait besoin) : `js/communes.js` réutilise
+maintenant cette même constante plutôt que d'en redéclarer une.
+
+Testé (Playwright, appels Hub'Eau interceptés avec des réponses
+réalistes - conforme, non conforme, et une commune sans résultat -
+puisque ce sandbox n'a de toute façon pas accès à Hub'Eau en direct) :
+les 24 communes du territoire fusionnées avec leurs polygones
+(`fetchQualiteEauTerritoire` + `geojsonDepuisQualiteEau`), couleurs
+vérifiées pour les trois cas (vert/rouge/gris), popup vérifiée
+(statut, réseau, date), cache localStorage vérifié à l'écriture ET à
+la lecture (deuxième appel avec le réseau Hub'Eau explicitement coupé
+côté test : toujours 24 communes, bien servi depuis le cache). Rendu
+Leaflet réel (couleur effective des polygones sur la carte) non
+vérifiable dans ce sandbox (Leaflet lui-même n'y charge pas, limite
+déjà documentée ailleurs dans ce fichier) - le panneau des couches
+utilisant la même construction générique que les autres choroplèthes
+déjà en production (démographie, prix immobilier, CATNAT), aucune
+raison de fonctionner différemment en conditions réelles.
+
 ## Ce qui reste à faire
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.
