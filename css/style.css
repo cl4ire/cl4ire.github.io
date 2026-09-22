@@ -483,12 +483,15 @@ button { font-family: inherit; cursor: pointer; }
 .popup-fiche-jour strong { color: #2A2A28; font-weight: 700; }
 .popup-fiche-jour.aujourdhui { color: var(--primaire); }
 .popup-fiche-jour.aujourdhui strong { color: var(--primaire); }
-.popup-fiche-elus { font-size: 11.5px; }
-.popup-fiche-elus summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer; list-style: none; font-weight: 700; color: var(--feuille); padding: 2px 0; }
-.popup-fiche-elus summary::-webkit-details-marker { display: none; }
-.popup-fiche-elus summary i { transition: transform .15s ease; font-size: 9px; }
-.popup-fiche-elus[open] summary i { transform: rotate(90deg); }
-.popup-fiche-elus-liste { margin-top: 8px; max-height: 170px; overflow-y: auto; border-top: 1px solid var(--bordure); padding-top: 6px; }
+/* Générique (pas seulement le conseil municipal, malgré le nom
+   d'origine) : tout <details> repliable dans une popup, ex. le détail
+   des restrictions Vigieau (construirePopupVigieau, js/popup.js). */
+.popup-fiche-repliable { font-size: 11.5px; }
+.popup-fiche-repliable summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer; list-style: none; font-weight: 700; color: var(--feuille); padding: 2px 0; }
+.popup-fiche-repliable summary::-webkit-details-marker { display: none; }
+.popup-fiche-repliable summary i { transition: transform .15s ease; font-size: 9px; }
+.popup-fiche-repliable[open] summary i { transform: rotate(90deg); }
+.popup-fiche-repliable-liste { margin-top: 8px; max-height: 170px; overflow-y: auto; border-top: 1px solid var(--bordure); padding-top: 6px; }
 .popup-fiche-elu { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; color: var(--ardoise); }
 .popup-fiche-elu strong { color: #2A2A28; font-weight: 700; }
 .popup-fiche-elu span { flex: 0 0 auto; text-align: right; font-size: 10.5px; }

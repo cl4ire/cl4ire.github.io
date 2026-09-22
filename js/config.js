@@ -83,20 +83,32 @@ function clipperAuTerritoire(geo) {
     return { type: "FeatureCollection", features };
 }
 
-function couleurVigieau(feature) {
-    const props = feature.properties || {};
-    const texte = Object.values(props)
+/* Niveau de gravité Vigieau : le vrai nom de champ est "niveauGravite"
+   (vérifié en conditions réelles, valeur observée "vigilance" - voir
+   construirePopupVigieau dans js/popup.js pour le détail complet du
+   schéma réel), mais reste comparé par mot-clé sur l'ensemble des
+   propriétés textuelles plutôt qu'une égalité stricte sur ce seul champ
+   - tolère une valeur composée ("alerte renforcée" contient aussi
+   "alerte", d'où l'ordre de vérification du plus sévère au moins
+   sévère) sans dépendre d'un format exact non garanti dans le temps.
+   Couleur ET libellé partagent cette même fonction (polygone ET popup)
+   pour qu'ils ne puissent jamais diverger l'un de l'autre. */
+const NIVEAUX_VIGIEAU = [
+    { motCle: "crise", label: "Crise", color: "#7A1F1F" },
+    { motCle: "renforc", label: "Alerte renforcée", color: "#EB5757" },
+    { motCle: "alerte", label: "Alerte", color: "#F2994A" },
+    { motCle: "vigilance", label: "Vigilance", color: "#F2C94C" }
+];
+const NIVEAU_VIGIEAU_DEFAUT = { label: "Niveau non identifié", color: "#9AA5A0" };
+function niveauVigieau(feature) {
+    const texte = Object.values(feature.properties || {})
         .filter(v => typeof v === "string")
         .join(" ")
         .toLowerCase();
-
-    let remplissage = "#9AA5A0"; // niveau inconnu / pas de restriction identifiée
-    if (texte.includes("crise")) remplissage = "#7A1F1F";
-    else if (texte.includes("renforc")) remplissage = "#EB5757";
-    else if (texte.includes("alerte")) remplissage = "#F2994A";
-    else if (texte.includes("vigilance")) remplissage = "#F2C94C";
-
-    return { color: "#fff", weight: 1, fillColor: remplissage, fillOpacity: 0.5 };
+    return NIVEAUX_VIGIEAU.find(n => texte.includes(n.motCle)) || NIVEAU_VIGIEAU_DEFAUT;
+}
+function couleurVigieau(feature) {
+    return { color: "#fff", weight: 1, fillColor: niveauVigieau(feature).color, fillOpacity: 0.5 };
 }
 
 /* Une couleur par itinéraire (randonnées, itinéraires cyclables) plutôt
@@ -1125,9 +1137,7 @@ const LAYERS = [
         transform: clipperAuTerritoire,
         type: "polygon", color: "#F2994A",
         styleFn: couleurVigieau,
-        lazy: true, searchable: false, cluster: false,
-        titleFields: ["nom_zone", "nomZone", "nom", "zone_nom", "libelle", "nomBassin"],
-        subtitleFields: ["niveauGravite", "niveau_gravite", "type_eau", "zoneType", "departement", "nom_dept"]
+        lazy: true, searchable: false, cluster: false
     },
     {
         id: "old", group: "risques", label: "Obligations légales de débroussaillement",

@@ -371,9 +371,9 @@ function construireElus(texte) {
     const elus = parserElus(texte);
     if (!elus.length) return "";
     const lignes = elus.map(e => `<div class="popup-fiche-elu"><strong>${echapperHtml(e.nom)}</strong><span>${echapperHtml(e.role)}</span></div>`).join("");
-    return `<details class="popup-fiche-elus">
+    return `<details class="popup-fiche-repliable">
         <summary><span>Conseil municipal (${elus.length})</span><i class="fa-solid fa-chevron-right"></i></summary>
-        <div class="popup-fiche-elus-liste">${lignes}</div>
+        <div class="popup-fiche-repliable-liste">${lignes}</div>
     </details>`;
 }
 
@@ -1837,13 +1837,87 @@ function construirePopupRga(props) {
 }
 
 /* =========================================================
+   POPUP VIGIEAU (restrictions sécheresse)
+   Schéma confirmé en conditions réelles par l'utilisatrice (capture de
+   donneesBrutes["vigieau"][0].properties) - remplace le premier essai
+   qui passait par la popup générique (titleFields/subtitleFields
+   devinés) : celui-ci montrait bien le nom de zone et le niveau, mais
+   rien du détail des restrictions (le plus utile de cette couche),
+   `arreteRestriction` et `restrictions` étant des objets/tableaux
+   imbriqués que la popup générique ne sait pas afficher (voir
+   estValeurSimple plus haut).
+   Champs réels : nom, code, type ("AEP"/"SUP"/"SOU" - alimentation en
+   eau potable / eaux superficielles / eaux souterraines), niveauGravite
+   (chaîne, ex. "vigilance" - voir niveauVigieau dans config.js, partagé
+   avec la couleur du polygone pour que les deux ne puissent jamais
+   diverger), departement ({code, nom}), arreteRestriction ({numero,
+   dateDebut, dateFin, dateSignature, fichier} - fichier est un lien PDF
+   vers l'arrêté), restrictions (tableau d'usages : nom, thematique,
+   description, et un booléen concerneXxx par public concerné -
+   particulier/entreprise/collectivite/exploitation/eso/esu/aep).
+   ========================================================= */
+const LABELS_TYPE_EAU_VIGIEAU = { AEP: "Eau potable", SUP: "Eaux superficielles", SOU: "Eaux souterraines" };
+
+/* Les zones peuvent porter plusieurs dizaines d'usages réglementés (23
+   sur la zone testée) : trop pour les afficher toutes en clair sans
+   noyer le reste de la popup. Repliées dans un <details> (natif,
+   aucun JS supplémentaire nécessaire) et limitées à celles qui
+   concernent les particuliers - public de ce site, les restrictions
+   qui ne concernent que les exploitations agricoles ou l'irrigation
+   professionnelle n'ont pas leur place ici. Le lien vers l'arrêté PDF
+   reste le repli pour le détail complet, professionnel inclus. */
+function construirePopupVigieau(props) {
+    const niveau = niveauVigieau({ properties: props });
+    const typeEau = LABELS_TYPE_EAU_VIGIEAU[props.type] || props.type;
+    const departement = props.departement && props.departement.nom;
+    const arrete = props.arreteRestriction || {};
+    const restrictions = Array.isArray(props.restrictions) ? props.restrictions : [];
+    const restrictionsParticulier = restrictions.filter(r => r.concerneParticulier);
+
+    const infosArrete = [
+        arrete.numero ? `Arrêté n° ${arrete.numero}` : null,
+        arrete.dateDebut ? `en vigueur depuis le ${formaterDateSeule(arrete.dateDebut)}` : null
+    ].filter(Boolean).join(", ");
+    const lienArrete = arrete.fichier
+        ? `<a class="popup-fiche-contact" href="${echapperHtml(arrete.fichier)}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-file-pdf"></i>Voir l'arrêté complet</a>`
+        : "";
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${niveau.color}"><i class="fa-solid fa-droplet-slash"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${niveau.color}">Restrictions sécheresse (Vigieau)</div>
+                <div class="popup-fiche-titre">${echapperHtml(props.nom || "Zone")}</div>
+                <div class="popup-fiche-adresse">${[typeEau, departement].filter(Boolean).map(echapperHtml).join(" · ")}</div>
+            </div>
+            <span class="popup-fiche-badge" style="background:${niveau.color}20;color:${niveau.color}">${echapperHtml(niveau.label)}</span>
+        </div>
+        ${infosArrete || lienArrete ? `<div class="popup-fiche-section">
+            ${infosArrete ? `<div class="popup-fiche-ligne">${echapperHtml(infosArrete)}</div>` : ""}
+            ${lienArrete ? `<div class="popup-fiche-contacts">${lienArrete}</div>` : ""}
+        </div>` : ""}
+        ${restrictionsParticulier.length ? `<div class="popup-fiche-section">
+            <details class="popup-fiche-repliable">
+                <summary><span>${restrictionsParticulier.length} usage(s) réglementé(s) pour les particuliers</span><i class="fa-solid fa-chevron-right"></i></summary>
+                <div class="popup-fiche-repliable-liste">
+                    ${restrictionsParticulier.map(r => `
+                        <div class="popup-fiche-jour"><span>${echapperHtml(r.nom)}</span></div>
+                        ${r.description ? `<div class="popup-fiche-precision">${echapperHtml(r.description.trim())}</div>` : ""}
+                    `).join("")}
+                </div>
+            </details>
+        </div>` : ""}
+    </div>`;
+}
+
+/* =========================================================
    POPUP GÉNÉRIQUE — dernier repli pour toute couche sans fiche dédiée
-   (aujourd'hui : Vigieau uniquement, dont les noms de champs exacts ne
-   sont pas garantis d'une mise à jour du fournisseur à l'autre) : même
-   habillage visuel (.popup-fiche) que les fiches sur mesure, à partir
-   des seuls titleFields/subtitleFields déclarés dans config.js, plutôt
-   qu'un style à part (l'ancien .popup-geo) qui détonnait par rapport au
-   reste du site.
+   déclarant titleFields/subtitleFields dans config.js (aucune
+   aujourd'hui - Vigieau, seule couche à l'avoir jamais utilisée, a
+   maintenant sa propre fiche ci-dessus) : même habillage visuel
+   (.popup-fiche) que les fiches sur mesure plutôt qu'un style à part
+   (l'ancien .popup-geo) qui détonnait par rapport au reste du site -
+   gardée en repli pour une future couche au schéma non garanti.
    ========================================================= */
 /* Adresse géocodée par l'API Adresse (recherche unifiée, js/search.js) :
    pas de feature/couche du site à réutiliser, juste un point avec un
@@ -1971,6 +2045,7 @@ function construirePopup(feature, layerConf) {
     else if (layerConf.id === "demographie") html = construirePopupDemographie(props);
     else if (layerConf.id === "zonagePLUi") html = construirePopupZonePLUi(props);
     else if (layerConf.id === "rga") html = construirePopupRga(props);
+    else if (layerConf.id === "vigieau") html = construirePopupVigieau(props);
     else html = construirePopupGenerique(feature, layerConf);
     return injecterItineraire(html, feature);
 }
