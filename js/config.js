@@ -574,6 +574,27 @@ function styleCatnat(feature) {
     return { color: "#fff", weight: 1, fillColor: couleurCatnat(nb), fillOpacity: 0.55 };
 }
 
+/* Couleur par opérateur pour les antennes-relais (couches/services/antennes.geojson) :
+   comparaison par mot-clé plutôt que valeur exacte du champ "operator",
+   dont les variantes réelles observées dans ce fichier sont multiples
+   pour un même opérateur (ex. "Orange" et "Orange Services Fixes",
+   "Free Mobile" et "IFW-Free") - vérifié sur les 33 features du fichier
+   avant d'écrire cette liste, pas une supposition. Les opérateurs
+   d'infrastructure (TDF, ATC France, Itas Tim - propriétaires du
+   pylône, pas forcément l'opérateur qui l'exploite) et les antennes
+   sans "operator" renseigné (1/3 du fichier) tombent dans "autres". */
+const OPERATEURS_ANTENNES = [
+    { motCle: "orange", color: "#FF7900" },
+    { motCle: "bouygues", color: PALETTE.riviere },
+    { motCle: "sfr", color: "#D6193C" },
+    { motCle: "free", color: PALETTE.ardoise }
+];
+function iconeAntenne(feature) {
+    const operateur = (feature.properties.operator || "").toLowerCase();
+    const trouve = OPERATEURS_ANTENNES.find(o => operateur.includes(o.motCle));
+    return { icon: "fa-solid fa-tower-cell", color: trouve ? trouve.color : "#B8C0BD" };
+}
+
 /* =========================================================
    COUCHES
    type: "point" | "line" | "polygon" | "choropleth"
@@ -725,6 +746,7 @@ const LAYERS = [
            absent des données OSM. */
         file: "couches/services/antennes.geojson",
         type: "point", icon: "fa-solid fa-tower-cell", color: PALETTE.ardoise,
+        iconePourFeature: iconeAntenne,
         sansPopup: true,
         lazy: false, searchable: true, cluster: true,
         titleFields: ["operator", "ref"],

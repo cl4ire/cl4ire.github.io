@@ -967,6 +967,18 @@ concrètes détaillées ci-dessous.
   concret et fiable (position réelle des pylônes/antennes), même
   mécanique Overpass que toutes les autres couches du site.
 
+  **Symbologie par opérateur** (retour de l'utilisatrice) : `iconeAntenne`
+  (`js/config.js`) colore chaque marqueur selon le champ `operator` -
+  Orange, Bouygues (bleu), SFR (rouge), Free (gris), et un gris clair
+  distinct pour "autres" (opérateurs d'infrastructure comme TDF/ATC
+  France/Itas Tim - propriétaires du pylône, pas forcément l'opérateur
+  qui l'exploite - et les antennes sans `operator` renseigné, environ un
+  tiers du fichier). Comparaison par mot-clé (`operator.includes(...)`)
+  plutôt que valeur exacte, vérifiée sur les 33 features réelles du
+  fichier avant d'écrire la liste : plusieurs variantes existent pour un
+  même opérateur ("Orange" et "Orange Services Fixes", "Free Mobile" et
+  "IFW-Free").
+
 **Pistes évaluées mais écartées** (documentées ici plutôt que de laisser
 une trace uniquement dans la conversation) :
 - **SITADEL (permis de construire)** — la donnée officielle existe, mais
