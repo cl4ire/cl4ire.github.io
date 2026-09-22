@@ -498,6 +498,15 @@ function viderSelectionCarte(map) {
     if (boutonVider) boutonVider.disabled = true;
 }
 
+/* Retour de l'utilisatrice : fermer le panneau recherche foncière (flèche
+   retour) laissait les parcelles surlignées sur la carte, obligeant à
+   cliquer "Vider la sélection" en plus - on vide donc automatiquement en
+   quittant la vue, comme si elle avait cliqué ce bouton juste avant. */
+function fermerRechercheFonciere(map) {
+    viderSelectionCarte(map);
+    fermerVuesPanneau();
+}
+
 /* ---------- Formulaire ---------- */
 
 function optionsCommune() {
