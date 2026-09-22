@@ -2701,6 +2701,43 @@ précédent au clic suivant. Rendu visuel réel du z-index des contrôles
 non vérifiable dans ce sandbox (Leaflet n'y charge pas) - à confirmer
 une fois déployé.
 
+## Corrections : couleur Vigieau, filtrage par sous-catégorie dans le dashboard
+
+Deux précisions de l'utilisatrice sur l'itération précédente.
+
+**Couleur Vigieau, mauvaise cible** : le terracotta demandé visait les
+sous-titres de thématique dans la liste déroulante des usages
+("Arrosage", "Lavage"...), pas le titre/icône de la popup - malentendu
+sur le mot "sous-titre". Titre/icône revenus à `niveau.color` (couleur
+variable selon la gravité, comme à l'origine) ;
+`.popup-fiche-restriction-theme` (`css/style.css`) passé de
+`var(--feuille)` (vert) à `var(--terracotta)`.
+
+**Tuiles du décompte : filtrage à la sous-catégorie, pas juste à la
+commune** : `afficherCoucheFiltreeCommune` (voir plus haut) filtrait
+déjà à la bonne commune, mais pas à la sous-catégorie précise de la
+tuile - cliquer sur "Restaurants & bars" à Jupilles affichait tous les
+commerces de la commune (bar, boulangerie, coiffeur...), pas seulement
+les restaurants. Chaque tuile porte maintenant aussi `data-label`
+(`construireCarteDecompte`, `js/communes.js`) - la fonction rejoue le
+même `grouper()` que celui qui a produit le décompte
+(`decompteEntitesCommune`) pour ne garder que les features dont le
+libellé calculé correspond exactement à celui de la tuile cliquée,
+garantissant que "ce qui s'affiche" corresponde toujours à "ce que la
+tuile comptait", sans dupliquer la logique de comparaison. Le zoom
+cible maintenant l'étendue réelle du résultat filtré
+(`map.fitBounds(coucheFiltreeCommuneActuelle.getBounds(), {maxZoom:16})`)
+plutôt que la commune entière ("ça zoome dessus", retour direct de
+l'utilisatrice) - un unique restaurant recentre serré dessus plutôt que
+de laisser deviner où il est dans toute la commune.
+
+Testé (Playwright) : popup Vigieau vérifiée (titre/icône de nouveau
+dynamiques), couleur CSS du thème confirmée terracotta
+(`rgb(216, 90, 48)`) ; filtrage vérifié avec les vraies données
+(Jupilles : 9 commerces au total, 2 restaurants - le clic sur la tuile
+"Restaurants & bars" ne garde bien que ces 2), `map.fitBounds` confirmé
+appelé sur le résultat filtré.
+
 ## Ce qui reste à faire
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.
