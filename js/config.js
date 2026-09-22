@@ -219,7 +219,8 @@ const TYPE_COMMERCE_DEFAUT = { id: "autre", label: "Autres commerces", icon: "fa
    dans les propriétés de sa fiche popup) ; pour un rétablissement,
    retirer l'entrée. */
 const COMMERCES_FERMES = {
-    // "node/XXXXXXXXX": { depuis: "2025-06", note: "" }
+    "way/166282513": { note: "" },   // Le Bistrot Chouette (Jupilles)
+    "node/13129240499": { note: "" } // Le Fournil de Jupilles (Jupilles)
 };
 
 function categorieCommerce(typeBrut) {
