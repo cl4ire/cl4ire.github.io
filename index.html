@@ -51,7 +51,7 @@
                 </div>
             </div>
         </div>
-        <button type="button" id="about-button">À propos</button>
+        <button type="button" id="about-button" title="À propos"><i class="fa-solid fa-circle-info"></i><span>À propos</span></button>
     </div>
 </header>
 <!-- FIN HEADER -->
@@ -115,21 +115,37 @@
     <div id="hero">
         <div id="hero-inner">
             <p id="hero-title">Que recherchez-vous ?</p>
-            <p id="hero-subtitle">Tapez dans la barre de recherche en haut, ou choisissez un raccourci ci-dessous</p>
-            <div id="hero-raccourcis"><!-- Généré par proximite.js --></div>
+            <p id="hero-subtitle">Tapez dans la barre de recherche en haut, choisissez votre commune, un raccourci ou une recherche de parcelle ci-dessous</p>
 
             <div id="hero-communes">
-                <label for="hero-commune-select">Ou consultez votre commune</label>
+                <label for="hero-commune-select">Votre commune</label>
                 <select id="hero-commune-select">
                     <option value="">Choisir une commune...</option>
                     <!-- Options générées par communes.js -->
                 </select>
             </div>
 
+            <div id="hero-raccourcis-titre">Ou un raccourci près de chez vous</div>
+            <div id="hero-raccourcis"><!-- Généré par proximite.js, défilement horizontal --></div>
+
             <details id="hero-plus">
                 <summary>Voir plus de thématiques</summary>
                 <div id="hero-tiles"><!-- Généré par hero.js --></div>
             </details>
+
+            <div id="hero-parcelle">
+                <div id="hero-parcelle-titre"><i class="fa-solid fa-magnifying-glass-location"></i> Rechercher une parcelle</div>
+                <form id="hero-parcelle-form">
+                    <select id="hp-commune" aria-label="Commune">
+                        <option value="">Toutes les communes</option>
+                        <!-- Options générées par recherche.js -->
+                    </select>
+                    <input type="number" id="hp-surface-min" min="0" placeholder="Surface min (m²)">
+                    <label class="hp-case"><input type="checkbox" id="hp-constructible">Constructible</label>
+                    <label class="hp-case"><input type="checkbox" id="hp-dpe-connu">DPE connu</label>
+                    <button type="submit" class="rf-bouton-principal">Rechercher</button>
+                </form>
+            </div>
 
             <button type="button" id="hero-explore">Voir la carte complète</button>
         </div>

@@ -10,8 +10,9 @@
    ========================================================= */
 const ETAPES_VISITE = [
     { cible: "#search-container", texte: "Recherchez une adresse, un lieu ou un service (mairie, commerce, école...) directement ici." },
-    { cible: "#hero-raccourcis", texte: "Ou utilisez un raccourci pour trouver ce qui est le plus proche de chez vous." },
     { cible: "#hero-communes", texte: "Consultez le dashboard de votre commune : mairie, chiffres clés, actualités locales." },
+    { cible: "#hero-raccourcis", texte: "Ou faites défiler les raccourcis pour trouver ce qui est le plus proche de chez vous." },
+    { cible: "#hero-parcelle", texte: "Recherchez une parcelle par surface, constructibilité ou DPE - pour affiner davantage, le panneau complet s'ouvre avec ces critères déjà remplis." },
     { cible: "#menu-button", texte: "Affichez ou masquez les couches de données sur la carte (cadastre, commerces, risques...)." },
     { cible: "#actu-button", texte: "Les actualités Illiwap du territoire, en un clic." }
 ];
