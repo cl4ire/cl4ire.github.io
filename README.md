@@ -2749,6 +2749,57 @@ dynamiques), couleur CSS du thème confirmée terracotta
 "Restaurants & bars" ne garde bien que ces 2), `map.fitBounds` confirmé
 appelé sur le résultat filtré.
 
+## Installation sur l'écran d'accueil (PWA)
+
+Retour direct de l'utilisatrice : passer par les 3 points de Chrome
+(ou équivalent) pour installer le site n'est pas pratique - demande un
+vrai bouton "Installer l'application" dans l'interface.
+
+**`manifest.json`** (racine du dépôt) : nom, icônes (192px/512px,
+générées depuis `img/favicon.svg`, le monogramme vectoriel déjà
+existant du logo - `cairosvg`, un rendu net à n'importe quelle taille
+plutôt que d'agrandir le PNG 79×79px existant), couleurs de thème/fond,
+`display: "standalone"` (l'app s'ouvre sans barre d'adresse ni onglets,
+comme une vraie application). Référencé dans `index.html`
+(`<link rel="manifest">` + `<meta name="theme-color">`).
+
+**`sw.js`** (service worker minimal, racine du dépôt) : Chrome exige un
+service worker enregistré avec un gestionnaire `fetch` pour qu'un site
+soit considéré comme installable, indépendamment de tout usage hors
+ligne. Volontairement sans aucune mise en cache (`event.respondWith`
+jamais appelé, laisse le navigateur traiter chaque requête normalement)
+- le site est mis à jour souvent, un cache raté resterait planté un
+moment sur les téléphones qui auraient installé l'app.
+
+**`js/installation.js`** : capte l'invite native du navigateur
+(événement `beforeinstallprompt`, non déclenché par défaut - empêché
+puis mémorisé) pour la déclencher depuis `#install-button` (nouveau
+bouton dans la barre du haut, masqué par défaut - affiché seulement
+quand le navigateur confirme que le site est réellement installable et
+pas déjà installé) plutôt que de laisser deviner où se trouve l'option
+dans les menus. Réenregistre le service worker au chargement ; masque
+le bouton si l'app est installée par un autre chemin (icône native de
+la barre d'adresse desktop) via l'événement `appinstalled`, pour ne
+jamais laisser un bouton "Installer" affiché alors que c'est déjà fait.
+
+**Limite réelle, pas contournable** : Safari iOS ne déclenche JAMAIS
+`beforeinstallprompt` (aucune API équivalente n'existe sur iOS, quel
+que soit le site) - sur iPhone, l'installation reste possible mais
+seulement à la main (Partager → "Sur l'écran d'accueil"), le bouton
+reste invisible là-bas plutôt que d'exister pour ne rien faire.
+`apple-touch-icon` tout de même ajouté (balise dédiée, ignorée par le
+`manifest.json` sur iOS) pour que l'icône ajoutée à la main soit quand
+même la bonne.
+
+Testé (Playwright) : chaîne complète vérifiée de bout en bout - chose
+rare cette fois, cette fonctionnalité ne dépend pas de Leaflet
+(indisponible dans ce sandbox, limite déjà documentée ailleurs dans ce
+fichier). Bouton masqué par défaut confirmé, balises manifest/theme-
+color/apple-touch-icon présentes, `beforeinstallprompt` simulé →
+bouton affiché → clic → `prompt()` appelé → bouton remasqué après le
+choix ; contenu de `manifest.json` vérifié tel que servi ; service
+worker confirmé enregistré avec le bon scope.
+
 ## Ce qui reste à faire
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.
