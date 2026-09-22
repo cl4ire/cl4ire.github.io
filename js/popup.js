@@ -1945,6 +1945,23 @@ const LABELS_TYPE_EAU_VIGIEAU = { AEP: "Eau potable", SUP: "Eaux superficielles"
    qui ne concernent que les exploitations agricoles ou l'irrigation
    professionnelle n'ont pas leur place ici. Le lien vers l'arrêté PDF
    reste le repli pour le détail complet, professionnel inclus. */
+/* Regroupe les usages réglementés par thématique (champ réel
+   "thematique", ex. "Arrosage", "Lavage"...) plutôt qu'une liste plate :
+   retour direct de l'utilisatrice, 23 lignes nom+description empilées
+   sans repère visuel étaient illisibles même repliées dans le <details>.
+   Ordre de première apparition (pas un tri alphabétique arbitraire) pour
+   rester stable et prévisible d'une zone à l'autre. */
+function grouperRestrictionsParThematique(restrictions) {
+    const groupes = {};
+    const ordre = [];
+    restrictions.forEach(r => {
+        const cle = r.thematique || "Autres usages";
+        if (!groupes[cle]) { groupes[cle] = []; ordre.push(cle); }
+        groupes[cle].push(r);
+    });
+    return ordre.map(thematique => ({ thematique, items: groupes[thematique] }));
+}
+
 function construirePopupVigieau(props) {
     const niveau = niveauVigieau({ properties: props });
     const typeEau = LABELS_TYPE_EAU_VIGIEAU[props.type] || props.type;
@@ -1952,6 +1969,7 @@ function construirePopupVigieau(props) {
     const arrete = props.arreteRestriction || {};
     const restrictions = Array.isArray(props.restrictions) ? props.restrictions : [];
     const restrictionsParticulier = restrictions.filter(r => r.concerneParticulier);
+    const groupesRestrictions = grouperRestrictionsParThematique(restrictionsParticulier);
 
     const infosArrete = [
         arrete.numero ? `Arrêté n° ${arrete.numero}` : null,
@@ -1979,9 +1997,16 @@ function construirePopupVigieau(props) {
             <details class="popup-fiche-repliable">
                 <summary><span>${restrictionsParticulier.length} usage(s) réglementé(s) pour les particuliers</span><i class="fa-solid fa-chevron-right"></i></summary>
                 <div class="popup-fiche-repliable-liste">
-                    ${restrictionsParticulier.map(r => `
-                        <div class="popup-fiche-jour"><span>${echapperHtml(r.nom)}</span></div>
-                        ${r.description ? `<div class="popup-fiche-precision">${echapperHtml(r.description.trim())}</div>` : ""}
+                    ${groupesRestrictions.map(g => `
+                        <div class="popup-fiche-restriction-groupe">
+                            <div class="popup-fiche-restriction-theme">${echapperHtml(g.thematique)}</div>
+                            ${g.items.map(r => `
+                                <div class="popup-fiche-restriction-item">
+                                    <div class="popup-fiche-jour"><span>${echapperHtml(r.nom)}</span></div>
+                                    ${r.description ? `<div class="popup-fiche-precision">${echapperHtml(r.description.trim())}</div>` : ""}
+                                </div>
+                            `).join("")}
+                        </div>
                     `).join("")}
                 </div>
             </details>

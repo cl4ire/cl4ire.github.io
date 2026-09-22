@@ -2524,6 +2524,79 @@ fusionné) : 297 tronçons confirmés, styles et popups toujours corrects
 après la fusion (rivière épaisse, tronçon intermittent en pointillé
 clair, fossé fin, popup nom/type).
 
+## Vigieau : transparence, masque hors-territoire, hiérarchie de la popup, badge dashboard
+
+Quatre retours directs de l'utilisatrice sur la couche Vigieau.
+
+**Transparence** : `fillOpacity` de l'aplat de couleur abaissée de 0,5 à
+0,28 (`couleurVigieau`, `js/config.js`) - l'aplat plein masquait trop le
+fond de carte (routes, cours d'eau, limites communales) en dessous.
+
+**"Toute la couche région qui se charge"** : `clipperAuTerritoire`
+(existant) ne fait qu'un FILTRE par boîte englobante - il exclut les
+zones qui ne touchent le territoire nulle part, mais une zone qui le
+touche ne serait-ce qu'un peu (fréquent pour Vigieau, zones à l'échelle
+d'un bassin versant ou d'un département) garde toute son étendue réelle,
+pas juste la partie qui nous concerne. Un vrai découpage géométrique
+(cette zone, rognée pile au contour du territoire) demanderait soit une
+librairie de géométrie externe - impossible à vérifier dans cet
+environnement de développement au réseau restreint (`hubeau.eaufrance.fr`
+et la plupart des CDN y sont bloqués, comme documenté ailleurs dans ce
+fichier), impossible donc de garantir sans risque qu'elle soit
+correctement intégrée - soit un algorithme de découpe écrit à la main,
+risqué pour la même raison (aucun moyen de le vérifier visuellement ici).
+
+Solution retenue à la place, sans nouvelle dépendance : un **masque
+visuel** (`construireMasqueHorsTerritoire`, `js/map.js`) - un polygone
+"le monde entier moins le territoire" (grand rectangle englobant avec un
+trou à la forme exacte de l'EPCI, `couches/epci.geojson`), posé dans une
+pane Leaflet dédiée (`masque-donnees`, z-index 450) au-dessus de
+`overlayPane` (400, où vivent toutes les couches de données par défaut,
+y compris Vigieau). Comme le trou correspond pile à la vraie forme du
+territoire (mêmes ~4174 sommets que le contour EPCI, pas une
+approximation), rien à l'intérieur du territoire n'est jamais recouvert
+- seul ce qui déborde à l'extérieur disparaît sous le masque, quelle que
+soit la couche concernée (Vigieau aujourd'hui, n'importe quelle future
+couche "flux" national demain, sans code à ajouter par couche). Le
+contour pointillé de l'EPCI lui-même est posé dans une pane encore
+au-dessus (`masque-dessus`, 460) pour rester net par-dessus le masque.
+`interactive:false` sur le masque : ne capte aucun clic, la carte reste
+utilisable normalement en dessous.
+
+**Hiérarchie de la popup** : la liste des usages réglementés (jusqu'à
+23 sur la zone testée) était plate - nom + description empilés sans
+repère visuel, illisible même repliée dans son `<details>`.
+`grouperRestrictionsParThematique` (`js/popup.js`) regroupe par champ
+réel `thematique` (Arrosage, Lavage...), avec un sous-titre par groupe
+et un séparateur entre chaque usage individuel (`.popup-fiche-
+restriction-groupe`/`-theme`/`-item`, `css/style.css`).
+
+**Badge d'alerte sur le dashboard commune** : `alerteVigieauPourCommune`
+(`js/communes.js`) charge Vigieau indépendamment de sa case à cocher
+(`chargerCouche` direct, même mécanisme que les couches différées
+rouvertes depuis la fiche parcelle - ne l'affiche jamais sur la carte ni
+ne coche sa case), puis cherche la zone qui contient la commune par test
+point-dans-polygone sur le centre de sa boîte englobante (une commune
+n'a pas de zone Vigieau dédiée, les zones sont bien plus grandes qu'une
+commune - approximation suffisante). `construireBadgeVigieau` affiche un
+badge coloré par niveau à côté du nom de la commune (`#commune-titre`) -
+un vrai lien cliquable vers le PDF de l'arrêté quand disponible
+(`arreteRestriction.fichier`), un simple badge sinon ; rien du tout si
+aucune zone Vigieau ne concerne la commune (dashboard propre par défaut,
+pas de badge "aucune alerte" superflu).
+
+Testé (Playwright) : extraction des anneaux du masque vérifiée sur le
+vrai fichier `couches/epci.geojson` (anneau fermé, 4174 sommets,
+correspond au contour réel) ; popup Vigieau vérifiée avec un jeu de
+données réaliste à plusieurs thématiques (regroupement correct, usages
+non destinés aux particuliers toujours exclus) ; badge vérifié pour les
+trois cas (zone trouvée avec lien vers l'arrêté, zone trouvée sans lien,
+aucune zone) ; ouverture complète du dashboard vérifiée sans erreur avec
+l'emplacement du badge bien injecté à côté du titre. Rendu Leaflet réel
+du masque (panes, ordre d'empilement visuel) non vérifiable dans ce
+sandbox (Leaflet n'y charge pas, limite déjà documentée) - capture
+d'écran à confirmer une fois déployé.
+
 ## Ce qui reste à faire
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.

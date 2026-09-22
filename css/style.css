@@ -273,6 +273,20 @@ button { font-family: inherit; cursor: pointer; }
     color: var(--primaire); font-weight: 700; font-size: 13px; padding: 8px 4px;
 }
 #commune-titre { font-weight: 700; font-size: 18px; color: var(--primaire); display: flex; align-items: center; gap: 8px; }
+/* Badge Vigieau du dashboard (construireBadgeVigieau, js/communes.js) :
+   même motif pastille que .popup-fiche-badge, en <a> cliquable vers
+   l'arrêté quand un lien est disponible (curseur pointeur seulement dans
+   ce cas - un <span> sans lien ne doit pas paraître cliquable). Vide
+   (aucun badge) le temps que Vigieau se charge/si aucune zone ne
+   concerne la commune : ne réserve pas d'espace fixe. */
+.commune-badge-vigieau {
+    display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto;
+    border-radius: 999px; padding: 5px 10px; font-size: 11px; font-weight: 800;
+    white-space: nowrap; text-decoration: none;
+}
+.commune-badge-vigieau span { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+a.commune-badge-vigieau { cursor: pointer; }
+a.commune-badge-vigieau:hover { text-decoration: underline; }
 #commune-page-corps { flex: 1; overflow-y: auto; padding: 24px 24px 40px; }
 /* 1200px (pas 640px comme la 1ère version, une simple colonne de lecture
    empilant tout à la verticale - "illisible, tout en longueur", retour
@@ -625,6 +639,19 @@ button { font-family: inherit; cursor: pointer; }
 .popup-fiche-repliable summary i { transition: transform .15s ease; font-size: 9px; }
 .popup-fiche-repliable[open] summary i { transform: rotate(90deg); }
 .popup-fiche-repliable-liste { margin-top: 8px; max-height: 170px; overflow-y: auto; border-top: 1px solid var(--bordure); padding-top: 6px; }
+/* Regroupement par thématique des usages réglementés Vigieau
+   (construirePopupVigieau) : sous-titre distinct par groupe + séparateur
+   entre chaque usage individuel, plutôt qu'une liste plate où rien ne
+   distingue visuellement un usage du suivant - retour direct de
+   l'utilisatrice ("trop de texte, illisible"). */
+.popup-fiche-restriction-groupe { margin-bottom: 10px; }
+.popup-fiche-restriction-groupe:last-child { margin-bottom: 0; }
+.popup-fiche-restriction-theme {
+    font-size: 9.5px; font-weight: 800; color: var(--feuille);
+    text-transform: uppercase; letter-spacing: .04em; margin-bottom: 2px;
+}
+.popup-fiche-restriction-item { padding: 3px 0; border-top: 1px solid #F0EFEC; }
+.popup-fiche-restriction-item:first-child { border-top: 0; }
 .popup-fiche-elu { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; color: var(--ardoise); }
 .popup-fiche-elu strong { color: #2A2A28; font-weight: 700; }
 .popup-fiche-elu span { flex: 0 0 auto; text-align: right; font-size: 10.5px; }

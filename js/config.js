@@ -107,8 +107,12 @@ function niveauVigieau(feature) {
         .toLowerCase();
     return NIVEAUX_VIGIEAU.find(n => texte.includes(n.motCle)) || NIVEAU_VIGIEAU_DEFAUT;
 }
+/* fillOpacity abaissée (0.5 -> 0.28) : retour direct de l'utilisatrice,
+   l'aplat plein masquait trop le fond de carte en dessous (routes,
+   cours d'eau, limites communales) pour une couche qui se superpose à
+   presque tout le reste du territoire en cas d'alerte large. */
 function couleurVigieau(feature) {
-    return { color: "#fff", weight: 1, fillColor: niveauVigieau(feature).color, fillOpacity: 0.5 };
+    return { color: "#fff", weight: 1, fillColor: niveauVigieau(feature).color, fillOpacity: 0.28 };
 }
 
 /* Une couleur par itinéraire (randonnées, itinéraires cyclables) plutôt

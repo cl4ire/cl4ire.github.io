@@ -386,13 +386,59 @@ function initClicTuilesDecompte(map) {
     });
 }
 
+/* Retour direct de l'utilisatrice : rattacher le niveau d'alerte Vigieau
+   à un petit badge sur le dashboard, plutôt que de devoir aller cocher
+   la couche carte et cliquer sur la bonne zone pour le savoir. Vigieau
+   est chargée en différé (lazy:true, voir config.js) - chargerCouche()
+   la charge ici indépendamment de sa case à cocher (même mécanisme que
+   les couches différées rouvertes depuis la fiche parcelle, voir
+   ouvrirPopupParcelle dans js/layers.js) : ne l'affiche jamais sur la
+   carte ni ne coche sa case, se contente de remplir donneesBrutes pour
+   qu'on puisse y chercher la zone concernée.
+   Une commune n'a pas de zone Vigieau dédiée (les zones sont à l'échelle
+   d'un bassin/département) : test point-dans-polygone du CENTRE DE LA
+   BOÎTE ENGLOBANTE de la commune (pas un vrai centroïde - approximation
+   suffisante ici, les zones Vigieau sont bien plus grandes qu'une seule
+   commune, un centre de boîte englobante tombe pratiquement toujours
+   dans la même zone qu'un vrai centroïde le ferait). */
+function alerteVigieauPourCommune(codeInsee) {
+    return new Promise(resolve => {
+        const conf = (typeof LAYERS !== "undefined") ? LAYERS.find(l => l.id === "vigieau") : null;
+        if (!conf) { resolve(null); return; }
+        chargerCouche(conf, () => {
+            const communeLayer = (typeof couchesCommunesParInsee !== "undefined") ? couchesCommunesParInsee[codeInsee] : null;
+            if (!communeLayer) { resolve(null); return; }
+            const centre = communeLayer.getBounds().getCenter();
+            const zone = (donneesBrutes["vigieau"] || []).find(f => pointDansFeature([centre.lng, centre.lat], f));
+            resolve(zone || null);
+        }, () => resolve(null));
+    });
+}
+
+function construireBadgeVigieau(zone) {
+    if (!zone) return "";
+    const niveau = niveauVigieau(zone);
+    const props = zone.properties || {};
+    const lien = props.arreteRestriction && props.arreteRestriction.fichier;
+    const contenu = `<span></span>${echapperHtml(niveau.label)}`;
+    const style = `style="color:${niveau.color};background:${niveau.color}20"`;
+    if (lien) {
+        return `<a href="${echapperHtml(lien)}" target="_blank" rel="noopener noreferrer" class="commune-badge-vigieau" ${style} title="Restrictions sécheresse en vigueur - voir l'arrêté">${contenu}</a>`;
+    }
+    return `<span class="commune-badge-vigieau" ${style} title="Restrictions sécheresse en vigueur">${contenu}</span>`;
+}
+
 function ouvrirDashboardCommune(map, codeInsee) {
     const nom = COMMUNES_TERRITOIRE[codeInsee];
     if (!nom) return;
 
     if (typeof zoomerSurCommune === "function") zoomerSurCommune(map, codeInsee);
 
-    document.getElementById("commune-titre").innerHTML = `<i class="fa-solid fa-signs-post"></i> ${echapperHtml(nom)}`;
+    document.getElementById("commune-titre").innerHTML = `<i class="fa-solid fa-signs-post"></i> ${echapperHtml(nom)} <span id="commune-badge-vigieau"></span>`;
+    alerteVigieauPourCommune(codeInsee).then(zone => {
+        const cible = document.getElementById("commune-badge-vigieau");
+        if (cible) cible.innerHTML = construireBadgeVigieau(zone);
+    });
     document.getElementById("commune-contenu").innerHTML = `<div class="popup-fiche-vide" style="padding:16px 18px;">Chargement...</div>`;
     document.getElementById("commune-page").hidden = false;
     /* Mémorisé pour le clic délégué sur les tuiles du décompte
