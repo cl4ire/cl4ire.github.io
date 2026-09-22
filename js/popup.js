@@ -1398,11 +1398,22 @@ const LABELS_EQUIPEMENT_SPORTIF = {
 const LABELS_SPORT = {
     soccer: "Football", boules: "Boules / pétanque", tennis: "Tennis", multi: "Multisports",
     swimming: "Natation", basketball: "Basketball", table_tennis: "Tennis de table",
-    athletics: "Athlétisme", equestrian: "Équitation"
+    athletics: "Athlétisme", equestrian: "Équitation", running: "Course à pied",
+    handball: "Handball", billiards: "Billard", skateboard: "Skateboard",
+    volleyball: "Volleyball", cycling: "Cyclisme", motocross: "Motocross",
+    ultralight_aviation: "Aviation légère (ULM)"
 };
+/* Certaines valeurs OSM combinent plusieurs sports sur un même terrain
+   ("basketball;handball;soccer" - vérifié en conditions réelles sur ce
+   territoire) : traduit chaque partie séparément plutôt que d'afficher
+   la valeur brute non reconnue dans son ensemble. */
+function labelSport(valeurBrute) {
+    if (!valeurBrute) return null;
+    return String(valeurBrute).split(";").map(v => LABELS_SPORT[v.trim()] || capitaliserPremiere(v.trim())).join(" / ");
+}
 function construirePopupEquipementSportif(props) {
     const typeLabel = LABELS_EQUIPEMENT_SPORTIF[props.type] || "Équipement sportif";
-    const sportLabel = LABELS_SPORT[props.sport] || (props.sport ? capitaliserPremiere(props.sport) : null);
+    const sportLabel = labelSport(props.sport);
     const nom = premierChampValide(props, ["name"]) || sportLabel || typeLabel;
     const horaires = parserHorairesOsm(props.opening_hours);
     const infos = [sportLabel && nom !== sportLabel ? sportLabel : null, LABELS_ACCESSIBILITE[props.wheelchair] || null].filter(Boolean);
@@ -1447,8 +1458,13 @@ function construirePopupPetiteEnfance(props) {
     </div>`;
 }
 
-/* Écoles. */
-const LABELS_TYPE_ECOLE = { primaire: "École primaire", maternelle: "École maternelle", elementaire: "École élémentaire", college: "Collège", lycee: "Lycée" };
+/* Écoles. Clés accentuées : la vraie donnée (education.geojson) porte
+   "élémentaire"/"collège"/"lycée" avec accents (vérifié en conditions
+   réelles) - sans ça la plupart des entrées ratent la table et
+   retombent sur capitaliserPremiere(type_fr) juste en dessous (résultat
+   visuellement identique par coïncidence, mais la table ne servait à
+   rien pour ces trois types). */
+const LABELS_TYPE_ECOLE = { primaire: "École primaire", maternelle: "École maternelle", "élémentaire": "École élémentaire", "collège": "Collège", "lycée": "Lycée", SEGPA: "SEGPA" };
 function construirePopupEcole(props) {
     const typeLabel = LABELS_TYPE_ECOLE[props.type_fr] || (props.type_fr ? capitaliserPremiere(props.type_fr) : "École");
     const nom = premierChampValide(props, ["name"]) || typeLabel;

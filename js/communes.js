@@ -45,6 +45,82 @@ function construireBlocMairie(props) {
     </div>`;
 }
 
+/* =========================================================
+   DÉCOMPTE D'ENTITÉS PAR COMMUNE
+   Retour direct de l'utilisatrice : compléter le dashboard avec un
+   décompte ("1 boulangerie, 1 banque, 2 assistantes maternelles, 2
+   écoles...") plutôt que de laisser deviner ce qui existe sur la
+   commune. Aucune donnée externe : tout est déjà chargé au démarrage du
+   site (les six couches ci-dessous sont toutes lazy:false, voir
+   config.js) - un simple comptage sur donneesBrutes, pas un nouvel
+   appel réseau.
+   La plupart des couches portent déjà com_insee (filtrage direct) ;
+   petiteEnfance n'a pas ce champ dans la donnée source, d'où
+   parGeometrie (test point-dans-polygone via pointDansFeature, déjà
+   utilisé par la recherche foncière, sur le contour de la commune
+   chargé dans couchesCommunesParInsee, js/map.js).
+   grouper (optionnel) éclate le total en sous-catégories plutôt qu'un
+   seul chiffre par couche - correspond au niveau de détail demandé
+   ("1 boulangerie" et pas juste "5 commerces"). Sans grouper, une seule
+   ligne pour toute la couche (ex. Aires de jeux).
+   LABELS_TYPE_ECOLE : réutilise la constante déjà définie dans
+   js/popup.js pour construirePopupEcole, pas de doublon. */
+const COUCHES_DECOMPTE_COMMUNE = [
+    { id: "commerces", icon: "fa-solid fa-basket-shopping", grouper: f => categorieCommerce(f.properties.type).label },
+    { id: "banques", icon: "fa-solid fa-money-bill-wave", grouper: f => f.properties.type === "atm" ? "Distributeur (DAB)" : "Agence bancaire" },
+    { id: "education", icon: "fa-solid fa-graduation-cap", grouper: f => LABELS_TYPE_ECOLE[f.properties.type_fr] || "École" },
+    { id: "petiteEnfance", icon: "fa-solid fa-baby", parGeometrie: true, grouper: f => f.properties.type || "Petite enfance" },
+    { id: "equipementSportif", icon: "fa-solid fa-futbol", grouper: f => labelSport(f.properties.sport) || "Équipement sportif" },
+    { id: "airesJeu", icon: "fa-solid fa-child-reaching", label: "Aires de jeux" }
+];
+
+function featuresCommune(conf, codeInsee) {
+    const donnees = donneesBrutes[conf.id] || [];
+    /* String(...) plutôt qu'une égalité stricte : com_insee est une chaîne
+       dans certains fichiers (commerces, education...) mais un nombre JSON
+       dans d'autres (banques, airesJeu) - vérifié en conditions réelles,
+       pas une supposition. Une comparaison stricte aurait silencieusement
+       filtré ces couches à zéro résultat partout. */
+    if (!conf.parGeometrie) return donnees.filter(f => f.properties && String(f.properties.com_insee) === codeInsee);
+
+    const communeFeature = (typeof couchesCommunesParInsee !== "undefined" && couchesCommunesParInsee[codeInsee]) ? couchesCommunesParInsee[codeInsee].feature : null;
+    if (!communeFeature) return [];
+    return donnees.filter(f => f.geometry && f.geometry.type === "Point" && pointDansFeature(f.geometry.coordinates, communeFeature));
+}
+
+/* Liste à plat (pas groupée par couche) : une ligne par sous-catégorie
+   trouvée, triée par effectif décroissant au sein de chaque couche -
+   c'est ce qui s'affiche tel quel dans le dashboard, dans l'ordre de
+   COUCHES_DECOMPTE_COMMUNE. */
+function decompteEntitesCommune(codeInsee) {
+    const lignes = [];
+    COUCHES_DECOMPTE_COMMUNE.forEach(conf => {
+        const features = featuresCommune(conf, codeInsee);
+        if (!features.length) return;
+        if (!conf.grouper) {
+            lignes.push({ icon: conf.icon, label: conf.label, n: features.length });
+            return;
+        }
+        const compte = {};
+        features.forEach(f => {
+            const cle = conf.grouper(f);
+            compte[cle] = (compte[cle] || 0) + 1;
+        });
+        Object.keys(compte).sort((a, b) => compte[b] - compte[a])
+            .forEach(cle => lignes.push({ icon: conf.icon, label: cle, n: compte[cle] }));
+    });
+    return lignes;
+}
+
+function construireBlocDecompte(codeInsee) {
+    const lignes = decompteEntitesCommune(codeInsee);
+    if (!lignes.length) return "";
+    return `<div class="popup-fiche-section">
+        <div class="popup-fiche-section-titre"><i class="fa-solid fa-list-check"></i>En chiffres sur la commune</div>
+        ${lignes.map(l => `<div class="popup-fiche-jour"><span><i class="${l.icon}"></i> ${echapperHtml(l.label)}</span><strong>${l.n}</strong></div>`).join("")}
+    </div>`;
+}
+
 /* demographieFeature n'a que population de fiable pour l'instant (reprise
    de couches/communes.geojson, voir _lisezmoi du fichier) - les autres
    champs (revenu, logements...) restent à fournir, construirePopupDemographie
@@ -56,10 +132,12 @@ function construireDashboardCommune(codeInsee, mairies, demographieFeature) {
 
     const aDesChiffres = demographieFeature && Object.keys(demographieFeature.properties || {}).some(k => typeof demographieFeature.properties[k] === "number");
     const blocDemographie = aDesChiffres ? construirePopupDemographie(demographieFeature.properties) : "";
+    const blocDecompte = construireBlocDecompte(codeInsee);
 
     return `
         ${blocsMairie}
         ${blocDemographie}
+        ${blocDecompte}
         <div class="popup-fiche-section">
             <div class="popup-fiche-section-titre"><i class="fa-solid fa-bullhorn"></i>Actualités (Illiwap)</div>
             <div class="illiwap-embed">

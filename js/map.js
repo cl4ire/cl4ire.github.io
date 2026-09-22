@@ -122,6 +122,49 @@ function togglerPanneauCouches(forcerOuvert) {
     map.invalidateSize();
 }
 
+/* Redimensionnement du panneau des couches (retour direct de
+   l'utilisatrice) : glisser la poignée sur le bord droit (#layers-resize-
+   handle, position:absolute, voir style.css) plutôt qu'une largeur figée
+   à 340px - utile depuis que le panneau affiche des listes plus riches
+   (légendes, décomptes par commune...). Largeur mémorisée dans
+   localStorage pour rester d'une visite à l'autre. Desktop seulement :
+   la poignée est masquée en dessous de 780px (voir style.css), le
+   panneau y est un panneau plein écran qui glisse, pas une colonne
+   redimensionnable. */
+function initRedimensionnementPanneau() {
+    const panel = document.getElementById("layers-panel");
+    const poignee = document.getElementById("layers-resize-handle");
+    if (!panel || !poignee) return;
+
+    const LARGEUR_MIN = 280, LARGEUR_MAX = 640;
+    try {
+        const sauvegardee = Number(localStorage.getItem("geoberce_largeur_panneau"));
+        if (sauvegardee) panel.style.width = Math.min(LARGEUR_MAX, Math.max(LARGEUR_MIN, sauvegardee)) + "px";
+    } catch (_) { /* navigation privée : tant pis, largeur par défaut (340px) */ }
+
+    let enCours = false;
+    poignee.addEventListener("mousedown", event => {
+        enCours = true;
+        poignee.classList.add("en-cours");
+        document.body.style.userSelect = "none";
+        event.preventDefault();
+    });
+    window.addEventListener("mousemove", event => {
+        if (!enCours) return;
+        const largeur = Math.min(LARGEUR_MAX, Math.max(LARGEUR_MIN, event.clientX - panel.getBoundingClientRect().left));
+        panel.style.width = largeur + "px";
+        map.invalidateSize();
+    });
+    window.addEventListener("mouseup", () => {
+        if (!enCours) return;
+        enCours = false;
+        poignee.classList.remove("en-cours");
+        document.body.style.userSelect = "";
+        try { localStorage.setItem("geoberce_largeur_panneau", parseInt(panel.style.width, 10)); } catch (_) { /* tant pis, pas bloquant */ }
+    });
+}
+initRedimensionnementPanneau();
+
 document.getElementById("menu-button").addEventListener("click", () => togglerPanneauCouches());
 document.getElementById("layers-close").addEventListener("click", () => {
     /* Fermer le panneau entier (×) pendant que la recherche foncière est

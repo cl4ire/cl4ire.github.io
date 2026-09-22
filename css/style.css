@@ -107,13 +107,32 @@ button { font-family: inherit; cursor: pointer; }
 #map { flex: 1; }
 /* 340px (contre 280px avant) : retour direct, la liste des couches et le
    formulaire de recherche foncière se sentaient à l'étroit. */
-#layers-panel { width: 340px; background: #fff; border-right: 1px solid var(--bordure); overflow-y: auto; flex-shrink: 0; }
+#layers-panel { width: 340px; background: #fff; border-right: 1px solid var(--bordure); overflow-y: auto; flex-shrink: 0; position: relative; }
 /* Repliée (bouton "Couches" ou croix de fermeture) : entièrement masqué
    plutôt qu'une largeur à 0 animée - la carte reprend tout de suite
    l'espace libéré (#map est flex:1, juste à côté), il suffit d'appeler
    map.invalidateSize() après coup pour que Leaflet redessine les tuiles
    sur la nouvelle largeur (voir js/map.js). */
 #layers-panel.layers-panel-hidden { display: none; }
+/* Poignée de redimensionnement (retour direct de l'utilisatrice) : bande
+   fine sur le bord droit du panneau, élargie visuellement seulement au
+   survol/pendant le glissement pour ne pas gêner la lecture au repos -
+   voir initRedimensionnementPanneau dans js/map.js pour la logique de
+   glissement (souris) et le stockage de la largeur choisie. Desktop
+   seulement : sur mobile le panneau est un panneau plein écran qui
+   glisse (position absolute, voir plus bas), le redimensionner n'aurait
+   pas de sens.
+   "right: 0" (entièrement DANS la boîte du panneau) plutôt qu'à cheval
+   sur le bord ("right: -3px") : #layers-panel a "overflow-y: auto", ce
+   qui bascule aussi overflow-x à "auto" (comportement standard CSS dès
+   qu'un seul axe n'est pas "visible") - tout ce qui dépasserait le bord
+   droit serait purement et simplement coupé (invisible ET impossible à
+   cliquer), constaté en testant. */
+#layers-resize-handle {
+    position: absolute; top: 0; right: 0; width: 6px; height: 100%;
+    cursor: col-resize; z-index: 5; background: transparent;
+}
+#layers-resize-handle:hover, #layers-resize-handle.en-cours { background: var(--primaire); opacity: 0.25; }
 .panel-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px 10px; }
 .panel-title { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--primaire); }
 .panel-close { display: block; border: none; background: none; font-size: 20px; color: var(--ardoise); }
@@ -566,6 +585,7 @@ button { font-family: inherit; cursor: pointer; }
        chacun adapté à son propre mode d'affichage (voir plus haut). */
     #layers-panel { position: absolute; inset: 0 15% 0 0; transform: translateX(-100%); transition: transform 0.25s ease; z-index: 900; display: block; }
     #layers-panel.layers-panel-open { transform: translateX(0); }
+    #layers-resize-handle { display: none; }
     #hero-title { font-size: 22px; }
     /* Pas de largeur forcée sur .leaflet-popup-content ici non plus (voir
        le commentaire plus haut dans ce fichier) : la largeur responsive

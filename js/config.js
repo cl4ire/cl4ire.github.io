@@ -37,6 +37,28 @@ const GROUPS = {
    qu'un nom de champ figé, pour rester robuste aux évolutions
    du fournisseur de données)
    ========================================================= */
+/* Retour direct de l'utilisatrice : le flux Vigieau (gros fichier
+   national, un seul objet S3 statique, aucun filtre géographique
+   possible côté serveur) peut ponctuellement dépasser le délai réseau
+   avant même d'avoir fini de télécharger ("ERR_TIMED_OUT" constaté en
+   conditions réelles) - un nouvel essai suffit généralement (aléa
+   réseau ponctuel plutôt qu'une vraie panne du service). Jusqu'à 3
+   tentatives avant d'abandonner pour de bon (affiche alors le badge
+   d'erreur normal du panneau, voir js/panel.js). */
+const URL_VIGIEAU = "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_arretes_en_vigueur.geojson";
+function fetchAvecReessai(url, tentativesRestantes) {
+    return fetch(url).then(r => {
+        if (!r.ok) throw new Error("Erreur HTTP " + r.status + " sur " + url);
+        return r.json();
+    }).catch(err => {
+        if (tentativesRestantes <= 1) throw err;
+        return fetchAvecReessai(url, tentativesRestantes - 1);
+    });
+}
+function fetchVigieau() {
+    return fetchAvecReessai(URL_VIGIEAU, 3);
+}
+
 /* Retour direct de l'utilisatrice : le flux Vigieau couvre toute la
    France (des centaines de zones), très long à charger/construire en
    objets Leaflet pour un intérêt local seulement. Filtré à la boîte
@@ -1094,8 +1116,12 @@ const LAYERS = [
         id: "vigieau", group: "risques", label: "Restrictions sécheresse (Vigieau)",
         /* Flux GeoJSON public des zones sous arrêté sécheresse en vigueur,
            publié par le Ministère (source du jeu de données data.gouv.fr
-           "VigiEau : Arrêtés sécheresse en vigueur"), mis à jour quotidiennement. */
-        file: "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_arretes_en_vigueur.geojson",
+           "VigiEau : Arrêtés sécheresse en vigueur"), mis à jour quotidiennement.
+           fetchPersonnalise (fetchVigieau, voir plus haut) plutôt que
+           "file" : nouvel essai automatique en cas de timeout réseau, un
+           gros fichier national sans filtre serveur possible y est plus
+           exposé que les autres couches du site. */
+        fetchPersonnalise: fetchVigieau,
         transform: clipperAuTerritoire,
         type: "polygon", color: "#F2994A",
         styleFn: couleurVigieau,
