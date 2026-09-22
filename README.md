@@ -2969,6 +2969,72 @@ absente) et la vue interne revient bien à la normale ; à l'inverse,
 `ouvrirVueResultats` confirmé toujours capable d'ouvrir réellement le
 panneau quand c'est lui-même qui le demande.
 
+## Icônes par type de sport sur la carte, légende des équipements sportifs
+
+Retour direct de l'utilisatrice : la couche "Équipements sportifs" avait
+déjà une icône différente par type de sport (foot, tennis, piscine...)
+dans le dashboard commune ("Ce qu'on trouve ici"), mais pas sur la carte
+elle-même, où tous les équipements partageaient la même icône ballon de
+foot fixe - et sans légende pour distinguer les catégories.
+
+Corrigé en consolidant la logique de classification en un seul endroit
+(`js/config.js`) au lieu de la dupliquer : **`TYPES_SPORT`** (17
+catégories, une par valeur `sport` réellement présente dans
+`couches/services/equipementSportif.geojson` - vérifié sur les 102
+équipements du territoire, pas une liste théorique) et
+**`categorieSport(props)`**, qui renvoie `{id, label, icon, color}` à
+partir de la valeur brute OSM (repli sur "Équipement sportif" avec une
+icône médaille générique si `sport` est absent ou inconnu). La couche
+`equipementSportif` (LAYERS) utilise maintenant `iconePourFeature` pour
+varier l'icône marqueur par sport, et `legend` / `legendDefaut` /
+`categoriser` pour faire apparaître les 17 catégories comme
+sous-couches à cocher indépendamment dans la légende du panneau,
+suivant le même mécanisme déjà utilisé pour les commerces et les
+lockers. `js/communes.js` a été mis à jour pour réutiliser directement
+`categorieSport` dans le décompte par commune (suppression du
+dictionnaire `ICONES_SPORT` local, devenu redondant) : une seule source
+de vérité pour la carte et le dashboard, au prix d'un effet de bord
+mineur et assumé sur l'unique équipement multi-sport du territoire
+(`"basketball;handball;soccer"`), dont le libellé dans le décompte
+passe de "Basketball / Handball / Football" (tous les sports listés) à
+simplement "Basketball" (premier sport listé, comme pour l'icône sur la
+carte).
+
+Certains sports partagent l'icône médaille générique (`tennis`,
+`handball`, `billiards`, `skateboard`) faute d'icône Font Awesome
+dédiée suffisamment fiable ; deux icônes plus spécifiques ont en
+revanche été ajoutées pour l'occasion : `fa-vector-square` pour
+"Multisports" et `fa-stopwatch` pour "Athlétisme". Au passage,
+`sousTitrePourFeature` a aussi été ajouté à la couche pour que le
+sous-titre affiché en résultat de recherche montre le sport traduit
+("Natation · Montval-sur-Loir") plutôt que la valeur brute OSM
+("soccer").
+
+Testé (Playwright, données réelles) : les 102 équipements du territoire
+sont tous classés sans exception dans une des 17 catégories (aucune
+icône manquante) ; la feature multi-sport confirmée classée
+"Basketball" sans erreur ; la légende de la couche a bien 17 entrées
+uniques, toutes avec icône ; `categoriser()` cohérent avec
+`categorieSport()` sur toutes les features ; aucune valeur brute OSM ne
+fuite dans les sous-titres. Décompte par commune revérifié sur une
+commune réelle (24 équipements sportifs) : icônes et libellés
+identiques à ceux affichés sur la carte, triés par effectif décroissant
+comme avant.
+
+## Icône manquante sur le bouton "Installer"
+
+Retour direct de l'utilisatrice : le bouton "Installer" de la barre du
+haut n'affichait aucune icône, juste un rond vide.
+
+Cause : `fa-arrow-down-to-bracket` (`index.html`) n'existe que dans la
+version payante (Pro) de Font Awesome, alors que le site charge la
+feuille de style gratuite (Free) depuis cdnjs - la classe ne
+correspondait à aucun glyphe réellement livré, d'où l'icône manquante
+sans erreur visible dans la console.
+
+Corrigé en la remplaçant par `fa-download`, une icône équivalente
+disponible dans le jeu gratuit.
+
 ## Ce qui reste à faire
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.
