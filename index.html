@@ -151,6 +151,8 @@
         <p>Les couches marquées d'un point orange ● dans le panneau sont chargées à la demande, seulement quand vous les cochez : certaines interrogent des données en direct (OpenStreetMap, Géorisques...) plutôt qu'un fichier déjà présent sur le site, et peuvent donc prendre quelques secondes à s'afficher.</p>
         <p class="about-source">Données : communes, EPCI, OpenStreetMap, data.gouv.fr, Vigieau, IGN Géoplateforme, Géoportail de l'Urbanisme, prix-carburants.gouv.fr, Géorisques, ANCT.</p>
 
+        <button type="button" id="tour-relancer" class="rf-bouton-secondaire">Revoir la visite guidée</button>
+
         <div class="contact-form">
             <div class="contact-titre">Un bug à signaler ? Une idée à proposer ?</div>
             <div class="rf-champ">
@@ -171,6 +173,22 @@
 </div>
 <!-- FIN MODALE À PROPOS -->
 
+<!-- DEBUT VISITE GUIDÉE -->
+<div id="tour" hidden>
+    <div id="tour-spot"></div>
+    <div id="tour-bulle">
+        <div id="tour-texte"></div>
+        <div class="tour-bas">
+            <span id="tour-compteur"></span>
+            <div class="tour-boutons">
+                <button type="button" id="tour-passer" class="tour-bouton-texte">Passer</button>
+                <button type="button" id="tour-suivant" class="rf-bouton-principal">Suivant</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- FIN VISITE GUIDÉE -->
+
 <!-- DEBUT SCRIPTS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
@@ -186,6 +204,7 @@
 <script src="js/proximite.js"></script>
 <script src="js/recherche.js"></script>
 <script src="js/communes.js"></script>
+<script src="js/tour.js"></script>
 <script src="js/map.js"></script>
 <!-- FIN SCRIPTS -->
 

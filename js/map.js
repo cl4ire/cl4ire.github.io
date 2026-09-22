@@ -69,6 +69,7 @@ initFiltrePanneau();
 construireEcranAccueil(map);
 construireRaccourcis(map);
 construireSelecteurCommunes(map);
+demarrerVisiteSiPremiereFois();
 
 initRecherche(map, {
     onResultat: () => {
@@ -139,6 +140,11 @@ document.getElementById("about-button").addEventListener("click", () => {
 
 document.getElementById("about-close").addEventListener("click", () => {
     document.getElementById("about-modal").classList.remove("modal-open");
+});
+
+document.getElementById("tour-relancer").addEventListener("click", () => {
+    document.getElementById("about-modal").classList.remove("modal-open");
+    demarrerVisiteGuidee();
 });
 
 /* Formulaire de contact (bugs/idées) : pas de backend sur un site 100%
