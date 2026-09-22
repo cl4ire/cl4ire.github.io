@@ -26,6 +26,58 @@ function chargerDemographieCommunes() {
     return demographieEnCache;
 }
 
+/* =========================================================
+   QUALITÉ DE L'EAU POTABLE (Hub'Eau)
+   Retour direct de l'utilisatrice : compléter le dashboard commune
+   avec une info du quotidien en plus des chiffres statiques. Hub'Eau
+   ("Qualité de l'eau potable", api/v1/qualite_eau_potable/resultats_dis)
+   est une API publique pensée pour la réutilisation externe (contrairement
+   à Vigicrues, retiré plus haut pour blocage CORS) - schéma confirmé en
+   conditions réelles par l'utilisatrice (résultat réel pour la commune
+   72071/Montval-sur-Loir, collé depuis un onglet ouvert directement sur
+   l'API).
+   Une seule requête (size=1, sort=desc) suffit : chaque ligne porte déjà
+   conclusion_conformite_prelevement, une phrase de synthèse pour TOUT le
+   prélèvement (pas juste le paramètre de cette ligne - répétée sur
+   chacune de ses lignes, vérifié dans l'exemple réel), donc la plus
+   récente ligne toutes couches confondues donne directement le dernier
+   verdict sans avoir à tout agréger côté client. */
+const URL_HUBEAU_EAU_POTABLE = "https://hubeau.eaufrance.fr/api/v1/qualite_eau_potable/resultats_dis";
+const qualiteEauEnCache = {}; // code_insee -> Promise
+function chargerQualiteEauCommune(codeInsee) {
+    if (qualiteEauEnCache[codeInsee]) return qualiteEauEnCache[codeInsee];
+    const url = `${URL_HUBEAU_EAU_POTABLE}?code_commune=${codeInsee}&size=1&sort=desc`;
+    qualiteEauEnCache[codeInsee] = fetch(url)
+        .then(r => r.ok ? r.json() : null)
+        .then(d => (d && d.data && d.data[0]) || null)
+        .catch(() => null);
+    return qualiteEauEnCache[codeInsee];
+}
+
+/* Classement conforme/non conforme par mot-clé sur la phrase de
+   conclusion plutôt qu'une valeur d'énumération figée (comme pour
+   Vigieau) : seule "C" (conforme) a été confirmée en conditions
+   réelles pour conformite_limites_bact_prelevement/
+   conformite_limites_pc_prelevement, la ou les valeurs de non-
+   conformité ne le sont pas - la phrase reste lisible et fiable dans
+   les deux cas. */
+function construireBlocQualiteEau(resultat) {
+    if (!resultat || !resultat.conclusion_conformite_prelevement) return "";
+    const nonConforme = /non\s+conforme/i.test(resultat.conclusion_conformite_prelevement);
+    const couleur = nonConforme ? PALETTE.terracotta : PALETTE.feuille;
+    const reseau = resultat.reseaux && resultat.reseaux[0] && resultat.reseaux[0].nom;
+    const precisions = [
+        reseau ? `Réseau ${reseau}` : null,
+        resultat.date_prelevement ? `dernier contrôle le ${formaterDateSeule(resultat.date_prelevement)}` : null
+    ].filter(Boolean).join(" · ");
+
+    return `<div class="popup-fiche-section">
+        <div class="popup-fiche-section-titre"><i class="fa-solid fa-droplet" style="color:${couleur}"></i>Qualité de l'eau potable</div>
+        <div class="popup-fiche-ligne">${echapperHtml(resultat.conclusion_conformite_prelevement)}</div>
+        ${precisions ? `<div class="popup-fiche-precision">${echapperHtml(precisions)}</div>` : ""}
+    </div>`;
+}
+
 function mairiesPourCommune(nomCommune) {
     const cible = normaliserNomCommune(nomCommune);
     return chargerMairies().then(features => features.filter(f => normaliserNomCommune(f.properties.commune) === cible));
@@ -138,6 +190,7 @@ function construireDashboardCommune(codeInsee, mairies, demographieFeature) {
         ${blocsMairie}
         ${blocDemographie}
         ${blocDecompte}
+        <div id="commune-qualite-eau"><!-- Rempli séparément une fois Hub'Eau résolu, voir ouvrirDashboardCommune --></div>
         <div class="popup-fiche-section">
             <div class="popup-fiche-section-titre"><i class="fa-solid fa-bullhorn"></i>Actualités (Illiwap)</div>
             <div class="illiwap-embed">
@@ -157,9 +210,27 @@ function ouvrirDashboardCommune(map, codeInsee) {
     document.getElementById("commune-contenu").innerHTML = `<div class="popup-fiche-vide" style="padding:16px 18px;">Chargement...</div>`;
     ouvrirVuePanneau("commune-view");
 
+    /* Hub'Eau (qualité de l'eau) démarré tout de suite, en parallèle du
+       Promise.all ci-dessous, pour ne pas perdre de temps - mais
+       #commune-qualite-eau (créé par construireDashboardCommune) n'existe
+       pas encore dans le DOM à cet instant : le remplissage est donc
+       chaîné APRÈS l'affichage du contenu principal plutôt que sur cette
+       promesse directement, sinon une réponse Hub'Eau plus rapide que la
+       lecture des fichiers locaux (cas limite, improbable mais possible)
+       chercherait un élément qui n'existe pas encore et perdrait
+       silencieusement le résultat. Le reste du dashboard ne l'attend
+       jamais pour s'afficher : c'est un appel réseau externe, latence/
+       fiabilité imprévisibles, contrairement à mairies/démographie qui ne
+       font que lire des fichiers locaux du dépôt. */
+    const promesseQualiteEau = chargerQualiteEauCommune(codeInsee);
+
     Promise.all([mairiesPourCommune(nom), chargerDemographieCommunes()]).then(([mairies, demoFeatures]) => {
         const demoFeature = demoFeatures.find(f => f.properties && f.properties.commune === codeInsee);
         document.getElementById("commune-contenu").innerHTML = construireDashboardCommune(codeInsee, mairies, demoFeature);
+        promesseQualiteEau.then(resultat => {
+            const cible = document.getElementById("commune-qualite-eau");
+            if (cible) cible.innerHTML = construireBlocQualiteEau(resultat);
+        });
     });
 }
 

@@ -2135,6 +2135,60 @@ bornes mini/maxi respectées, persistance en `localStorage` et
 restauration vérifiées, y compris avec une valeur aberrante en stockage
 (bornée à 640px plutôt que d'appliquer une largeur absurde).
 
+## Qualité de l'eau potable (Hub'Eau) sur le dashboard commune
+
+Suite à l'idée de l'utilisatrice de raccrocher Hub'Eau (évoquée en
+retirant Vigicrues, bloqué par CORS) : exploration de deux pistes,
+qualité de l'eau potable et qualité de l'air.
+
+**Qualité de l'air écartée** : l'indice ATMO officiel n'est calculé que
+pour les 7 plus grosses agglomérations de la région Pays de la Loire
+(Nantes, Angers, Le Mans, Saint-Nazaire, Cholet, La Roche-sur-Yon,
+Laval) - confirmé par l'utilisatrice sur l'API ouverte d'Air Pays de la
+Loire (`data.airpl.org`), aucune commune du territoire (rural, aucune
+de ces 7 villes) n'y a de valeur mesurée. Afficher un indice pour
+notre territoire aurait été trompeur (donnée absente ou non
+représentative) : abandonné plutôt que bricolé.
+
+**Qualité de l'eau potable retenue** : Hub'Eau
+(`hubeau.eaufrance.fr/api/v1/qualite_eau_potable/resultats_dis`),
+schéma confirmé en conditions réelles par l'utilisatrice (résultat réel
+pour Montval-sur-Loir, collé directement depuis un onglet ouvert sur
+l'API - contrôle sanitaire réglementaire, pas un flux corrigible/
+approximatif). Champ clé : `conclusion_conformite_prelevement`, une
+phrase de synthèse déjà lisible ("Eau d'alimentation conforme aux
+exigences de qualité en vigueur pour l'ensemble des paramètres
+mesurés."), répétée sur toutes les lignes d'un même prélèvement
+(`code_prelevement`) - la ligne la plus récente (`size=1&sort=desc`)
+suffit donc à donner le dernier verdict sans agréger côté client.
+`reseaux[0].nom` donne le nom du réseau de distribution en plus.
+
+`chargerQualiteEauCommune`/`construireBlocQualiteEau`
+(`js/communes.js`) : classement conforme/non conforme par mot-clé sur
+la phrase de conclusion (comme Vigieau) plutôt qu'une valeur
+d'énumération figée - seule "C" (conforme) a été confirmée pour
+`conformite_limites_bact_prelevement`/`conformite_limites_pc_prelevement`,
+pas la ou les valeurs de non-conformité.
+
+Chargé à part du reste du dashboard (`ouvrirDashboardCommune`, même
+fichier) plutôt que dans le même `Promise.all` que mairies/démographie
+: c'est un appel réseau externe (latence/fiabilité imprévisibles),
+contrairement aux deux autres qui ne lisent que des fichiers locaux du
+dépôt - le reste du dashboard ne doit pas attendre après lui pour
+s'afficher. Le résultat est injecté dans `#commune-qualite-eau` une
+fois le contenu principal déjà affiché (pas directement sur la
+promesse Hub'Eau) : sinon, dans le cas limite où Hub'Eau répondrait
+plus vite que la lecture des fichiers locaux, le conteneur n'existerait
+pas encore dans le DOM et le résultat se perdrait silencieusement -
+trouvé en testant. Échec (CORS, réseau, commune sans donnée) : le
+conteneur reste simplement vide, comme les autres sections du dashboard
+qui n'ont rien à montrer.
+
+Testé : rendu conforme (vert) et non conforme (terracotta) sur le vrai
+payload fourni par l'utilisatrice, dégradation silencieuse vérifiée
+(résultat `null`, aucune trace visible), intégration complète au
+dashboard (bloc injecté au bon endroit après le contenu principal).
+
 ## Ce qui reste à faire
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.
