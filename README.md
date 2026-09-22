@@ -1981,6 +1981,91 @@ objet, `Restrictions` tableau d'objets) : plus aucun "[object Object]"
 dans le HTML généré, les champs simples (IdSandre/Code/Type) s'affichent
 normalement.
 
+**Mise à jour** : retour de l'utilisatrice - une fois "[object Object]"
+supprimé, la popup n'affichait plus grand-chose d'utile (3 champs
+numériques/codes, plus de détail sur le type d'alerte ni les
+restrictions par usage) : `estValeurSimple` a stoppé le bug visuel mais
+n'apporte pas de remplacement, alors que `Restrictions` est justement le
+contenu le plus utile de cette couche. Une fiche dédiée demande le
+schéma exact des objets imbriqués (noms des sous-champs dans
+`Restrictions`/`ArreteRestriction`) - non vérifiable depuis cet
+environnement (accès réseau restreint aux domaines concernés) ; en
+attente d'une capture des propriétés réelles d'une zone fournie par
+l'utilisatrice pour construire une fiche complète plutôt que deviner
+une nouvelle fois des noms de champs.
+
+## Décompte d'entités par commune
+
+Retour direct de l'utilisatrice : compléter le dashboard commune avec
+"1 boulangerie, 1 banque, 2 assistantes maternelles, 2 écoles..."
+plutôt que de laisser deviner ce qui existe sur place - aucune donnée
+externe, tout est déjà chargé au démarrage du site (commerces, banques,
+écoles, petite enfance, équipements sportifs, aires de jeux sont toutes
+`lazy: false`, voir `js/config.js`).
+
+`COUCHES_DECOMPTE_COMMUNE`/`featuresCommune`/`decompteEntitesCommune`/
+`construireBlocDecompte` (`js/communes.js`) : la plupart des couches
+portent déjà `com_insee` (filtrage direct), sauf `petiteEnfance` (champ
+absent de la donnée source) - `parGeometrie` bascule sur un test
+point-dans-polygone (`pointDansFeature`, déjà utilisé par la recherche
+foncière) contre le contour de la commune. `grouper` (optionnel) éclate
+le total en sous-catégories (ex. commerces par `categorieCommerce`,
+écoles par `type_fr`, sport par `sport`) plutôt qu'un seul chiffre par
+couche - c'est le niveau de détail demandé, pas juste "5 commerces".
+Réutilise `LABELS_TYPE_ECOLE`/`LABELS_SPORT` déjà définies dans
+`js/popup.js` pour les popups de ces couches, pas de doublon.
+
+**Trouvé en implémentant** : `com_insee` est une chaîne dans certains
+fichiers (`commerces`, `education`, `equipementSportif`) mais un nombre
+JSON dans d'autres (`banques`, `airesJeu`) - vérifié en conditions
+réelles. Une comparaison stricte (`===`) aurait donc silencieusement
+renvoyé zéro résultat pour ces deux couches sur toutes les communes ;
+`featuresCommune` compare désormais via `String(...)` des deux côtés.
+
+**Trouvé au passage** : `LABELS_TYPE_ECOLE` (`js/popup.js`) utilisait des
+clés sans accent (`elementaire`, `college`, `lycee`) alors que la vraie
+donnée (`education.geojson`) porte `type_fr` accentué
+(`élémentaire`/`collège`/`lycée`) - la table ne servait donc à rien pour
+ces trois types, le rendu restait correct par coïncidence grâce au repli
+`capitaliserPremiere`. Corrigé (clés accentuées). `LABELS_SPORT`
+complétée avec les valeurs `sport` réellement présentes mais absentes de
+la table (`running`, `handball`, `billiards`, `skateboard`,
+`volleyball`, `cycling`, `motocross`, `ultralight_aviation`), plus
+`labelSport` qui traduit chaque partie d'une valeur combinée
+("basketball;handball;soccer", observée une fois dans la donnée) plutôt
+que de l'afficher brute.
+
+Testé : couverture géométrique de `petiteEnfance` (70/70 features
+assignées à une commune, `pointDansFeature` sur les 24 contours réels -
+aucune perte) ; décompte sur plusieurs communes réelles (rendu HTML
+vérifié, aucun "[object Object]", tous les libellés en français) ;
+balayage des 24 communes sans erreur.
+
+## Redimensionnement du panneau des couches
+
+Retour direct de l'utilisatrice. `#layers-resize-handle` (bande de 6px
+sur le bord droit de `#layers-panel`, `index.html`/`css/style.css`) +
+`initRedimensionnementPanneau` (`js/map.js`) : glisser change la largeur
+du panneau entre 280 et 640px, mémorisée dans `localStorage`
+(`geoberce_largeur_panneau`) pour rester d'une visite à l'autre.
+`map.invalidateSize()` à chaque déplacement, comme pour l'ouverture/
+fermeture du panneau (même besoin : Leaflet ne redétecte pas seul un
+changement de taille de son conteneur). Desktop seulement (poignée
+masquée sous 780px, voir `@media`) : sur mobile le panneau est un
+panneau plein écran qui glisse, pas une colonne redimensionnable.
+
+**Trouvé en implémentant** : la poignée était positionnée à cheval sur
+le bord (`right: -3px`), or `#layers-panel` a `overflow-y: auto` - ce
+qui bascule aussi `overflow-x` à `auto` (comportement standard CSS dès
+qu'un seul axe n'est pas `visible`), coupant tout ce qui dépassait le
+bord droit (invisible ET impossible à cliquer). Corrigée en la plaçant
+entièrement à l'intérieur (`right: 0`).
+
+Testé (glissements simulés à la souris) : largeur qui suit le curseur,
+bornes mini/maxi respectées, persistance en `localStorage` et
+restauration vérifiées, y compris avec une valeur aberrante en stockage
+(bornée à 640px plutôt que d'appliquer une largeur absurde).
+
 ## Ce qui reste à faire
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.
