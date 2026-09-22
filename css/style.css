@@ -294,7 +294,20 @@ button { font-family: inherit; cursor: pointer; }
 #hero-title { font-family: var(--font-titre); font-size: 28px; font-weight: 700; color: var(--primaire); margin: 0 0 6px; }
 #hero-subtitle { font-size: 14px; color: var(--ardoise); margin: 0 0 22px; }
 
-#hero-raccourcis, #hero-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 12px; margin-bottom: 18px; }
+#hero-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 12px; margin-bottom: 18px; }
+/* Une seule ligne, défilement horizontal plutôt qu'une grille qui
+   s'étale sur plusieurs lignes - retour direct de l'utilisatrice,
+   l'accueil devenait trop long avec tous les raccourcis affichés
+   d'un coup. Les thématiques moins prioritaires restent accessibles
+   via "Voir plus de thématiques" (#hero-tiles, grille inchangée). */
+#hero-raccourcis-titre { font-size: 12.5px; color: var(--ardoise); margin-bottom: 8px; }
+#hero-raccourcis {
+    display: flex; gap: 12px; margin-bottom: 18px;
+    overflow-x: auto; overflow-y: hidden;
+    scroll-snap-type: x proximity;
+    padding-bottom: 4px;
+}
+#hero-raccourcis .hero-tile { flex: 0 0 128px; scroll-snap-align: start; }
 .hero-tile {
     background: #fff;
     border: 1px solid var(--bordure);
@@ -318,6 +331,26 @@ button { font-family: inherit; cursor: pointer; }
     padding: 10px 12px; border: 1px solid var(--bordure); border-radius: 10px;
     background: #fff; width: 100%; max-width: 320px;
 }
+
+/* ---------- RECHERCHE RAPIDE DE PARCELLE (accueil) ---------- */
+#hero-parcelle {
+    margin-bottom: 18px;
+    background: #fff;
+    border: 1px solid var(--bordure);
+    border-radius: 14px;
+    padding: 18px;
+    text-align: left;
+}
+#hero-parcelle-titre { font-weight: 700; font-size: 14px; color: var(--primaire); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+#hero-parcelle-form { display: flex; flex-direction: column; gap: 10px; }
+#hero-parcelle-form select, #hero-parcelle-form input[type="number"] {
+    font-family: inherit; font-size: 13px;
+    padding: 9px 11px; border: 1px solid var(--bordure); border-radius: 10px;
+    background: var(--fond); width: 100%;
+}
+.hp-case { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #2A2A28; font-weight: 600; }
+.hp-case input { accent-color: var(--primaire); width: 16px; height: 16px; }
+#hero-parcelle-form button { margin-top: 4px; }
 
 #hero-plus { margin-bottom: 18px; }
 #hero-plus summary {

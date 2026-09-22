@@ -1676,6 +1676,66 @@ n'indiquait quel tracé était sélectionné.
   au clic sur un autre tracé - une seule surbrillance active à la fois
   par couche.
 
+## Refonte de l'écran d'accueil : dashboard commune, raccourcis en une ligne, recherche de parcelle rapide
+
+Trois retours groupés de l'utilisatrice : la recherche foncière n'était
+pas mentionnée dans la visite guidée ("il va falloir faire un truc à
+part pour elle"), les raccourcis thématiques prenaient trop de place, et
+elle voulait un accès plus direct à la recherche de parcelle depuis
+l'accueil plutôt que de passer par le bouton dédié.
+
+**Nouvel ordre de l'accueil** (`index.html`) : sélecteur de commune
+(dashboard) → raccourcis thématiques → "Rechercher une parcelle" → "Voir
+plus de thématiques" → "Voir la carte complète".
+
+- **Raccourcis en une seule ligne** : `#hero-raccourcis` passé d'une
+  grille qui s'étalait sur plusieurs lignes à une rangée à défilement
+  horizontal (`overflow-x: auto`, `scroll-snap-type: x proximity`) -
+  tous les raccourcis restent accessibles, juste par un glissement
+  latéral plutôt qu'en scrollant toute la page verticalement. "Voir plus
+  de thématiques" (`#hero-tiles`) garde sa grille classique, inchangée.
+- **Recherche de parcelle rapide** (`#hero-parcelle`, `js/recherche.js`) :
+  quatre champs simplifiés (commune, surface minimale, constructible,
+  DPE connu) plutôt qu'un formulaire complet en double sur l'accueil -
+  au clic sur "Rechercher", ils préremplissent le panneau "Recherche
+  foncière" existant (tous ses filtres avancés restent disponibles pour
+  affiner) et lancent la recherche immédiatement, sans réutiliser de
+  logique de filtrage dupliquée :
+  - **"Constructible"** réutilise `ZONES_PLUI_CONSTRUCTIBLES` (déjà
+    présent dans le code pour la fiche parcelle) via une nouvelle option
+    `constructible` ajoutée au champ "Zone PLUi" du panneau complet
+    (`correspond()` la traite comme un raccourci pour "U ou AUc") -
+    utilisable aussi directement depuis le panneau complet, pas
+    seulement via ce raccourci.
+  - **"DPE connu"** coche les 7 classes DPE à la fois dans le panneau :
+    `correspond()` exclut déjà une parcelle sans étiquette DPE dès qu'au
+    moins une classe est cochée, donc cocher les 7 revient exactement à
+    "n'importe quelle classe, du moment qu'elle existe".
+  - **Contournement volontaire de la limite "vue actuelle"** : la
+    recherche foncière ne porte normalement que sur les parcelles
+    affichées à l'écran (voir l'en-tête de `js/recherche.js`), pour ne
+    pas charger les dizaines de milliers de parcelles du territoire
+    entier d'un coup. Une recherche rapide avec une commune choisie n'a
+    pas ce problème (quelques centaines à quelques milliers de parcelles
+    par commune, pas le territoire entier) : `chargerEtEnrichirCommune`
+    filtre directement `donneesBrutes["cadastre"]` (déjà chargé en
+    entier) par code INSEE, sans avoir besoin d'être déjà zoomé dessus.
+    Sans commune choisie ("Toutes les communes"), la recherche rapide
+    retombe sur le comportement habituel (vue actuelle) : si la carte
+    n'est pas assez zoomée, le même message d'invite à zoomer s'affiche
+    que dans le panneau complet - pas une limitation nouvelle, celle qui
+    existe déjà pour tout le monde.
+- **Visite guidée mise à jour** (`js/tour.js`) : réordonnée pour suivre
+  le nouvel ordre de l'accueil, avec une étape dédiée à
+  `#hero-parcelle`.
+
+Testé (données mockées) : recherche rapide avec commune + surface min
+affiche exactement les parcelles attendues sur la carte (vérifié avec
+trois parcelles de test, deux exclues à raison - mauvaise commune, ou
+surface insuffisante) ; les trois autres champs (préremplissage
+commune/surface/plui, "constructible" et "DPE connu") vérifiés
+directement sur `correspond()` avec des cas couvrant chaque branche.
+
 ## Ce qui reste à faire
 - **Vigicrues : endpoint et nom de champ À VÉRIFIER EN CONDITIONS
   RÉELLES**, voir la section dédiée plus haut — cocher la couche ; si
