@@ -209,7 +209,6 @@ button { font-family: inherit; cursor: pointer; }
 
 /* ---------- PANNEAU "RECHERCHE FONCIÈRE" ---------- */
 #recherche-view { padding-bottom: 16px; }
-#commune-view { padding-bottom: 16px; }
 .recherche-titre {
     display: flex; align-items: center; gap: 8px;
     padding: 4px 18px 12px; font-weight: 700; font-size: 14px; color: #2A2A28;
@@ -250,7 +249,36 @@ button { font-family: inherit; cursor: pointer; }
 .actu-dropdown-header button { border: none; background: none; font-size: 18px; color: var(--ardoise); }
 .actu-dropdown .illiwap-embed { margin: 0 14px 14px; }
 .actu-dropdown .illiwap-embed iframe { height: 420px; }
-#commune-titre { padding-bottom: 4px; }
+
+/* ---------- PAGE COMMUNE (dashboard plein écran) ---------- */
+/* Retour direct de l'utilisatrice : le dashboard commune (mairie,
+   chiffres clés, décompte d'entités, qualité de l'eau, actualités)
+   étroit dans la colonne du panneau des couches ne suffisait plus une
+   fois enrichi - passé en page plein écran, même principe que #hero
+   (position:absolute sur #app, au-dessus de la carte) mais son propre
+   habillage (en-tête avec retour, contenu centré et lisible plutôt que
+   le prompt centré de l'accueil). */
+#commune-page {
+    position: absolute; inset: 0; z-index: 600;
+    background: var(--fond); display: flex; flex-direction: column; overflow: hidden;
+}
+#commune-page[hidden] { display: none; }
+#commune-page-header {
+    display: flex; align-items: center; gap: 16px; flex-shrink: 0;
+    padding: 16px 24px; background: #fff; border-bottom: 1px solid var(--bordure);
+}
+.commune-page-back {
+    display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+    border: none; background: none; cursor: pointer;
+    color: var(--primaire); font-weight: 700; font-size: 13px; padding: 8px 4px;
+}
+#commune-titre { font-weight: 700; font-size: 18px; color: var(--primaire); display: flex; align-items: center; gap: 8px; }
+#commune-page-corps { flex: 1; overflow-y: auto; padding: 24px 24px 40px; }
+#commune-page-corps #commune-contenu { max-width: 640px; margin: 0 auto; }
+@media (max-width: 780px) {
+    #commune-page-header { padding: 12px 16px; }
+    #commune-page-corps { padding: 16px 16px 32px; }
+}
 
 .rf-groupe { border-top: 1px solid var(--bordure); padding: 14px 0; }
 .rf-groupe-titre { font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: var(--ardoise); margin-bottom: 10px; }

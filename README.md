@@ -2189,6 +2189,44 @@ payload fourni par l'utilisatrice, dégradation silencieuse vérifiée
 (résultat `null`, aucune trace visible), intégration complète au
 dashboard (bloc injecté au bon endroit après le contenu principal).
 
+## Dashboard commune : panneau latéral → page plein écran
+
+Retour direct de l'utilisatrice : le dashboard commune (mairie,
+chiffres clés, décompte d'entités, qualité de l'eau, actualités) était
+à l'étroit dans la colonne du panneau des couches (280-640px) une fois
+enrichi de tout ce contenu.
+
+`#commune-page` (`index.html`) sort du panneau des couches
+(`#layers-panel`) : devient un enfant direct de `#app`, au même niveau
+que `#hero`/`#map`/`#layers-panel`, avec `position: absolute; inset: 0`
+- même principe que `#hero` (l'écran d'accueil), mais son propre
+habillage : en-tête fixe (bouton retour + nom de la commune) et contenu
+centré sur une largeur de lecture confortable (640px) plutôt que le
+prompt centré de l'accueil. `z-index: 600`, au-dessus de `#hero`
+(500) : nécessaire pour "Accueil" depuis la page commune (voir plus
+bas).
+
+`ouvrirDashboardCommune`/`fermerVueCommune` (`js/communes.js`) affichent/
+masquent directement `#commune-page` (`hidden`) au lieu de passer par
+`ouvrirVuePanneau("commune-view")`/`fermerVuesPanneau()` - `"commune-view"`
+retiré de `VUES_PANNEAU` (`js/panel.js`), le dashboard commune n'est
+plus une vue du panneau. Plus besoin de `map.invalidateSize()` non plus
+: `#commune-page` est un calque par-dessus la carte, pas un changement
+de largeur du conteneur de la carte.
+
+**Trouvé en implémentant** : le bouton "Accueil" (`home-button`,
+`js/map.js`) ne fermait que les résultats "près de chez moi" avant
+d'ouvrir l'accueil - `#commune-page` (`z-index: 600`, au-dessus de
+`#hero`) resterait donc affiché par-dessus, rendant "Accueil" invisible
+depuis la page commune. Corrigé en fermant aussi `#commune-page` dans
+ce même gestionnaire.
+
+Testé : ouverture/fermeture (dashboard rempli avec des données de
+démonstration, capture d'écran desktop et mobile envoyée à
+l'utilisatrice), clic réel sur "Retour à la carte" vérifié, et confirmé
+qu'aucune référence à l'ancien `#commune-view` ne subsiste dans le
+code.
+
 ## Ce qui reste à faire
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.
