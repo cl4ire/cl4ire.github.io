@@ -1736,6 +1736,47 @@ surface insuffisante) ; les trois autres champs (préremplissage
 commune/surface/plui, "constructible" et "DPE connu") vérifiés
 directement sur `correspond()` avec des cas couvrant chaque branche.
 
+## Horaires saisonnières (été/hiver) pour les déchèteries
+
+L'utilisatrice enrichit ses couches depuis le projet QGIS livré plus
+haut, et voulait savoir comment différencier les horaires été/hiver
+d'une déchèterie dans le champ `opening_hours`.
+
+`parserHorairesOsm` (`js/popup.js`) ne couvrait volontairement qu'un
+sous-ensemble de la syntaxe OSM (jours de la semaine + plages horaires,
+voir "Ne couvre pas toute la spécification..." dans son commentaire) -
+ni les jours fériés (`PH`), ni les plages saisonnières. Étendu pour
+gérer ces dernières : un bloc peut désormais commencer par une plage de
+mois ("`Apr-Sep: Mo-Sa 09:00-19:00`"), qui n'est retenue que si le mois
+actuel y tombe - `moisOsmDansPlage` gère aussi les plages à cheval sur
+l'année civile ("`Oct-Mar`"). Exemple complet pour une déchèterie :
+`Apr-Sep: Mo-Sa 09:00-19:00; Oct-Mar: Mo-Sa 09:00-17:00`.
+
+Le format renvoyé par `parserHorairesOsm` ne change pas (toujours
+`{Mo: [...], ...}` pour la semaine en cours) : tous les appelants
+existants (mairies, commerces...) affichent donc automatiquement la
+bonne saison sans aucune modification de leur côté - seule la fiche
+qui reçoit le résultat n'a pas connaissance des saisons, elle voit
+simplement "les horaires de cette semaine". Pas d'indication visuelle
+du genre "vous consultez les horaires d'été" : sur simple demande si
+besoin plus tard.
+
+**Trouvé en implémentant** : `construirePopupDecheterie` n'affichait en
+fait jamais les horaires, même quand le champ est renseigné - contact/
+opérateur oui, mais pas `opening_hours`. Corrigé au passage (même
+mécanique que les commerces : badge "Ouvert"/"Fermé" +
+`construireLignesHoraires`) puisque sans ça, les horaires que
+l'utilisatrice s'apprêtait à ajouter ne se seraient affichés nulle
+part.
+
+Testé (horaires mockées, en changeant artificiellement la date système
+dans plusieurs mois de test) : juillet et avril affichent les horaires
+d'été (09:00-19:00), décembre et février les horaires d'hiver
+(09:00-17:00) - y compris pour la plage "Oct-Mar" à cheval sur l'année
+civile. Un format non saisonnier existant, et des plages de mois non
+reconnues, continuent de fonctionner comme avant (testés en
+non-régression).
+
 ## Ce qui reste à faire
 - **Vigicrues : endpoint et nom de champ À VÉRIFIER EN CONDITIONS
   RÉELLES**, voir la section dédiée plus haut — cocher la couche ; si
