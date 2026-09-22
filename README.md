@@ -3021,6 +3021,20 @@ commune réelle (24 équipements sportifs) : icônes et libellés
 identiques à ceux affichés sur la carte, triés par effectif décroissant
 comme avant.
 
+## Icône manquante sur le bouton "Installer"
+
+Retour direct de l'utilisatrice : le bouton "Installer" de la barre du
+haut n'affichait aucune icône, juste un rond vide.
+
+Cause : `fa-arrow-down-to-bracket` (`index.html`) n'existe que dans la
+version payante (Pro) de Font Awesome, alors que le site charge la
+feuille de style gratuite (Free) depuis cdnjs - la classe ne
+correspondait à aucun glyphe réellement livré, d'où l'icône manquante
+sans erreur visible dans la console.
+
+Corrigé en la remplaçant par `fa-download`, une icône équivalente
+disponible dans le jeu gratuit.
+
 ## Ce qui reste à faire
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.
