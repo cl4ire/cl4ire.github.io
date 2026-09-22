@@ -2800,6 +2800,43 @@ bouton affiché → clic → `prompt()` appelé → bouton remasqué après le
 choix ; contenu de `manifest.json` vérifié tel que servi ; service
 worker confirmé enregistré avec le bon scope.
 
+## Haut de la modale "À propos" et de l'accueil inaccessible sur mobile
+
+Retour direct de l'utilisatrice, capture d'écran à l'appui : sur son
+téléphone, impossible de voir le bouton fermer et le logo en haut de
+la modale "À propos" (contenu plus grand que l'écran une fois le
+formulaire de contact déplié) - même chose évoquée pour le haut de
+l'écran d'accueil (`#hero`).
+
+Piège CSS connu : `#hero` et `.modal` centrent leur contenu avec
+`display:flex; align-items:center; justify-content:center`. Tant que le
+contenu tient dans l'écran, aucun souci. Dès qu'il dépasse (téléphone à
+petit écran, formulaire déplié...), un centrage classique déborde à
+parts égales au-dessus ET en dessous du conteneur - mais rien ne permet
+d'atteindre la partie qui déborde par le haut : `scrollTop` ne peut pas
+descendre sous 0, alors que le centrage a justement poussé le début du
+contenu dans cette zone inaccessible. `.modal` n'avait en plus aucun
+`overflow-y` du tout (aucun défilement possible, même vers le bas).
+
+Corrigé avec le mot-clé CSS `safe` (`align-items: safe center;
+justify-content: safe center;` sur `#hero` et `.modal`) : indique au
+navigateur de centrer normalement tant que ça tient, mais de revenir à
+un alignement en haut dès que centrer rendrait une partie du contenu
+inatteignable - le comportement voulu dans les deux cas, sans code JS
+ni logique conditionnelle à écrire. `overflow-y: auto` ajouté à `.modal`
+(seul `#hero` l'avait déjà) ; `.modal-content` reçoit une marge
+verticale (`margin: 20px auto`) pour ne pas coller aux bords une fois
+le défilement nécessaire.
+
+Testé (Playwright, viewport 412×640 - téléphone à écran réduit une fois
+la barre d'adresse Chrome décomptée, proche du cas réel signalé) :
+débordement confirmé sur les deux (172px pour la modale une fois le
+formulaire de contact affiché, 43px pour l'accueil), bouton fermer et
+logo de la modale confirmés visibles après un défilement complet vers
+le haut (`scrollTop = 0`), pareil pour le titre de l'accueil - capture
+d'écran vérifiée visuellement, tout le contenu du haut est maintenant
+atteignable.
+
 ## Ce qui reste à faire
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.
