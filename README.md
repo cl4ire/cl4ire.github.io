@@ -1530,6 +1530,25 @@ l'ancien badge en le remplaçant par le nouveau sans le retirer, laissant
 un spinner orphelin indéfiniment affiché à côté du badge d'erreur -
 trouvé en testant le scénario d'échec puis de nouvelle tentative.
 
+## Ordre des icônes de la barre du haut
+
+Retour direct de l'utilisatrice : l'ordre n'était pas cohérent (Accueil,
+Recherche foncière, Actualités, À propos, Couches). Réordonné en
+Accueil → Couches → Recherche foncière → Actualités → À propos
+(`#topbar-actions` dans `index.html`) - la barre de recherche générale
+(adresse/lieu/service) reste à sa place actuelle, bien visible entre le
+logo et ces icônes, plutôt qu'intercalée parmi elles : c'est l'outil
+principal du site, la mélanger avec des icônes utilitaires la ferait
+paraître moins importante qu'elle ne l'est. Réorganisation par ID
+uniquement (aucun sélecteur CSS/JS du site ne dépendait de leur ordre
+dans le DOM), sans risque de régression.
+
+Au passage, `#recherche-button` a maintenant un `title="Recherche
+foncière"` (infobulle au survol) : son libellé texte est masqué sur
+petit écran (icône seule, `@media max-width: 780px`), l'infobulle
+comble ce manque de clarté sans reprendre la place qu'occuperait un
+libellé toujours visible.
+
 ## Ce qui reste à faire
 - **Vigicrues : endpoint et nom de champ À VÉRIFIER EN CONDITIONS
   RÉELLES**, voir la section dédiée plus haut — cocher la couche ; si
