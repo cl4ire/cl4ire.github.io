@@ -181,31 +181,29 @@ function construireLegende(conf, map) {
    ouvrirDashboardCommune/fermerVueCommune (js/communes.js). */
 const VUES_PANNEAU = ["layers-normal-view", "results-view", "recherche-view"];
 
-function ouvrirVuePanneau(idVue) {
-    /* Les deux classes ensemble, pas seulement "layers-panel-open" : si le
-       panneau avait été replié sur PC (togglerPanneauCouches, js/map.js),
-       "layers-panel-hidden" resterait sinon présente et masquerait quand
-       même le panneau (display:none) malgré l'ajout de "layers-panel-open" -
-       un raccourci "près de chez moi" ou "Recherche foncière" doit rouvrir
-       le panneau s'il était fermé, pas rester invisible. */
-    const panel = document.getElementById("layers-panel");
-    const etaitReplie = panel.classList.contains("layers-panel-hidden");
-    panel.classList.add("layers-panel-open");
-    panel.classList.remove("layers-panel-hidden");
+/* basculerVuePanneau (anciennement ouvrirVuePanneau) : change SEULEMENT
+   la vue interne affichée (couches normales / résultats "près de chez
+   moi" / recherche foncière) - n'ouvre plus jamais le panneau tout
+   seul. Retour direct de l'utilisatrice : "Accueil" rouvrait le
+   panneau des couches sur mobile alors qu'il était fermé - la
+   précédente version forçait systématiquement `layers-panel-open` à
+   chaque appel, y compris depuis fermerVuesPanneau (appelée par
+   "Accueil" via fermerResultatsProximite pour "revenir à la vue
+   normale en arrière-plan", jamais pour réellement ouvrir quoi que ce
+   soit). Les appelants qui veulent réellement OUVRIR le panneau
+   (recherche foncière, résultats "près de chez moi") appellent
+   togglerPanneauCouches(true) juste après, explicitement -
+   togglerPanneauCouches (js/map.js) gère déjà lui-même l'invalidateSize()
+   nécessaire au changement de largeur, pas besoin de le refaire ici. */
+function basculerVuePanneau(idVue) {
     VUES_PANNEAU.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.hidden = (id !== idVue);
     });
-    /* Repris de togglerPanneauCouches (js/map.js) : le panneau reprend de
-       l'espace sur PC seulement s'il était effectivement replié - inutile
-       de redessiner les tuiles à chaque changement de vue interne au
-       panneau (résultats/recherche/liste normale) quand il était déjà
-       ouvert. */
-    if (etaitReplie) map.invalidateSize();
 }
 
 function fermerVuesPanneau() {
-    ouvrirVuePanneau("layers-normal-view");
+    basculerVuePanneau("layers-normal-view");
 }
 
 /* Filtre texte du panneau */

@@ -421,8 +421,17 @@ function afficherCoucheFiltreeCommune(map, layerId, codeInsee, label) {
         /* construireCoucheDonnees (js/layers.js) : même construction
            (style, popup, index de recherche) que la vraie couche, pour
            un rendu identique - juste un sous-ensemble de features en
-           entrée plutôt que le fichier complet. */
-        coucheFiltreeCommuneActuelle = construireCoucheDonnees({ type: "FeatureCollection", features }, layerConf);
+           entrée plutôt que le fichier complet. cluster:false forcé sur
+           une copie de la config (jamais sur layerConf lui-même, partagé
+           avec la vraie couche territoriale) : retour direct de
+           l'utilisatrice, "Restaurants" à Jupilles (2 résultats) se
+           regroupait en un seul rond de cluster à ouvrir en plus -
+           un clic sur une tuile a déjà réduit le résultat à une poignée
+           d'entités précises, les grouper en cluster n'a plus lieu
+           d'être (le clustering sert à absorber des centaines de
+           marqueurs sur tout le territoire, pas 2 restaurants dans une
+           seule commune). */
+        coucheFiltreeCommuneActuelle = construireCoucheDonnees({ type: "FeatureCollection", features }, { ...layerConf, cluster: false });
         coucheFiltreeCommuneActuelle.addTo(map);
         /* Zoome sur l'étendue réelle du résultat filtré (pas juste la
            commune entière) : "ça zoome dessus", retour direct de

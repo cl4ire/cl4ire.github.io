@@ -2800,6 +2800,175 @@ bouton affiché → clic → `prompt()` appelé → bouton remasqué après le
 choix ; contenu de `manifest.json` vérifié tel que servi ; service
 worker confirmé enregistré avec le bon scope.
 
+## Haut de la modale "À propos" et de l'accueil inaccessible sur mobile
+
+Retour direct de l'utilisatrice, capture d'écran à l'appui : sur son
+téléphone, impossible de voir le bouton fermer et le logo en haut de
+la modale "À propos" (contenu plus grand que l'écran une fois le
+formulaire de contact déplié) - même chose évoquée pour le haut de
+l'écran d'accueil (`#hero`).
+
+Piège CSS connu : `#hero` et `.modal` centrent leur contenu avec
+`display:flex; align-items:center; justify-content:center`. Tant que le
+contenu tient dans l'écran, aucun souci. Dès qu'il dépasse (téléphone à
+petit écran, formulaire déplié...), un centrage classique déborde à
+parts égales au-dessus ET en dessous du conteneur - mais rien ne permet
+d'atteindre la partie qui déborde par le haut : `scrollTop` ne peut pas
+descendre sous 0, alors que le centrage a justement poussé le début du
+contenu dans cette zone inaccessible. `.modal` n'avait en plus aucun
+`overflow-y` du tout (aucun défilement possible, même vers le bas).
+
+Corrigé avec le mot-clé CSS `safe` (`align-items: safe center;
+justify-content: safe center;` sur `#hero` et `.modal`) : indique au
+navigateur de centrer normalement tant que ça tient, mais de revenir à
+un alignement en haut dès que centrer rendrait une partie du contenu
+inatteignable - le comportement voulu dans les deux cas, sans code JS
+ni logique conditionnelle à écrire. `overflow-y: auto` ajouté à `.modal`
+(seul `#hero` l'avait déjà) ; `.modal-content` reçoit une marge
+verticale (`margin: 20px auto`) pour ne pas coller aux bords une fois
+le défilement nécessaire.
+
+Testé (Playwright, viewport 412×640 - téléphone à écran réduit une fois
+la barre d'adresse Chrome décomptée, proche du cas réel signalé) :
+débordement confirmé sur les deux (172px pour la modale une fois le
+formulaire de contact affiché, 43px pour l'accueil), bouton fermer et
+logo de la modale confirmés visibles après un défilement complet vers
+le haut (`scrollTop = 0`), pareil pour le titre de l'accueil - capture
+d'écran vérifiée visuellement, tout le contenu du haut est maintenant
+atteignable.
+
+## Popups qui se ferment aussitôt sur mobile (suite), cluster inutile sur les tuiles filtrées
+
+Deux retours directs de l'utilisatrice.
+
+**Popups qui se referment aussitôt à l'ouverture sur mobile** : le
+correctif précédent (retrait de `width: ... !important` en CSS, voir
+"Popups qui se fermaient près des bords de carte" plus haut)
+n'a pas suffi - persiste toujours. Cette section-là avait déjà anticipé
+la suite sans pouvoir la confirmer ("un gestionnaire de clic global qui
+fermerait la popup par erreur"). Coupable trouvé cette fois :
+`closePopupOnClick` de Leaflet lui-même (option du niveau de la carte,
+`true` par défaut, jamais explicitement réglée jusqu'ici) - un clic
+n'importe où ailleurs sur la carte referme la popup ouverte. Sur
+certains navigateurs mobiles, un simple tap sur un marqueur peut
+déclencher à la fois le clic du marqueur (ouvre la popup) ET,
+quasi simultanément, un clic synthétique sur la carte juste en dessous,
+que Leaflet interprète comme "cliquer ailleurs" et referme donc la
+popup aussitôt - avant même que l'œil ait le temps de la voir.
+
+Corrigé en désactivant `closePopupOnClick` à l'initialisation de la
+carte (`js/map.js`). Contrepartie acceptée : un tap en dehors d'une
+popup ne la referme plus tout seul, il faut désormais son propre bouton
+× ou ouvrir un autre marqueur (`autoClose`, resté activé, referme
+l'ancienne popup dans ce cas - mécanisme différent, pas concerné par ce
+changement) - léger changement d'habitude, largement préférable à des
+popups qui se ferment sans prévenir.
+
+⚠️ **Non vérifiable dans ce sandbox** (Leaflet n'y charge pas, et le
+bug lui-même ne s'est jamais reproduit dans cet environnement de
+développement même avant ce correctif - seulement rapporté en
+conditions réelles) : correction basée sur la cause la plus probable
+au vu du code et du comportement documenté de Leaflet, à confirmer une
+fois déployé. Si le problème persiste malgré tout, il faudra creuser du
+côté de MarkerClusterGroup (spiderfy) ou d'un conflit spécifique entre
+les gestionnaires tactiles de Leaflet et ceux de ce site.
+
+**Cluster inutile sur une tuile filtrée** : cliquer sur "Restaurants" à
+Jupilles (2 résultats) regroupait les 2 marqueurs en un seul rond de
+cluster à ouvrir en plus, plutôt que de les afficher directement -
+`afficherCoucheFiltreeCommune` (voir plus haut) construisait sa couche
+temporaire avec la même config que la vraie couche territoriale,
+`cluster: true` compris. Le clustering sert à absorber des centaines de
+marqueurs sur tout le territoire, plus lieu d'être une fois réduit à
+une poignée d'entités précises par le clic sur une tuile. Corrigé en
+passant une copie de la config avec `cluster: false` forcé (`{
+...layerConf, cluster: false }`, jamais modifiée sur `layerConf`
+lui-même, partagé avec la vraie couche).
+
+Testé (Playwright) : confirmé que la couche temporaire reçoit bien
+`cluster: false` alors que la config `LAYERS` partagée garde
+`cluster: true` intact (aucune fuite d'état entre les deux usages).
+
+## Couleurs officielles ALÉOP et couleurs de marque pour les lockers, légende par enseigne
+
+Deux retours directs de l'utilisatrice.
+
+**Lignes ALÉOP : couleur officielle par ligne** ("il y a un code
+couleur à respecter") - `couches/mobilite/reseauALEOP.geojson` porte
+déjà `route_color`/`route_text_color` (flux GTFS/OSM, vérifié réel :
+`rgb(243,151,93)` pour la ligne 216, orange), jusqu'ici ignorés pour le
+TRACÉ de la ligne sur la carte (seulement utilisés pour l'icône de sa
+popup, `construirePopupLigneBus`, déjà correcte). Nouveau `styleLigneALEOP`
+(`js/config.js`) : reprend `route_color` (converti en hex via
+`couleurDepuisRgb`, déjà utilisée par la popup - même conversion, pas
+de code dupliqué), repli sur le bleu générique du site seulement si la
+donnée manque. Une seule ligne dessert aujourd'hui le territoire, mais
+le code s'applique déjà correctement ligne par ligne si la desserte
+s'étoffe.
+
+**Lockers : couleur de marque réelle + différenciation en légende**
+("une couleur correspondant au logo... et les différencier dans la
+légende") :
+
+- **Couleurs corrigées** (`TYPES_LOCKERS`, `js/config.js`) : Mondial
+  Relay (`#E2001A`, rouge d'enseigne) et Colissimo/La Poste (`#FFCD00`,
+  jaune d'enseigne) utilisaient à tort une couleur de palette générique
+  du site (bleu/vert) plutôt que leur vraie couleur de marque ; Amazon
+  Locker (`#FF9900`) l'avait déjà. Les autres enseignes déjà
+  répertoriées (InPost, Chronopost, DPD, UPS, Hermes/Evri, Vinted Go,
+  Relais Colis) gardent leur couleur, déjà correcte.
+- **Légende par enseigne** : la couche `lockers` n'avait encore aucune
+  légende (contrairement aux commerces) - `legend: TYPES_LOCKERS,
+  legendDefaut: TYPE_LOCKER_DEFAUT, categoriser:
+  categorieLockerPourFeature` ajouté à sa config, même mécanisme déjà
+  établi pour les commerces (une sous-couche Leaflet par enseigne,
+  case à cocher indépendante dans le panneau). `icon` (nouveau champ,
+  absent jusqu'ici de `TYPES_LOCKERS`) ajouté à chaque entrée,
+  nécessaire à `construireLegende` pour dessiner la pastille de
+  couleur de la légende - uniforme (icône "casier") pour toutes les
+  enseignes, le marqueur réel sur la carte garde sa propre distinction
+  casier automatique / point relais en commerce
+  (`iconeLocker`/`estPointRelaisCommerce`, inchangée).
+
+Testé (Playwright, données réelles) : couleur ALÉOP vérifiée
+(`rgb(243,151,93)` → `#f3975d`) ; répartition réelle des 12 lockers du
+territoire confirmée par enseigne (8 Mondial Relay, 3 Colissimo/La
+Poste, 1 Amazon Locker - aucun classé "Autre opérateur" par erreur) ;
+config `lockers` vérifiée avec légende et fonction de catégorisation
+branchées, chaque entrée de légende porte bien une icône.
+
+## "Accueil" rouvrait le panneau des couches sur mobile
+
+Retour direct de l'utilisatrice : cliquer sur "Accueil" rouvrait le
+panneau des couches, même quand il était fermé.
+
+Cause : `ouvrirVuePanneau(idVue)` (`js/panel.js`) - malgré son nom, qui
+ne dit que "changer la vue interne affichée" (couches normales /
+résultats / recherche foncière) - forçait aussi systématiquement le
+panneau OUVERT à chaque appel (`layers-panel-open` ajoutée
+inconditionnellement). `fermerVuesPanneau()` (appelée par "Accueil" via
+`fermerResultatsProximite`, censée juste "revenir à la vue normale en
+arrière-plan") passait par cette même fonction, donc rouvrait le
+panneau comme un effet de bord non voulu - même s'il avait été
+explicitement fermé juste avant.
+
+Corrigé en séparant les deux responsabilités que cette fonction
+mélangeait : **`basculerVuePanneau(idVue)`** (renommée) change
+désormais SEULEMENT la vue interne, sans jamais toucher à l'état
+ouvert/fermé du panneau. Les deux vrais appelants qui veulent
+réellement OUVRIR le panneau (`ouvrirRecherche` dans `js/recherche.js`,
+`ouvrirVueResultats` dans `js/proximite.js`) appellent maintenant
+`togglerPanneauCouches(true)` explicitement juste après - `fermerVuesPanneau`
+(donc "Accueil"), elle, ne l'appelle plus du tout : le panneau reste
+dans l'état où l'utilisatrice l'avait laissé.
+
+Testé (Playwright, viewport mobile 390×800) : scénario reproduit
+(panneau fermé, vue "résultats" restée affichée) - après
+`fermerVuesPanneau()`, le panneau reste bien fermé (`layers-panel-open`
+absente) et la vue interne revient bien à la normale ; à l'inverse,
+`ouvrirVueResultats` confirmé toujours capable d'ouvrir réellement le
+panneau quand c'est lui-même qui le demande.
+
 ## Ce qui reste à faire
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.

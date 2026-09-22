@@ -451,13 +451,19 @@ a.commune-badge-vigieau:hover { text-decoration: underline; }
 .rf-bouton-secondaire:disabled { color: #C7CCD4; border-color: #EDEBE6; cursor: not-allowed; }
 
 /* ---------- ÉCRAN D'ACCUEIL ---------- */
+/* align-items/justify-content: safe center (voir .modal plus bas pour
+   le détail du piège CSS corrigé) : retour direct de l'utilisatrice,
+   le haut de l'écran d'accueil restait inaccessible sur mobile quand
+   son contenu dépassait la hauteur de l'écran (logo, thématiques,
+   recherche de parcelle...) - "overflow-y:auto" seul ne suffisait pas
+   tant que le centrage piégeait la partie qui dépassait par le haut. */
 #hero {
     position: absolute;
     inset: 0;
     background: linear-gradient(180deg, rgba(233,241,250,0.97), rgba(250,250,248,0.97));
     display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: safe center;
+    justify-content: safe center;
     z-index: 500;
     transition: opacity 0.35s ease;
     overflow-y: auto;
@@ -698,9 +704,21 @@ a.commune-badge-vigieau:hover { text-decoration: underline; }
 .popup-fiche-itineraire a:hover { border-color: var(--primaire); color: var(--primaire); }
 .popup-fiche-itineraire a i { font-size: 12px; }
 
-.modal { position: fixed; inset: 0; background: rgba(15,20,18,0.45); display: none; align-items: center; justify-content: center; z-index: 2000; }
+/* align-items/justify-content: SAFE center (pas juste "center") et
+   overflow-y: auto : retour direct de l'utilisatrice, le haut de la
+   modale (bouton fermer, logo) restait inaccessible sur mobile quand
+   le contenu (formulaire de contact inclus) dépassait la hauteur de
+   l'écran - "center" seul centre le contenu même s'il déborde des deux
+   côtés à parts égales, et rien ne permettait de faire défiler vers le
+   haut pour rattraper le débordement du dessus (piège CSS connu :
+   centrage + dépassement + aucun moyen d'atteindre la partie qui
+   dépasse "avant" le centre). "safe" indique au navigateur de revenir
+   à un alignement en haut plutôt que de centrer, dès que centrer
+   rendrait une partie du contenu inatteignable - mêmes correctifs sur
+   #hero (accueil), touché par exactement le même piège. */
+.modal { position: fixed; inset: 0; background: rgba(15,20,18,0.45); display: none; align-items: safe center; justify-content: safe center; overflow-y: auto; z-index: 2000; }
 .modal-open { display: flex; }
-.modal-content { background: #fff; border-radius: 16px; padding: 28px; max-width: 420px; width: 90%; position: relative; text-align: center; }
+.modal-content { background: #fff; border-radius: 16px; padding: 28px; max-width: 420px; width: 90%; position: relative; text-align: center; margin: 20px auto; }
 .modal-content h2 { font-family: var(--font-titre); color: var(--foret); }
 .about-source { font-size: 11.5px; color: var(--ardoise); }
 .info-close { position: absolute; top: 10px; right: 14px; background: none; border: none; font-size: 20px; color: var(--ardoise); }
