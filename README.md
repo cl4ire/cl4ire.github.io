@@ -2772,29 +2772,22 @@ appelé sur le résultat filtré.
   résultat en GeoJSON, puis repasser le filtrage point-dans-polygone sur
   `couches/epci.geojson` avant d'écraser les fichiers `couches/**/*.geojson`
   concernés.
-- **Couche `catnat` (historique des catastrophes naturelles) : À VÉRIFIER
-  EN CONDITIONS RÉELLES**, voir la section dédiée plus haut — la forme
-  exacte de la réponse de l'API Géorisques (CATNAT) n'a pas pu être
-  confirmée pendant le développement (accès réseau restreint). Cocher la
-  couche et vérifier qu'au moins une commune du territoire affiche un
-  historique non vide ; si toutes les communes affichent "Aucun arrêté
-  recensé" de façon suspecte, inspecter la réponse réseau réelle et
-  ajuster `elementsReponseCatnat`/`libelleEvenementCatnat`/
-  `dateEvenementCatnat` dans `js/config.js`/`js/popup.js`.
-- **Couche `pointsRemarquablesBerce` : coordonnées du Chêne Boppe, de la
-  Fontaine de la Coudre et de la Source de l'Hermitière à ajouter** dans
-  `couches/tourisme/pointsRemarquablesBerce_manuels.geojson` (voir la
-  section dédiée plus haut) dès qu'elles sont connues — fichier
-  actuellement vide, ces trois sites n'apparaîtront sur la carte qu'une
-  fois leurs coordonnées renseignées (ou trouvées sur OpenStreetMap).
-- **Couche "bâtiments" (`URL_BATIMENTS_EPCI`, détection du bâti pour "à
-  proximité") : À VÉRIFIER EN CONDITIONS RÉELLES**, voir la section
-  dédiée plus haut — nom de flux et schéma de géométrie non confirmés
-  (accès réseau restreint pendant le développement). Vérifier qu'une
-  parcelle agricole connue pour avoir une maison affiche bien "à
-  proximité" dans sa fiche ; si ce n'est jamais le cas, inspecter la
-  réponse réseau réelle de `URL_BATIMENTS_EPCI` et ajuster
-  `pointBatiment`/le nom du flux dans `js/recherche.js` en conséquence.
+- ~~Couche `catnat` (historique des catastrophes naturelles) : à
+  vérifier en conditions réelles~~ **Vérifié par l'utilisatrice : OK.**
+  La forme de la réponse de l'API Géorisques (CATNAT), non confirmable
+  pendant le développement (accès réseau restreint), fonctionne
+  correctement en conditions réelles.
+- ~~Couche `pointsRemarquablesBerce` : coordonnées du Chêne Boppe, de la
+  Fontaine de la Coudre et de la Source de l'Hermitière~~ **Confirmé par
+  l'utilisatrice : pas la peine d'insister**, `couches/tourisme/
+  pointsRemarquablesBerce_manuels.geojson` reste vide pour l'instant -
+  ces trois sites n'apparaîtront sur la carte que si leurs coordonnées
+  sont un jour connues (ou trouvées sur OpenStreetMap), sans urgence.
+- ~~Couche "bâtiments" (`URL_BATIMENTS_EPCI`, détection du bâti pour "à
+  proximité") : à vérifier en conditions réelles~~ **Vérifié par
+  l'utilisatrice : OK.** Le nom de flux et le schéma de géométrie, non
+  confirmables pendant le développement (accès réseau restreint),
+  fonctionnent correctement en conditions réelles.
 
 ## Déploiement
 
