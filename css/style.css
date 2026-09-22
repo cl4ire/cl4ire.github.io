@@ -70,7 +70,7 @@ button { font-family: inherit; cursor: pointer; }
     font-size: 13px;
     color: var(--ardoise);
 }
-#about-button { padding: 8px 16px; }
+#about-button { padding: 8px 16px; display: inline-flex; align-items: center; gap: 6px; }
 #recherche-button {
     border: none;
     background: var(--primaire);
@@ -513,8 +513,18 @@ button { font-family: inherit; cursor: pointer; }
 .contact-statut-erreur { color: #C94338; font-weight: 700; }
 
 @media (max-width: 780px) {
-    #recherche-button span { display: none; }
-    #recherche-button { padding: 8px 11px; }
+    /* Icône seule pour ces deux-là aussi (comme Accueil/Couches/
+       Actualités, déjà en 38x38 fixe) plutôt qu'un texte qui peut
+       passer sur deux lignes selon la largeur exacte de l'écran -
+       constaté en conditions réelles : "À propos" repassait de 30px à
+       42px de haut entre 390px et 375px de large rien qu'à cause du
+       retour à la ligne, cassant l'alignement de toute la rangée de
+       boutons. Taille fixe = plus aucune variation possible. */
+    #recherche-button span, #about-button span { display: none; }
+    #recherche-button, #about-button {
+        width: 38px; height: 38px; padding: 0;
+        display: inline-flex; align-items: center; justify-content: center;
+    }
     /* Hors champ par défaut (pas "display:none" comme sur PC) : c'est ce
        qui permet l'animation de glissement au lieu d'une simple
        apparition/disparition brute - layers-panel-hidden (PC) et
@@ -552,10 +562,18 @@ button { font-family: inherit; cursor: pointer; }
    faire réapparaître). Resserré ici plutôt que de le cacher/l'empiler
    ailleurs : tout doit rester accessible sans scroll horizontal ni zoom. */
 @media (max-width: 420px) {
-    #topbar { padding: 0 10px; gap: 8px; }
-    #topbar-actions { gap: 6px; }
+    #topbar { padding: 0 8px; gap: 6px; }
+    #topbar-actions { gap: 4px; }
     #brand-subtitle { display: none; }
     .brand-logo { height: 26px; }
     #brand-title { font-size: 15px; }
-    #about-button { padding: 8px 9px; font-size: 11px; }
+    /* Cinq boutons désormais tous à taille fixe (38px, voir la règle à
+       780px) : à 320px de large (iPhone SE, bas de gamme Android), leur
+       simple somme + les espacements dépassait encore la largeur de
+       l'écran de ~27px même une fois la barre de recherche réduite à
+       rien - resserré encore ici plutôt que de laisser "À propos"
+       hors champ. Constaté en mesurant, pas une simple supposition. */
+    #home-button, #menu-button, #recherche-button, #actu-button, #about-button {
+        width: 34px; height: 34px;
+    }
 }

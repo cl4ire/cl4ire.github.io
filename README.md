@@ -1572,6 +1572,39 @@ petit écran (icône seule, `@media max-width: 780px`), l'infobulle
 comble ce manque de clarté sans reprendre la place qu'occuperait un
 libellé toujours visible.
 
+### Boutons mal alignés sur mobile (+ débordement à 320px)
+
+Retour direct de l'utilisatrice ("les boutons en haut sont pas très
+bien alignés sur mobile"). En mesurant les cinq boutons de
+`#topbar-actions` sur plusieurs largeurs réelles (320 à 414px), deux
+causes distinctes :
+- **Accueil/Couches/Actualités** sont en icône seule à taille fixe
+  (38×38, `border-radius:999px`/`10px`) depuis le début, mais
+  **Recherche foncière** et **À propos** n'avaient jamais reçu le même
+  traitement : tailles en `padding` variable selon leur contenu texte
+  (29px de haut pour Recherche foncière, 30 à **42px** pour "À propos"
+  selon que son texte tienne sur une ou deux lignes à telle largeur
+  précise) - cinq boutons côte à côte à des hauteurs différentes, d'où
+  le désalignement visuel.
+- Corrigé en alignant `#recherche-button`/`#about-button` sur le même
+  gabarit icône-seule 38×38 que les trois autres dans
+  `@media (max-width: 780px)` (`#about-button` a gagné une icône
+  `fa-circle-info`, comme Recherche foncière avait déjà `fa-sliders` -
+  texte masqué, infobulle au survol à la place). Un texte de taille fixe
+  ne peut plus jamais passer à la ligne : plus aucune variation de
+  hauteur possible, quelle que soit la largeur exacte de l'écran.
+
+**Débordement découvert en testant la correction** (pas présent avant,
+mais pas non plus créé par elle : déjà là, juste plus visible une fois
+les boutons uniformisés) : à 320px de large (iPhone SE, bas de gamme
+Android), même une fois la barre de recherche réduite à zéro, la simple
+somme des cinq boutons + leurs espacements dépassait encore la largeur
+de l'écran de 27px - "À propos" se retrouvait hors champ, nécessitant
+un défilement horizontal pour l'atteindre. Resserré dans
+`@media (max-width: 420px)` (boutons à 34×34 au lieu de 38×38,
+espacements réduits) : plus aucun débordement horizontal vérifié de
+320px à 1920px.
+
 ## Visite guidée (première visite)
 
 Suite de bulles qui met en avant quelques éléments clés (recherche,
