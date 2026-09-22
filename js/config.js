@@ -611,15 +611,26 @@ function styleCatnat(feature) {
    pylône, pas forcément l'opérateur qui l'exploite) et les antennes
    sans "operator" renseigné (1/3 du fichier) tombent dans "autres". */
 const OPERATEURS_ANTENNES = [
-    { motCle: "orange", color: "#FF7900" },
-    { motCle: "bouygues", color: PALETTE.riviere },
-    { motCle: "sfr", color: "#D6193C" },
-    { motCle: "free", color: PALETTE.ardoise }
+    { id: "orange", label: "Orange", icon: "fa-solid fa-tower-cell", motCle: "orange", color: "#FF7900" },
+    { id: "bouygues", label: "Bouygues Telecom", icon: "fa-solid fa-tower-cell", motCle: "bouygues", color: PALETTE.riviere },
+    { id: "sfr", label: "SFR", icon: "fa-solid fa-tower-cell", motCle: "sfr", color: "#D6193C" },
+    { id: "free", label: "Free", icon: "fa-solid fa-tower-cell", motCle: "free", color: PALETTE.ardoise }
 ];
-function iconeAntenne(feature) {
+const OPERATEUR_ANTENNE_DEFAUT = { id: "autre", label: "Autre / non renseigné", icon: "fa-solid fa-tower-cell", color: "#B8C0BD" };
+
+function operateurAntenne(feature) {
     const operateur = (feature.properties.operator || "").toLowerCase();
-    const trouve = OPERATEURS_ANTENNES.find(o => operateur.includes(o.motCle));
-    return { icon: "fa-solid fa-tower-cell", color: trouve ? trouve.color : "#B8C0BD" };
+    return OPERATEURS_ANTENNES.find(o => operateur.includes(o.motCle)) || OPERATEUR_ANTENNE_DEFAUT;
+}
+/* Point d'extension utilisé par icons.js/layers.js : couleur du marqueur. */
+function iconeAntenne(feature) {
+    const op = operateurAntenne(feature);
+    return { icon: op.icon, color: op.color };
+}
+/* Point d'extension utilisé par layers.js pour la légende du panneau
+   (voir TYPES_COMMERCES/categoriePourFeature, même mécanisme). */
+function categorieAntenne(feature) {
+    return operateurAntenne(feature).id;
 }
 
 /* =========================================================
@@ -779,6 +790,7 @@ const LAYERS = [
         file: "couches/services/antennes.geojson",
         type: "point", icon: "fa-solid fa-tower-cell", color: PALETTE.ardoise,
         iconePourFeature: iconeAntenne,
+        legend: OPERATEURS_ANTENNES, legendDefaut: OPERATEUR_ANTENNE_DEFAUT, categoriser: categorieAntenne,
         sansPopup: true,
         lazy: false, searchable: true, cluster: true,
         titleFields: ["operator", "ref"],

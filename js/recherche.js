@@ -577,7 +577,7 @@ function construireFormulaire() {
             </div>
 
             <button type="button" id="rf-ici" class="rf-bouton-secondaire" hidden>Rechercher ici</button>
-            <div id="rf-statut" class="rf-statut">Chargement des données...</div>
+            <div id="rf-statut" class="rf-statut rf-statut-chargement"><i class="fa-solid fa-circle-notch fa-spin"></i>Chargement des données foncières...</div>
 
             <div class="rf-actions">
                 <button type="submit" id="rf-appliquer" class="rf-bouton-principal" disabled>Afficher les parcelles correspondantes</button>
@@ -597,6 +597,7 @@ function mettreAJourStatut() {
     const bouton = document.getElementById("rf-appliquer");
     if (!statut || !resultatsEnrichis) return;
 
+    statut.classList.remove("rf-statut-chargement");
     const n = compterResultats();
     if (n === 0) {
         statut.textContent = "Aucune parcelle ne correspond à ces critères.";
@@ -666,6 +667,7 @@ function chargerEtEnrichirVueActuelle(map) {
     if (bouton) bouton.hidden = true;
 
     if (map.getZoom() < zoomMin) {
+        statut.classList.remove("rf-statut-chargement");
         statut.textContent = `Zoomez sur une zone du territoire (niveau ${zoomMin} ou plus) pour lancer une recherche : elle ne porte que sur les parcelles affichées à l'écran.`;
         document.getElementById("rf-appliquer").disabled = true;
         return Promise.resolve(false);
