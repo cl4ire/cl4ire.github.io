@@ -100,17 +100,24 @@
             <div id="recherche-contenu"><!-- Généré par recherche.js --></div>
         </div>
 
-        <div id="commune-view" hidden>
-            <button type="button" id="commune-back" class="panel-back">
-                <i class="fa-solid fa-arrow-left"></i><span>Toutes les couches</span>
-            </button>
-            <div class="recherche-titre" id="commune-titre"></div>
-            <div id="commune-contenu"><!-- Généré par communes.js --></div>
-        </div>
         <div id="layers-resize-handle" title="Faire glisser pour redimensionner le panneau"></div>
     </aside>
 
     <div id="map"></div>
+
+    <!-- DEBUT PAGE COMMUNE (dashboard plein écran) -->
+    <div id="commune-page" hidden>
+        <div id="commune-page-header">
+            <button type="button" id="commune-back" class="commune-page-back">
+                <i class="fa-solid fa-arrow-left"></i><span>Retour à la carte</span>
+            </button>
+            <div id="commune-titre"></div>
+        </div>
+        <div id="commune-page-corps">
+            <div id="commune-contenu"><!-- Généré par communes.js --></div>
+        </div>
+    </div>
+    <!-- FIN PAGE COMMUNE -->
 
     <!-- DEBUT ÉCRAN D'ACCUEIL -->
     <div id="hero">

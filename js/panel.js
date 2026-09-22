@@ -176,8 +176,10 @@ function construireLegende(conf, map) {
    couches normal, résultats "près de chez moi", recherche foncière) :
    ces deux fonctions centralisent le passage de l'une à l'autre pour
    que proximite.js et recherche.js restent cohérents entre eux.
-   ========================================================= */
-const VUES_PANNEAU = ["layers-normal-view", "results-view", "recherche-view", "commune-view"];
+   Le dashboard commune n'en fait plus partie (voir #commune-page dans
+   index.html) : passé en page plein écran indépendante, gérée par
+   ouvrirDashboardCommune/fermerVueCommune (js/communes.js). */
+const VUES_PANNEAU = ["layers-normal-view", "results-view", "recherche-view"];
 
 function ouvrirVuePanneau(idVue) {
     /* Les deux classes ensemble, pas seulement "layers-panel-open" : si le

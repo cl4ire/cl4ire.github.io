@@ -1,8 +1,11 @@
 /* =========================================================
    GÉOBERCÉ — DASHBOARD PAR COMMUNE
-   Vue du panneau dédiée à une commune du territoire : mairie(s)
+   Page plein écran dédiée à une commune du territoire (#commune-page,
+   index.html - retour direct de l'utilisatrice : trop à l'étroit dans
+   la colonne du panneau des couches une fois enrichi) : mairie(s)
    (couches/services/mairies.geojson, déjà en local), chiffres clés
-   (couche demographie déjà construite) et actualités Illiwap de la
+   (couche demographie déjà construite), décompte d'entités locales,
+   qualité de l'eau potable (Hub'Eau) et actualités Illiwap de la
    commune (iframe chargée à la demande, jamais 24 d'avance).
    ========================================================= */
 
@@ -208,7 +211,7 @@ function ouvrirDashboardCommune(map, codeInsee) {
 
     document.getElementById("commune-titre").innerHTML = `<i class="fa-solid fa-signs-post"></i> ${echapperHtml(nom)}`;
     document.getElementById("commune-contenu").innerHTML = `<div class="popup-fiche-vide" style="padding:16px 18px;">Chargement...</div>`;
-    ouvrirVuePanneau("commune-view");
+    document.getElementById("commune-page").hidden = false;
 
     /* Hub'Eau (qualité de l'eau) démarré tout de suite, en parallèle du
        Promise.all ci-dessous, pour ne pas perdre de temps - mais
@@ -279,6 +282,6 @@ function toggleActuDropdown(forcerOuvert) {
 }
 
 function fermerVueCommune() {
+    document.getElementById("commune-page").hidden = true;
     document.getElementById("commune-contenu").innerHTML = "";
-    fermerVuesPanneau();
 }

@@ -249,6 +249,11 @@ document.getElementById("contact-envoyer").addEventListener("click", () => {
 
 document.getElementById("home-button").addEventListener("click", () => {
     fermerResultatsProximite();
+    /* La page commune (#commune-page) est au-dessus de l'accueil en
+       z-index (voir style.css) : sans la refermer ici, "Accueil"
+       resterait invisible derrière elle plutôt que de ramener
+       effectivement à l'écran d'accueil. */
+    fermerVueCommune();
     ouvrirAccueil();
 });
 
