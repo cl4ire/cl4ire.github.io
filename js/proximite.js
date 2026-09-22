@@ -36,7 +36,8 @@ function construireRaccourcis(map) {
 
 /* Affiche la vue "résultats" du panneau de couches (masque l'arbre normal) */
 function ouvrirVueResultats(titre) {
-    ouvrirVuePanneau("results-view");
+    basculerVuePanneau("results-view");
+    togglerPanneauCouches(true);
     document.getElementById("results-title").textContent = titre;
 }
 

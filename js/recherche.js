@@ -636,7 +636,8 @@ let ecouteurDeplacementRechercheBranche = false;
 
 function ouvrirRecherche(map, codeInseeCible) {
     fermerAccueil();
-    ouvrirVuePanneau("recherche-view");
+    basculerVuePanneau("recherche-view");
+    togglerPanneauCouches(true);
     construireFormulaire();
 
     const form = document.getElementById("recherche-form");

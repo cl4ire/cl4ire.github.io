@@ -2937,6 +2937,38 @@ Poste, 1 Amazon Locker - aucun classé "Autre opérateur" par erreur) ;
 config `lockers` vérifiée avec légende et fonction de catégorisation
 branchées, chaque entrée de légende porte bien une icône.
 
+## "Accueil" rouvrait le panneau des couches sur mobile
+
+Retour direct de l'utilisatrice : cliquer sur "Accueil" rouvrait le
+panneau des couches, même quand il était fermé.
+
+Cause : `ouvrirVuePanneau(idVue)` (`js/panel.js`) - malgré son nom, qui
+ne dit que "changer la vue interne affichée" (couches normales /
+résultats / recherche foncière) - forçait aussi systématiquement le
+panneau OUVERT à chaque appel (`layers-panel-open` ajoutée
+inconditionnellement). `fermerVuesPanneau()` (appelée par "Accueil" via
+`fermerResultatsProximite`, censée juste "revenir à la vue normale en
+arrière-plan") passait par cette même fonction, donc rouvrait le
+panneau comme un effet de bord non voulu - même s'il avait été
+explicitement fermé juste avant.
+
+Corrigé en séparant les deux responsabilités que cette fonction
+mélangeait : **`basculerVuePanneau(idVue)`** (renommée) change
+désormais SEULEMENT la vue interne, sans jamais toucher à l'état
+ouvert/fermé du panneau. Les deux vrais appelants qui veulent
+réellement OUVRIR le panneau (`ouvrirRecherche` dans `js/recherche.js`,
+`ouvrirVueResultats` dans `js/proximite.js`) appellent maintenant
+`togglerPanneauCouches(true)` explicitement juste après - `fermerVuesPanneau`
+(donc "Accueil"), elle, ne l'appelle plus du tout : le panneau reste
+dans l'état où l'utilisatrice l'avait laissé.
+
+Testé (Playwright, viewport mobile 390×800) : scénario reproduit
+(panneau fermé, vue "résultats" restée affichée) - après
+`fermerVuesPanneau()`, le panneau reste bien fermé (`layers-panel-open`
+absente) et la vue interne revient bien à la normale ; à l'inverse,
+`ouvrirVueResultats` confirmé toujours capable d'ouvrir réellement le
+panneau quand c'est lui-même qui le demande.
+
 ## Ce qui reste à faire
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.
