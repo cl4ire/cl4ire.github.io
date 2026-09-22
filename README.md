@@ -1951,6 +1951,30 @@ conservées, une zone très éloignée (region parisienne/alpes) est
 exclue ; sans `bboxTerritoire` disponible, rien n'est filtré (repli de
 sécurité vérifié).
 
+**Mise à jour** : retour de l'utilisatrice, avec capture d'écran de la
+console - `net::ERR_TIMED_OUT` puis `TypeError: Failed to fetch` sur le
+flux Vigieau. Le filtrage territorial ci-dessus réduit le rendu, pas le
+téléchargement (voir plus haut) : le fichier national reste entier à
+récupérer avant de pouvoir le filtrer, et un objet S3 statique ne permet
+aucun filtre géographique côté serveur - plus exposé qu'un flux plus
+léger à un aléa réseau ponctuel qui fait dépasser le délai avant la fin
+du transfert.
+
+`fetchAvecReessai`/`fetchVigieau` (`js/config.js`, branché en
+`fetchPersonnalise` sur la couche `vigieau` à la place de `file` - même
+mécanisme que `fetchCatnat` pour l'historique des catastrophes
+naturelles) : jusqu'à 3 tentatives avant d'abandonner pour de bon,
+plutôt qu'un seul essai qui échoue au moindre aléa réseau transitoire.
+N'élimine pas le risque si le service est réellement indisponible ou le
+fichier durablement trop lent à charger (affiche alors le badge
+d'erreur normal du panneau), mais couvre le cas le plus courant d'un
+blocage ponctuel.
+
+Testé (fetch remplacé temporairement pour simuler des échecs) : réussit
+après 2 échecs suivis d'un succès (3 tentatives consommées), abandonne
+proprement après 3 échecs consécutifs (pas de boucle infinie), et ne
+fait qu'un seul appel quand tout se passe bien du premier coup.
+
 ## Popup Vigieau : "[object Object]" au lieu des horaires/restrictions
 
 Retour direct de l'utilisatrice, avec capture d'écran : la popup
