@@ -254,9 +254,19 @@ function lancerRechercheProximite(map, raccourci) {
                    candidats en réserve évite de se retrouver avec trop peu
                    de résultats après filtrage sur ces carburants-là. */
                 const limite = raccourci.layerIds.includes("carburants") ? 60 : 15;
+                /* Un commerce repéré comme définitivement fermé
+                   (COMMERCES_FERMES, js/config.js) reste sur la carte et
+                   dans la recherche texte (voir iconeCommerce/
+                   construirePopupCommerce) mais n'a rien à faire dans une
+                   recommandation "le plus proche" - proposer une adresse
+                   fermée irait à l'encontre du but de cette fonction. */
                 const resultats = window.indexRecherche
                     .filter(item => raccourci.layerIds.includes(item.layerId))
                     .filter(item => !raccourci.filtre || raccourci.filtre(item))
+                    .filter(item => {
+                        const props = item.layer && item.layer.feature && item.layer.feature.properties;
+                        return !(props && COMMERCES_FERMES[props.osm_id]);
+                    })
                     .map(item => ({ ...item, distance: origine.distanceTo(item.latlng) }))
                     .sort((a, b) => a.distance - b.distance)
                     .slice(0, limite);

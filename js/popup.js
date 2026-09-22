@@ -379,22 +379,29 @@ function construireElus(texte) {
 
 function construirePopupCommerce(props) {
     const cat = categorieCommerce(props.type);
+    const fermeture = COMMERCES_FERMES[props.osm_id];
+    const couleur = fermeture ? "#B8C0BD" : cat.color;
     const nom = premierChampValide(props, ["name", "brand"]) || cat.label;
     const adresse = [props.address, props.com_nom].filter(Boolean).join(" · ");
-    const horaires = parserHorairesOsm(props.opening_hours);
-    const contacts = construireContacts(props);
+    /* Horaires/contact masqués si fermé : les afficher quand même serait
+       trompeur (un numéro qui ne répondra plus, des horaires qui ne
+       s'appliquent plus) - remplacés par la mention de fermeture. */
+    const horaires = fermeture ? null : parserHorairesOsm(props.opening_hours);
+    const contacts = fermeture ? [] : construireContacts(props);
     const lignesHoraires = construireLignesHoraires(horaires);
 
     return `<div class="popup-fiche">
         <div class="popup-fiche-entete">
-            <div class="popup-fiche-icon" style="background:${cat.color}"><i class="${cat.icon}"></i></div>
+            <div class="popup-fiche-icon" style="background:${couleur}"><i class="${cat.icon}"></i></div>
             <div class="popup-fiche-titre-wrap">
-                <div class="popup-fiche-tag" style="color:${cat.color}">${echapperHtml(cat.label)}</div>
+                <div class="popup-fiche-tag" style="color:${couleur}">${echapperHtml(cat.label)}</div>
                 <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
                 ${adresse ? `<div class="popup-fiche-adresse">${echapperHtml(adresse)}</div>` : ""}
             </div>
-            ${construireBadgeOuvert(horaires)}
+            ${fermeture ? `<span class="popup-fiche-badge ferme-def"><span></span>Fermé définitivement</span>` : construireBadgeOuvert(horaires)}
         </div>
+
+        ${fermeture ? `<div class="popup-fiche-section"><div class="popup-fiche-precision">Repéré comme fermé${fermeture.depuis ? ` depuis ${echapperHtml(fermeture.depuis)}` : ""}${fermeture.note ? ` — ${echapperHtml(fermeture.note)}` : ""}. Le point reste affiché au cas où un nouveau commerce reprendrait le local.</div></div>` : ""}
 
         ${contacts.length ? `<div class="popup-fiche-section"><div class="popup-fiche-section-titre">Contact</div><div class="popup-fiche-contacts">${contacts.join("")}</div></div>` : ""}
 
@@ -1050,6 +1057,33 @@ function construirePopupQualiteEau(props) {
             ${resultat.date_prelevement ? `<div class="popup-fiche-ligne"><i class="fa-regular fa-calendar"></i> Dernier contrôle le ${formaterDateSeule(resultat.date_prelevement)}</div>` : ""}
         </div>
         <div class="popup-fiche-section"><div class="popup-fiche-precision">Source : Hub'Eau (ministère de la Santé), dernier prélèvement analysé.</div></div>
+    </div>`;
+}
+
+/* nom !== type : la ligne "Ruisseau"/"Rivière"... n'est ajoutée que
+   quand le titre affiché est un vrai nom propre (ex. "Le Rhonne") -
+   sinon ("Ruisseau" utilisé comme titre faute de nom OSM) elle
+   répéterait exactement le titre juste au-dessus, pour rien. */
+function construirePopupCoursEau(props) {
+    const type = LABELS_COURS_EAU[props.waterway] || "Cours d'eau";
+    const nom = premierChampValide(props, ["name"]) || type;
+    const couleur = PALETTE.riviere;
+
+    const lignes = [
+        nom !== type ? `<div class="popup-fiche-ligne"><i class="fa-solid fa-water"></i> ${type}</div>` : null,
+        props.intermittent === "yes" ? `<div class="popup-fiche-ligne"><i class="fa-solid fa-droplet-slash"></i> Intermittent : peut s'assécher en été</div>` : null,
+        props.tunnel === "culvert" ? `<div class="popup-fiche-precision">Passe en partie sous terre (busé) sur ce tronçon.</div>` : null
+    ].filter(Boolean);
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${couleur}"><i class="fa-solid fa-water"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${couleur}">${type}</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+            </div>
+        </div>
+        ${lignes.length ? `<div class="popup-fiche-section">${lignes.join("")}</div>` : ""}
     </div>`;
 }
 
@@ -2089,6 +2123,7 @@ function construirePopup(feature, layerConf) {
     else if (layerConf.id === "prixImmobilier") html = construirePopupPrixCommune(props);
     else if (layerConf.id === "demographie") html = construirePopupDemographie(props);
     else if (layerConf.id === "qualiteEau") html = construirePopupQualiteEau(props);
+    else if (layerConf.id === "coursEau") html = construirePopupCoursEau(props);
     else if (layerConf.id === "zonagePLUi") html = construirePopupZonePLUi(props);
     else if (layerConf.id === "rga") html = construirePopupRga(props);
     else if (layerConf.id === "vigieau") html = construirePopupVigieau(props);

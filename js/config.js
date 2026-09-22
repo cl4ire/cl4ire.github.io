@@ -206,6 +206,23 @@ const TYPES_COMMERCES = [
 ];
 const TYPE_COMMERCE_DEFAUT = { id: "autre", label: "Autres commerces", icon: "fa-solid fa-store", color: PALETTE.ardoise };
 
+/* Retour direct de l'utilisatrice : un commerce définitivement fermé ne
+   doit pas disparaître de la carte (un repreneur peut toujours arriver un
+   jour) - juste être signalé comme tel plutôt que supprimé. Liste tenue à
+   la main, par osm_id (déjà présent dans chaque fiche de
+   couches/commerces/commerces.geojson, stable d'un export à l'autre)
+   plutôt qu'un fichier séparé à fetcher : même convention que les autres
+   petites listes manuelles de ce fichier (COMMUNES_TERRITOIRE,
+   TYPES_COMMERCES...), pas de latence réseau/course avec le rendu des
+   marqueurs à gérer pour une poignée d'entrées. Pour signaler une
+   fermeture : ajouter une entrée ici avec l'osm_id du commerce (visible
+   dans les propriétés de sa fiche popup) ; pour un rétablissement,
+   retirer l'entrée. */
+const COMMERCES_FERMES = {
+    "way/166282513": { note: "" },   // Le Bistrot Chouette (Jupilles)
+    "node/13129240499": { note: "" } // Le Fournil de Jupilles (Jupilles)
+};
+
 function categorieCommerce(typeBrut) {
     if (!typeBrut) return TYPE_COMMERCE_DEFAUT;
     const valeurs = String(typeBrut).split(/[;,/]/).map(v => v.trim().toLowerCase());
@@ -214,9 +231,15 @@ function categorieCommerce(typeBrut) {
 
 /* Point d'extension utilisé par icons.js/layers.js : renvoie l'icône et
    la couleur à utiliser pour CE commerce précis plutôt que celles, fixes,
-   de la couche "commerces". */
+   de la couche "commerces". Gris neutre (ni la couleur de la catégorie, ni
+   un rouge d'alerte) pour un commerce fermé : reste identifiable par son
+   icône (toujours une boulangerie sur la carte) mais visuellement en
+   retrait, sans donner l'impression d'un problème/danger. */
 function iconeCommerce(feature) {
     const cat = categorieCommerce((feature.properties || {}).type);
+    if (COMMERCES_FERMES[(feature.properties || {}).osm_id]) {
+        return { icon: cat.icon, color: "#B8C0BD" };
+    }
     return { icon: cat.icon, color: cat.color };
 }
 
@@ -277,6 +300,40 @@ function stylePrixMutation(feature) {
     const ventes = ventesDepuisMutation(feature);
     const prixM2 = ventes[0] ? ventes[0].prixM2 : null;
     return { color: "#fff", weight: 1, fillColor: couleurPrix(prixM2), fillOpacity: 0.6 };
+}
+
+/* =========================================================
+   COURS D'EAU (OpenStreetMap, extrait statique)
+   Demande directe de l'utilisatrice, envisagé un temps via Hub'Eau -
+   mais Hub'Eau ne fournit pas le tracé du réseau hydrographique
+   (uniquement des stations de mesure ponctuelles), le tracé vient donc
+   d'OSM. Même méthode que les autres couches OSM du site (voir la
+   section "Couches converties en fichiers statiques" du README) :
+   export overpass-turbo.eu (`way["waterway"~"^(river|stream|canal|
+   drain|ditch)$"]`) sur le rectangle englobant le territoire, filtré
+   ensuite par un vrai test point-dans-polygone contre couches/epci.geojson
+   (1431 tronçons dans l'export brut, 401 réellement dans le territoire).
+   Une ligne est gardée dès qu'AU MOINS UN de ses points tombe dans le
+   polygone plutôt que de découper le tronçon pile à la frontière : un
+   cours d'eau qui sort du territoire sur quelques mètres reste lisible
+   d'un seul tenant plutôt que tronqué net. */
+const LABELS_COURS_EAU = {
+    river: "Rivière", stream: "Ruisseau", canal: "Canal",
+    drain: "Fossé de drainage", ditch: "Fossé"
+};
+/* Épaisseur dégressive par importance (rivière > canal > ruisseau >
+   fossé), plutôt qu'un trait uniforme qui noierait les vraies rivières
+   (Le Loir...) au milieu des centaines de petits fossés agricoles.
+   Tronçons intermittents (à sec une partie de l'année, tag OSM
+   "intermittent=yes") en trait plus clair et pointillé, même code
+   visuel que la ligne pointillée de l'EPCI (js/map.js) - distingue d'un
+   coup d'œil un vrai ruisseau permanent d'un fossé qui ne coule qu'en
+   hiver. */
+function styleCoursEau(feature) {
+    const type = feature.properties.waterway;
+    const weight = type === "river" ? 3 : type === "canal" ? 2.5 : type === "stream" ? 1.5 : 1;
+    const intermittent = feature.properties.intermittent === "yes";
+    return { color: PALETTE.riviere, weight, opacity: intermittent ? 0.55 : 0.85, dashArray: intermittent ? "4 3" : null };
 }
 
 /* =========================================================
@@ -1114,6 +1171,16 @@ const LAYERS = [
         type: "point", icon: "fa-solid fa-tree", color: PALETTE.foret,
         iconePourFeature: iconePointRemarquableBerce,
         lazy: false, searchable: true, cluster: true,
+        titleFields: ["name"],
+        subtitleFields: []
+    },
+    {
+        id: "coursEau", group: "tourisme", label: "Cours d'eau (rivières, ruisseaux)",
+        /* Voir plus haut dans ce fichier (LABELS_COURS_EAU/styleCoursEau)
+           pour le détail de l'extraction et le choix du style. */
+        file: "couches/tourisme/cours_eau.geojson", type: "line",
+        color: PALETTE.riviere, styleFn: styleCoursEau,
+        lazy: true, searchable: true, cluster: false,
         titleFields: ["name"],
         subtitleFields: []
     },

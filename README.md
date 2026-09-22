@@ -2395,6 +2395,89 @@ utilisant la même construction générique que les autres choroplèthes
 déjà en production (démographie, prix immobilier, CATNAT), aucune
 raison de fonctionner différemment en conditions réelles.
 
+## Cours d'eau (rivières, ruisseaux)
+
+Demande directe de l'utilisatrice, envisagée un temps via Hub'Eau -
+mais Hub'Eau ne fournit que des stations de mesure ponctuelles, pas le
+tracé du réseau hydrographique lui-même. Le tracé vient donc
+d'OpenStreetMap, avec la même méthode que les autres couches OSM du
+site (voir "Couches converties en fichiers statiques" plus haut) :
+export overpass-turbo.eu sur le rectangle englobant le territoire
+(`way["waterway"~"^(river|stream|canal|drain|ditch)$"]`), envoyé par
+l'utilisatrice, puis filtré côté script par un vrai test
+point-dans-polygone contre `couches/epci.geojson` - 1431 tronçons dans
+l'export brut, 401 réellement dans le territoire une fois le
+débordement sur les communes limitrophes écarté (couches/tourisme/cours_eau.geojson).
+Une ligne est gardée dès qu'au moins un de ses points tombe dans le
+polygone plutôt que d'être découpée pile à la frontière : un cours
+d'eau qui sort du territoire sur quelques mètres reste lisible d'un
+seul tenant.
+
+Nouvelle couche `coursEau` (`js/config.js`, groupe "tourisme" - à côté
+des points remarquables de la forêt de Bercé) :
+
+- **`styleCoursEau`** : épaisseur dégressive par type (rivière 3px,
+  canal 2,5px, ruisseau 1,5px, fossé/drain 1px) plutôt qu'un trait
+  uniforme qui aurait noyé les vraies rivières (Le Loir, la Veuve...)
+  au milieu des centaines de petits fossés agricoles. Tronçons
+  intermittents (`intermittent=yes`, peuvent s'assécher en été) en
+  trait plus clair et pointillé - même code visuel que le contour EPCI
+  déjà en pointillés (`js/map.js`).
+- **`construirePopupCoursEau`** (`js/popup.js`) : nom si disponible
+  (172 tronçons sur 401 sont nommés), type (rivière/ruisseau/canal/
+  fossé), alerte "intermittent" et mention des passages busés/souterrains
+  (`tunnel=culvert`, 99 tronçons - explique une ligne qui semble
+  s'interrompre sans raison sur la carte).
+
+Testé (Playwright : fichier chargé directement, `L.geoJSON`/rendu
+Leaflet réel non vérifiable dans ce sandbox comme les autres couches -
+voir plus haut) : 401 tronçons confirmés (284 ruisseaux, 54 rivières,
+51 fossés, 11 fossés de drainage, 1 canal), styles vérifiés pour les
+trois cas (rivière épaisse, tronçon intermittent en pointillé clair,
+fossé fin), popups vérifiées (nom + type pour une rivière nommée,
+libellé générique "Ruisseau" pour un tronçon sans nom, alerte
+"peut s'assécher en été" pour un tronçon intermittent).
+
+## Commerces fermés définitivement (sans supprimer le point)
+
+Retour direct de l'utilisatrice : un commerce qui ferme ne doit pas
+disparaître de la carte (le point reste pertinent si un repreneur
+arrive un jour) - juste être signalé comme fermé plutôt que supprimé
+de `couches/commerces/commerces.geojson`.
+
+**`COMMERCES_FERMES`** (`js/config.js`) : petite liste manuelle tenue
+directement en JS, par `osm_id` (déjà présent dans chaque fiche,
+stable d'un export à l'autre) - même convention que les autres petites
+listes manuelles de ce fichier (`COMMUNES_TERRITOIRE`,
+`TYPES_COMMERCES`...), pas de fichier séparé à fetcher pour une
+poignée d'entrées éditées à la main au fil des signalements. Pour
+signaler une fermeture : ajouter une entrée avec l'`osm_id` du
+commerce (visible dans les propriétés de sa fiche) ; pour un
+rétablissement (repreneur), retirer l'entrée.
+
+Effets d'une entrée dans `COMMERCES_FERMES` :
+
+- **`iconeCommerce`** (`js/config.js`) : icône inchangée (toujours
+  identifiable comme boulangerie/restaurant/...) mais en gris neutre
+  plutôt que la couleur de sa catégorie - pas un rouge d'alerte, qui
+  suggèrerait un problème plutôt qu'une simple fermeture.
+- **`construirePopupCommerce`** (`js/popup.js`) : badge "Fermé
+  définitivement" (nouvelle variante `.popup-fiche-badge.ferme-def`,
+  gris neutre - distincte du badge rouge "Fermé" existant, qui parle
+  des horaires du jour, pas de fermeture définitive), avec la date/note
+  éventuelle. Contact et horaires masqués : les montrer quand même
+  serait trompeur (numéro qui ne répond plus, horaires caducs).
+- **`lancerRechercheProximite`** (`js/proximite.js`) : exclu des
+  résultats "près de chez moi" - recommander une adresse fermée irait à
+  l'encontre du but de cette fonction. Reste en revanche trouvable par
+  la recherche texte classique (utile pour confirmer "oui, c'est bien
+  fermé" plutôt que de ne rien trouver).
+
+Testé (Playwright) : icône et popup vérifiées avant/après ajout d'une
+entrée de test (badge, note, date, horaires/contact masqués), commerce
+non concerné inchangé, icône revenue à la normale après retrait de
+l'entrée.
+
 ## Ce qui reste à faire
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.
