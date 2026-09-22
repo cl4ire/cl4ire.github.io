@@ -2227,6 +2227,53 @@ l'utilisatrice), clic réel sur "Retour à la carte" vérifié, et confirmé
 qu'aucune référence à l'ancien `#commune-view` ne subsiste dans le
 code.
 
+**Mise à jour** : retour direct de l'utilisatrice sur cette 1ère
+version - "illisible, tout en longueur, ça sert à rien", simplement
+empilée verticalement en reprenant le contenu de l'ancien panneau
+latéral sans vraiment exploiter la largeur disponible. Demande
+explicite de ne pas repartir de cette mise en page et d'en faire "de
+jolies choses".
+
+Repensé en `.commune-grille` (`css/style.css`) : vraie grille de cartes
+(`display:grid; grid-template-columns: repeat(auto-fit, minmax(260px,
+1fr))`) qui se réorganise seule selon la largeur d'écran, plutôt qu'une
+colonne unique. Trois cartes compactes côte à côte (démographie,
+mairie, qualité de l'eau), puis deux cartes pleine largeur
+(`.commune-carte-large` : décompte d'entités, actualités). Même motif
+visuel que `.hero-tile`/`#hero-parcelle` déjà établis ailleurs sur le
+site (fond blanc, bordure fine, 14px de rayon) plutôt qu'une nouvelle
+esthétique à part.
+
+- **`construireCarteDemographie`** (`js/communes.js`, remplace
+  l'usage de `construirePopupDemographie` dans le dashboard -
+  `construirePopupDemographie` elle-même inchangée, toujours utilisée
+  pour la popup de la couche démographie) : gros chiffre population en
+  avant-plan ("carte hero", fond en dégradé léger) plutôt qu'une liste
+  de lignes égales entre elles, chiffres secondaires (logements,
+  établissements, revenu médian) en dessous.
+- **`construireCarteDecompte`** (remplace `construireBlocDecompte`) :
+  la longue liste à plat pointée comme illisible devient une grille de
+  tuiles (icône colorée + chiffre + libellé), groupée en trois
+  sous-sections thématiques (Commerces & services, Éducation & petite
+  enfance, Sport & loisirs - `titreGroupe` ajouté à
+  `COUCHES_DECOMPTE_COMMUNE`) plutôt qu'une seule liste mélangeant
+  boulangeries et terrains de foot. Couleur de chaque tuile reprise de
+  la couleur déjà utilisée pour cette couche sur la carte (`color`
+  ajouté à `COUCHES_DECOMPTE_COMMUNE`, cohérent avec `config.js`
+  plutôt qu'une palette inventée à part).
+- **`construireCarteMairie`**/**`construireCarteQualiteEau`** : même
+  contenu qu'avant, sur les nouvelles classes `.commune-carte`/
+  `.commune-ligne` (pas `.popup-fiche-section`, dont le padding/bordure
+  pensés pour l'empilement dans une popup étroite auraient fait doublon
+  avec le padding propre de `.commune-carte`).
+
+Testé (captures d'écran desktop et mobile envoyées à l'utilisatrice,
+dashboard rempli avec des données de démonstration incluant les 6
+couches du décompte) : grille à 3 colonnes sur desktop qui passe à 1
+colonne sur mobile, tuiles du décompte groupées et colorées comme
+prévu (33 tuiles réparties en 3 groupes sur l'exemple testé), aucune
+erreur JS liée au nouveau code.
+
 ## Ce qui reste à faire
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.

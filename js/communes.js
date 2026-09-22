@@ -64,7 +64,12 @@ function chargerQualiteEauCommune(codeInsee) {
    conformite_limites_pc_prelevement, la ou les valeurs de non-
    conformité ne le sont pas - la phrase reste lisible et fiable dans
    les deux cas. */
-function construireBlocQualiteEau(resultat) {
+/* Rien (chaîne vide) si aucun résultat exploitable, plutôt qu'une carte
+   vide ou un message d'erreur : échec réseau/CORS/commune sans donnée
+   traités pareil, comme le reste du dashboard quand une source n'a
+   rien à montrer (voir #commune-qualite-eau dans construireDashboardCommune,
+   qui reste alors un simple espace vide dans la grille). */
+function construireCarteQualiteEau(resultat) {
     if (!resultat || !resultat.conclusion_conformite_prelevement) return "";
     const nonConforme = /non\s+conforme/i.test(resultat.conclusion_conformite_prelevement);
     const couleur = nonConforme ? PALETTE.terracotta : PALETTE.feuille;
@@ -74,9 +79,10 @@ function construireBlocQualiteEau(resultat) {
         resultat.date_prelevement ? `dernier contrôle le ${formaterDateSeule(resultat.date_prelevement)}` : null
     ].filter(Boolean).join(" · ");
 
-    return `<div class="popup-fiche-section">
-        <div class="popup-fiche-section-titre"><i class="fa-solid fa-droplet" style="color:${couleur}"></i>Qualité de l'eau potable</div>
-        <div class="popup-fiche-ligne">${echapperHtml(resultat.conclusion_conformite_prelevement)}</div>
+    return `<div class="commune-carte">
+        <div class="commune-carte-titre"><i class="fa-solid fa-droplet"></i>Qualité de l'eau potable</div>
+        <div class="commune-eau-badge" style="color:${couleur}"><span></span>${nonConforme ? "Non conforme" : "Conforme"}</div>
+        <div class="commune-ligne">${echapperHtml(resultat.conclusion_conformite_prelevement)}</div>
         ${precisions ? `<div class="popup-fiche-precision">${echapperHtml(precisions)}</div>` : ""}
     </div>`;
 }
@@ -86,18 +92,33 @@ function mairiesPourCommune(nomCommune) {
     return chargerMairies().then(features => features.filter(f => normaliserNomCommune(f.properties.commune) === cible));
 }
 
-function construireBlocMairie(props) {
-    const lignes = [
-        props.opening_hours ? `<div class="popup-fiche-ligne"><i class="fa-solid fa-clock"></i> ${echapperHtml(props.opening_hours).replace(/\n/g, "<br>")}</div>` : null,
-        props.contact_phone ? `<div class="popup-fiche-ligne"><i class="fa-solid fa-phone"></i> <a href="tel:${echapperHtml(props.contact_phone.replace(/\s+/g, ""))}">${echapperHtml(props.contact_phone)}</a></div>` : null,
-        props.contact_email ? `<div class="popup-fiche-ligne"><i class="fa-solid fa-envelope"></i> <a href="mailto:${echapperHtml(props.contact_email)}">${echapperHtml(props.contact_email)}</a></div>` : null,
-        props.contact_website ? `<div class="popup-fiche-ligne"><i class="fa-solid fa-globe"></i> <a href="${echapperHtml(props.contact_website)}" target="_blank" rel="noopener">Site internet</a></div>` : null
-    ].filter(Boolean);
+/* Carte(s) "Mairie" - une par mairie trouvée pour la commune (certaines
+   communes nouvelles en ont plusieurs, une par ancienne commune
+   déléguée). Classes commune-* dédiées (pas popup-fiche-section,
+   pensée pour l'empilement dans une popup étroite) : cette carte vit
+   dans la grille du dashboard plein écran, voir construireDashboardCommune. */
+function construireCarteMairie(mairies) {
+    if (!mairies.length) {
+        return `<div class="commune-carte">
+            <div class="commune-carte-titre"><i class="fa-solid fa-landmark"></i>Mairie</div>
+            <div class="commune-carte-vide">Aucune donnée de mairie disponible pour cette commune.</div>
+        </div>`;
+    }
+    return mairies.map(m => {
+        const props = m.properties;
+        const lignes = [
+            props.opening_hours ? `<div class="commune-ligne"><i class="fa-solid fa-clock"></i>${echapperHtml(props.opening_hours).replace(/\n/g, "<br>")}</div>` : null,
+            props.contact_phone ? `<div class="commune-ligne"><i class="fa-solid fa-phone"></i><a href="tel:${echapperHtml(props.contact_phone.replace(/\s+/g, ""))}">${echapperHtml(props.contact_phone)}</a></div>` : null,
+            props.contact_email ? `<div class="commune-ligne"><i class="fa-solid fa-envelope"></i><a href="mailto:${echapperHtml(props.contact_email)}">${echapperHtml(props.contact_email)}</a></div>` : null,
+            props.contact_website ? `<div class="commune-ligne"><i class="fa-solid fa-globe"></i><a href="${echapperHtml(props.contact_website)}" target="_blank" rel="noopener">Site internet</a></div>` : null
+        ].filter(Boolean);
 
-    return `<div class="popup-fiche-section">
-        <div class="popup-fiche-section-titre"><i class="fa-solid fa-landmark"></i>${echapperHtml(props.name || "Mairie")}</div>
-        ${lignes.length ? lignes.join("") : `<div class="popup-fiche-vide">Aucune information disponible.</div>`}
-    </div>`;
+        return `<div class="commune-carte">
+            <div class="commune-carte-titre"><i class="fa-solid fa-landmark"></i>Mairie</div>
+            <div class="commune-carte-mairie-nom">${echapperHtml(props.name || "Mairie")}</div>
+            ${lignes.length ? lignes.join("") : `<div class="commune-carte-vide">Aucune information disponible.</div>`}
+        </div>`;
+    }).join("");
 }
 
 /* =========================================================
@@ -118,15 +139,20 @@ function construireBlocMairie(props) {
    seul chiffre par couche - correspond au niveau de détail demandé
    ("1 boulangerie" et pas juste "5 commerces"). Sans grouper, une seule
    ligne pour toute la couche (ex. Aires de jeux).
+   titreGroupe/color : regroupement visuel en sous-sections de la carte
+   "Ce qu'on trouve ici" (retour direct de l'utilisatrice sur la version
+   précédente, une longue liste à plat "illisible") - même couleur que
+   celle déjà utilisée pour cette couche sur la carte (config.js), pour
+   rester cohérent plutôt que d'inventer une palette à part.
    LABELS_TYPE_ECOLE : réutilise la constante déjà définie dans
    js/popup.js pour construirePopupEcole, pas de doublon. */
 const COUCHES_DECOMPTE_COMMUNE = [
-    { id: "commerces", icon: "fa-solid fa-basket-shopping", grouper: f => categorieCommerce(f.properties.type).label },
-    { id: "banques", icon: "fa-solid fa-money-bill-wave", grouper: f => f.properties.type === "atm" ? "Distributeur (DAB)" : "Agence bancaire" },
-    { id: "education", icon: "fa-solid fa-graduation-cap", grouper: f => LABELS_TYPE_ECOLE[f.properties.type_fr] || "École" },
-    { id: "petiteEnfance", icon: "fa-solid fa-baby", parGeometrie: true, grouper: f => f.properties.type || "Petite enfance" },
-    { id: "equipementSportif", icon: "fa-solid fa-futbol", grouper: f => labelSport(f.properties.sport) || "Équipement sportif" },
-    { id: "airesJeu", icon: "fa-solid fa-child-reaching", label: "Aires de jeux" }
+    { id: "commerces", titreGroupe: "Commerces & services", icon: "fa-solid fa-basket-shopping", color: PALETTE.feuille, grouper: f => categorieCommerce(f.properties.type).label },
+    { id: "banques", titreGroupe: "Commerces & services", icon: "fa-solid fa-money-bill-wave", color: PALETTE.ardoise, grouper: f => f.properties.type === "atm" ? "Distributeur (DAB)" : "Agence bancaire" },
+    { id: "education", titreGroupe: "Éducation & petite enfance", icon: "fa-solid fa-graduation-cap", color: PALETTE.terracotta, grouper: f => LABELS_TYPE_ECOLE[f.properties.type_fr] || "École" },
+    { id: "petiteEnfance", titreGroupe: "Éducation & petite enfance", icon: "fa-solid fa-baby", color: PALETTE.terracotta, parGeometrie: true, grouper: f => f.properties.type || "Petite enfance" },
+    { id: "equipementSportif", titreGroupe: "Sport & loisirs", icon: "fa-solid fa-futbol", color: PALETTE.riviere, grouper: f => labelSport(f.properties.sport) || "Équipement sportif" },
+    { id: "airesJeu", titreGroupe: "Sport & loisirs", icon: "fa-solid fa-child-reaching", color: PALETTE.riviere, label: "Aires de jeux" }
 ];
 
 function featuresCommune(conf, codeInsee) {
@@ -143,17 +169,24 @@ function featuresCommune(conf, codeInsee) {
     return donnees.filter(f => f.geometry && f.geometry.type === "Point" && pointDansFeature(f.geometry.coordinates, communeFeature));
 }
 
-/* Liste à plat (pas groupée par couche) : une ligne par sous-catégorie
-   trouvée, triée par effectif décroissant au sein de chaque couche -
-   c'est ce qui s'affiche tel quel dans le dashboard, dans l'ordre de
-   COUCHES_DECOMPTE_COMMUNE. */
+/* Groupé par titreGroupe (pas une liste à plat) : un groupe = une
+   sous-section de tuiles dans la carte "Ce qu'on trouve ici"
+   (construireCarteDecompte). Ordre = première apparition d'un groupe
+   dans COUCHES_DECOMPTE_COMMUNE ; au sein d'un groupe, sous-catégories
+   triées par effectif décroissant. */
 function decompteEntitesCommune(codeInsee) {
-    const lignes = [];
+    const groupes = {};
+    const ordreGroupes = [];
     COUCHES_DECOMPTE_COMMUNE.forEach(conf => {
         const features = featuresCommune(conf, codeInsee);
         if (!features.length) return;
+        if (!groupes[conf.titreGroupe]) {
+            groupes[conf.titreGroupe] = [];
+            ordreGroupes.push(conf.titreGroupe);
+        }
+        const lignes = groupes[conf.titreGroupe];
         if (!conf.grouper) {
-            lignes.push({ icon: conf.icon, label: conf.label, n: features.length });
+            lignes.push({ icon: conf.icon, color: conf.color, label: conf.label, n: features.length });
             return;
         }
         const compte = {};
@@ -162,45 +195,95 @@ function decompteEntitesCommune(codeInsee) {
             compte[cle] = (compte[cle] || 0) + 1;
         });
         Object.keys(compte).sort((a, b) => compte[b] - compte[a])
-            .forEach(cle => lignes.push({ icon: conf.icon, label: cle, n: compte[cle] }));
+            .forEach(cle => lignes.push({ icon: conf.icon, color: conf.color, label: cle, n: compte[cle] }));
     });
-    return lignes;
+    return ordreGroupes.map(titre => ({ titre, lignes: groupes[titre] }));
 }
 
-function construireBlocDecompte(codeInsee) {
-    const lignes = decompteEntitesCommune(codeInsee);
-    if (!lignes.length) return "";
-    return `<div class="popup-fiche-section">
-        <div class="popup-fiche-section-titre"><i class="fa-solid fa-list-check"></i>En chiffres sur la commune</div>
-        ${lignes.map(l => `<div class="popup-fiche-jour"><span><i class="${l.icon}"></i> ${echapperHtml(l.label)}</span><strong>${l.n}</strong></div>`).join("")}
+function construireCarteDecompte(codeInsee) {
+    const groupes = decompteEntitesCommune(codeInsee);
+    if (!groupes.length) return "";
+    return `<div class="commune-carte commune-carte-large">
+        <div class="commune-carte-titre"><i class="fa-solid fa-list-check"></i>Ce qu'on trouve ici</div>
+        ${groupes.map(g => `
+            <div class="commune-decompte-groupe">
+                <div class="commune-decompte-groupe-titre">${echapperHtml(g.titre)}</div>
+                <div class="commune-tuiles">
+                    ${g.lignes.map(l => `
+                        <div class="commune-tuile">
+                            <div class="commune-tuile-icone" style="background:${l.color}"><i class="${l.icon}"></i></div>
+                            <div class="commune-tuile-nombre">${l.n}</div>
+                            <div class="commune-tuile-label">${echapperHtml(l.label)}</div>
+                        </div>
+                    `).join("")}
+                </div>
+            </div>
+        `).join("")}
     </div>`;
 }
 
-/* demographieFeature n'a que population de fiable pour l'instant (reprise
-   de couches/communes.geojson, voir _lisezmoi du fichier) - les autres
-   champs (revenu, logements...) restent à fournir, construirePopupDemographie
-   (js/popup.js) n'affiche déjà que ce qui est réellement présent. */
-function construireDashboardCommune(codeInsee, mairies, demographieFeature) {
-    const blocsMairie = mairies.length
-        ? mairies.map(m => construireBlocMairie(m.properties)).join("")
-        : `<div class="popup-fiche-section"><div class="popup-fiche-vide">Aucune donnée de mairie disponible pour cette commune.</div></div>`;
+/* Carte "hero" du dashboard : gros chiffre population en avant, chiffres
+   secondaires (logements/entreprises/revenu médian) en dessous - au
+   contraire de construirePopupDemographie (js/popup.js, gardée telle
+   quelle pour la popup de la couche démographie elle-même, format liste
+   qui convient à un popup étroit), cette carte est pensée pour la
+   grille large du dashboard plein écran. demographieFeature n'a que
+   population de fiable pour l'instant (reprise de couches/communes.geojson,
+   voir _lisezmoi du fichier) - les autres champs, quand présents,
+   s'affichent en plus sans jamais être supposés systématiques. */
+function construireCarteDemographie(props) {
+    if (typeof props.population !== "number") return "";
+    const evolution = typeof props.evolution_annuelle_2017_2023 === "number" ? props.evolution_annuelle_2017_2023 : null;
+    const partsAge = [
+        typeof props.part_moins_25 === "number" ? `${props.part_moins_25}% de moins de 25 ans` : null,
+        typeof props.part_25_64 === "number" ? `${props.part_25_64}% de 25 à 64 ans` : null,
+        typeof props.part_65_plus === "number" ? `${props.part_65_plus}% de 65 ans et +` : null
+    ].filter(Boolean).join(" · ");
+    const statsSecondaires = [
+        typeof props.nb_logements === "number" ? { n: props.nb_logements.toLocaleString("fr-FR"), label: "Logements" } : null,
+        typeof props.nb_entreprises === "number" ? { n: props.nb_entreprises.toLocaleString("fr-FR"), label: "Établissements" } : null,
+        typeof props.revenu_median === "number" ? { n: `${Math.round(props.revenu_median).toLocaleString("fr-FR")} €`, label: "Revenu médian/an" } : null
+    ].filter(Boolean);
 
-    const aDesChiffres = demographieFeature && Object.keys(demographieFeature.properties || {}).some(k => typeof demographieFeature.properties[k] === "number");
-    const blocDemographie = aDesChiffres ? construirePopupDemographie(demographieFeature.properties) : "";
-    const blocDecompte = construireBlocDecompte(codeInsee);
+    return `<div class="commune-carte commune-carte-hero">
+        <div class="commune-carte-titre"><i class="fa-solid fa-chart-column"></i>Mon territoire en chiffres</div>
+        <div class="commune-hero-nombre">${props.population.toLocaleString("fr-FR")}<span>habitants</span></div>
+        ${evolution !== null ? `<div class="commune-hero-evolution">${evolution > 0 ? "+" : ""}${evolution}%/an en moyenne (2017-2023)</div>` : ""}
+        ${partsAge ? `<div class="popup-fiche-precision" style="margin-top:8px;">${echapperHtml(partsAge)}</div>` : ""}
+        ${statsSecondaires.length ? `<div class="commune-stats-secondaires">
+            ${statsSecondaires.map(s => `<div class="commune-stat-mini"><strong>${s.n}</strong><span>${s.label}</span></div>`).join("")}
+        </div>` : ""}
+    </div>`;
+}
 
-    return `
-        ${blocsMairie}
-        ${blocDemographie}
-        ${blocDecompte}
-        <div id="commune-qualite-eau"><!-- Rempli séparément une fois Hub'Eau résolu, voir ouvrirDashboardCommune --></div>
-        <div class="popup-fiche-section">
-            <div class="popup-fiche-section-titre"><i class="fa-solid fa-bullhorn"></i>Actualités (Illiwap)</div>
-            <div class="illiwap-embed">
-                <iframe src="${urlIllwapEmbed(codeInsee)}" title="Actualités Illiwap" loading="lazy"></iframe>
-            </div>
+function construireCarteActualites(codeInsee) {
+    return `<div class="commune-carte commune-carte-large">
+        <div class="commune-carte-titre"><i class="fa-solid fa-bullhorn"></i>Actualités (Illiwap)</div>
+        <div class="illiwap-embed">
+            <iframe src="${urlIllwapEmbed(codeInsee)}" title="Actualités Illiwap" loading="lazy"></iframe>
         </div>
-    `;
+    </div>`;
+}
+
+/* Retour direct de l'utilisatrice : la première version (contenu de
+   l'ancien panneau latéral simplement empilé dans la page plein écran)
+   restait "tout en longueur", illisible - repensée en vraie grille de
+   cartes (voir .commune-grille dans style.css) qui exploite la largeur
+   disponible plutôt qu'une seule colonne étroite. commune-qualite-eau
+   reste un simple <div> (pas encore une carte) : rempli après coup une
+   fois Hub'Eau résolu, voir ouvrirDashboardCommune. */
+function construireDashboardCommune(codeInsee, mairies, demographieFeature) {
+    const carteDemographie = demographieFeature ? construireCarteDemographie(demographieFeature.properties) : "";
+    const carteMairie = construireCarteMairie(mairies);
+    const carteDecompte = construireCarteDecompte(codeInsee);
+
+    return `<div class="commune-grille">
+        ${carteDemographie}
+        ${carteMairie}
+        <div id="commune-qualite-eau"><!-- Rempli séparément une fois Hub'Eau résolu, voir ouvrirDashboardCommune --></div>
+        ${carteDecompte}
+        ${construireCarteActualites(codeInsee)}
+    </div>`;
 }
 
 function ouvrirDashboardCommune(map, codeInsee) {
@@ -232,7 +315,7 @@ function ouvrirDashboardCommune(map, codeInsee) {
         document.getElementById("commune-contenu").innerHTML = construireDashboardCommune(codeInsee, mairies, demoFeature);
         promesseQualiteEau.then(resultat => {
             const cible = document.getElementById("commune-qualite-eau");
-            if (cible) cible.innerHTML = construireBlocQualiteEau(resultat);
+            if (cible) cible.innerHTML = construireCarteQualiteEau(resultat);
         });
     });
 }
