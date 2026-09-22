@@ -15,6 +15,18 @@
 <link rel="stylesheet" href="css/style.css">
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
 <!-- FIN STYLES -->
+
+<!-- DEBUT PWA (installation sur l'écran d'accueil) -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0F6E56">
+<!-- Safari iOS ignore le manifest pour l'icône d'écran d'accueil, lit
+     uniquement cette balise dédiée (voir js/installation.js pour la
+     limite de fond : pas de bouton "Installer" possible sur iOS, aucune
+     API ne l'y permet). -->
+<link rel="apple-touch-icon" href="img/icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="GéoBercé">
+<!-- FIN PWA -->
 </head>
 
 <body>
@@ -51,6 +63,12 @@
             </div>
         </div>
         <button type="button" id="recherche-button" title="Recherche foncière"><i class="fa-solid fa-sliders"></i><span>Recherche foncière</span></button>
+        <!-- Masqué par défaut (hidden) : affiché par js/installation.js
+             seulement quand le navigateur confirme (événement
+             "beforeinstallprompt") que le site est réellement
+             installable et pas déjà installé - jamais un bouton mort
+             qui ne ferait rien au clic. -->
+        <button type="button" id="install-button" title="Installer l'application" hidden><i class="fa-solid fa-arrow-down-to-bracket"></i></button>
         <button type="button" id="about-button" title="À propos"><i class="fa-solid fa-circle-info"></i><span>À propos</span></button>
     </div>
 </header>
@@ -234,6 +252,7 @@
 <script src="js/communes.js"></script>
 <script src="js/tour.js"></script>
 <script src="js/map.js"></script>
+<script src="js/installation.js"></script>
 <!-- FIN SCRIPTS -->
 
 </body>

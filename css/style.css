@@ -82,12 +82,13 @@ button { font-family: inherit; cursor: pointer; }
     display: flex; align-items: center; gap: 7px;
     flex-shrink: 0;
 }
-#home-button, #actu-button {
+#home-button, #actu-button, #install-button {
     width: 38px; height: 38px;
     display: flex; align-items: center; justify-content: center;
     color: var(--primaire);
     font-size: 15px;
 }
+#install-button { border: 1px solid var(--bordure); background: #fff; border-radius: 999px; }
 /* Toujours visible (avant : caché sur grand écran, où le panneau était
    fixe en permanence) - permet de fermer/rouvrir le panneau des couches
    sur PC aussi, pas seulement sur mobile, retour direct de
