@@ -2274,6 +2274,59 @@ colonne sur mobile, tuiles du décompte groupées et colorées comme
 prévu (33 tuiles réparties en 3 groupes sur l'exemple testé), aucune
 erreur JS liée au nouveau code.
 
+## Dashboard commune : polish de la grille de cartes
+
+Retour direct de l'utilisatrice sur la grille de cartes ci-dessus,
+quatre points :
+
+- **Carte "Qualité de l'eau" plus courte que ses voisines** : bug CSS
+  Grid, pas un problème de contenu. `#commune-qualite-eau` (le `<div>`
+  vide créé par `construireDashboardCommune`, rempli plus tard une fois
+  Hub'Eau résolu) s'étire bien à la hauteur de la ligne par défaut de la
+  grille (`align-items: stretch`), mais la carte `.commune-carte`
+  injectée dedans ensuite via `innerHTML` n'hérite pas de cet
+  étirement - elle ne prend que la hauteur de son propre contenu.
+  Corrigé en donnant `height: 100%` à `.commune-carte` et
+  explicitement à `#commune-qualite-eau`/son contenu (`css/style.css`).
+- **Trou à droite de la carte eau** : rempli avec une nouvelle carte
+  "Prix immobilier" (`construireCartePrixImmobilier`, `js/communes.js`)
+  - prix médian au m² et nombre de ventes, à partir de
+    `donneesBrutes["prixImmobilier"]` déjà chargé en mémoire
+    (`lazy:false`, `couches/urbanisme/prix_immobilier_communes.geojson`) :
+    aucun nouvel appel réseau. Même piège `com_insee`/`code_insee`
+    texte-vs-nombre déjà rencontré pour `banques`/`airesJeu` :
+    comparaison via `String(f.properties.code_insee) === codeInsee`.
+- **Clic sur une tuile du décompte → ouvre la carte sur ce service** :
+  chaque `.commune-tuile` porte désormais `data-couche` (l'id de sa
+  couche). `initClicTuilesDecompte` (`js/communes.js`) écoute les clics
+  par délégation sur `#commune-contenu` (branché une seule fois, son
+  contenu étant entièrement réécrit à chaque ouverture de commune) :
+  ferme le dashboard, re-zoome sur la commune puis réutilise
+  `chargerEtAfficherCouche` (déjà existante dans `js/proximite.js`,
+  utilisée par la recherche) pour charger/afficher/cocher la couche
+  correspondante - pas de nouvelle logique de chargement de couche à
+  maintenir en double.
+- **Une icône par service, pas par couche** : les fonctions `grouper`
+  de `COUCHES_DECOMPTE_COMMUNE` renvoient maintenant `{label, icon}` au
+  lieu d'un simple libellé. `categorieCommerce` avait déjà une icône
+  par sous-catégorie (réutilisée telle quelle) ; trois nouvelles tables
+  ajoutées pour les autres couches groupées (`ICONES_ECOLE`,
+  `ICONES_PETITE_ENFANCE`, `ICONES_SPORT`), avec une icône générique de
+  repli (`fa-graduation-cap`/`fa-baby`/`fa-medal`) pour toute valeur
+  absente de la table plutôt qu'une erreur.
+
+Testé (Playwright, données réelles de `couches/commerces/`,
+`couches/famille/`, `couches/services/urbanisme` chargées directement -
+`donneesBrutes` rempli à la main dans le test car `initialiserCouches`
+ne tourne pas dans cet environnement sandbox) : les trois cartes
+compactes (mairie, qualité de l'eau, prix immobilier) font
+effectivement la même hauteur (127px chacune sur l'exemple testé), la
+carte prix immobilier s'affiche avec les vraies données, 36 tuiles avec
+des icônes distinctes par sous-catégorie confirmées, clic sur une tuile
+vérifié : appelle bien `chargerEtAfficherCouche` avec l'id de couche
+attendu et referme le dashboard. Capture d'écran envoyée à
+l'utilisatrice.
+
 ## Ce qui reste à faire
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.
