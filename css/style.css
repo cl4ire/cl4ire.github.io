@@ -105,6 +105,16 @@ button { font-family: inherit; cursor: pointer; }
 /* ---------- APPLICATION ---------- */
 #app { display: flex; height: calc(100% - 62px); position: relative; }
 #map { flex: 1; }
+/* Contrôles Leaflet (zoom +/-, géolocalisation) : z-index par défaut de
+   Leaflet (1000) au-dessus de TOUS nos propres calques plein écran
+   (#hero à 500, #commune-page à 600, #layers-panel replié sur mobile à
+   900) - visibles par-dessus l'accueil ou le panneau mobile, gênant au
+   toucher. Abaissé sous ces calques (400 : juste au-dessus des tuiles/
+   couches de la carte elle-même à 400 par défaut chez Leaflet, pour
+   rester cliquables en usage normal) plutôt que masqué/déplacé au cas
+   par cas pour chaque calque - un seul réglage couvre tous les cas
+   présents et futurs. Retour direct de l'utilisatrice. */
+.leaflet-top, .leaflet-bottom { z-index: 450; }
 /* 340px (contre 280px avant) : retour direct, la liste des couches et le
    formulaire de recherche foncière se sentaient à l'étroit. */
 #layers-panel { width: 340px; background: #fff; border-right: 1px solid var(--bordure); overflow-y: auto; flex-shrink: 0; position: relative; }

@@ -15,55 +15,12 @@ L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r
 
 L.control.locate({ position: "topright", flyTo: true, keepCurrentZoomLevel: false }).addTo(map);
 
-/* Panes dédiées pour le masque hors-territoire (voir plus bas) : la
-   filtration par boîte englobante (clipperAuTerritoire, js/config.js)
-   exclut les zones qui ne touchent le territoire nulle part, mais une
-   zone qui le touche ne serait-ce qu'un peu (fréquent pour Vigieau, dont
-   les zones sont à l'échelle d'un bassin versant ou d'un département)
-   garde toute son étendue réelle - "toute la couche région qui se
-   charge", retour direct de l'utilisatrice. Plutôt que de découper
-   chaque géométrie au vrai contour du territoire (nécessiterait soit une
-   librairie de géométrie externe non vérifiable dans cet environnement
-   de développement au réseau restreint, soit un algorithme de découpe
-   maison risqué à écrire sans jamais pouvoir le tester visuellement
-   ici), un masque visuel : un polygone "monde entier moins le
-   territoire" (anneau extérieur + trou à la forme exacte de l'EPCI),
-   semi-opaque, posé au-dessus de TOUTE couche de données. Comme le trou
-   correspond pile à la vraie forme du territoire, rien à l'intérieur
-   n'est jamais affecté (le masque n'a littéralement aucune surface à cet
-   endroit) - seul ce qui déborde à l'extérieur (Vigieau aujourd'hui,
-   n'importe quelle future couche "flux" national) est recouvert, quelle
-   que soit sa géométrie propre. "masque-donnees" (z-index 450, au-dessus
-   du pane "overlayPane" à 400 où vivent toutes les couches de données
-   par défaut) porte le masque ; le contour pointillé de l'EPCI est posé
-   dans "masque-dessus" (460) pour rester net par-dessus, plutôt que
-   noyé sous le masque comme s'il était une couche de données ordinaire. */
-map.createPane("masque-donnees");
-map.getPane("masque-donnees").style.zIndex = 450;
-map.getPane("masque-donnees").style.pointerEvents = "none";
-map.createPane("masque-dessus");
-map.getPane("masque-dessus").style.zIndex = 460;
-
-function construireMasqueHorsTerritoire(geometrieTerritoire) {
-    const enveloppe = [[-179, -89], [179, -89], [179, 89], [-179, 89], [-179, -89]];
-    const polygones = geometrieTerritoire.type === "MultiPolygon"
-        ? geometrieTerritoire.coordinates
-        : [geometrieTerritoire.coordinates];
-    const trous = polygones.map(poly => poly[0]);
-    const anneaux = [enveloppe, ...trous].map(anneau => L.GeoJSON.coordsToLatLngs(anneau));
-    return L.polygon(anneaux, {
-        pane: "masque-donnees", interactive: false, stroke: false,
-        fillColor: "#FAFAF8", fillOpacity: 0.82
-    });
-}
-
 /* ---------- 2. Couches de référence (limites communes / EPCI) ---------- */
 fetch("couches/epci.geojson")
     .then(r => r.json())
     .then(data => {
-        L.geoJSON(data, { pane: "masque-dessus", style: { color: PALETTE.riviere, weight: 2, fill: false, dashArray: "4 3" } }).addTo(map);
+        L.geoJSON(data, { style: { color: PALETTE.riviere, weight: 2, fill: false, dashArray: "4 3" } }).addTo(map);
         bboxTerritoire = bboxFeature(data.features[0]);
-        construireMasqueHorsTerritoire(data.features[0].geometry).addTo(map);
     })
     .catch(err => console.error("epci.geojson :", err));
 
@@ -207,7 +164,29 @@ function initRedimensionnementPanneau() {
 }
 initRedimensionnementPanneau();
 
-document.getElementById("menu-button").addEventListener("click", () => togglerPanneauCouches());
+/* Retour direct de l'utilisatrice : "Couches" et "Recherche foncière"
+   se disputaient le même panneau sans jamais se le disputer PROPREMENT -
+   togglerPanneauCouches() ne faisait que replier/déplier le panneau sans
+   jamais se soucier de la vue interne actuellement affichée
+   (VUES_PANNEAU, js/panel.js). Résultat concret : recherche foncière
+   ouverte, puis clic sur "Couches" → le panneau se refermait au lieu de
+   basculer sur la liste des couches (panneauEstOuvert() le trouvait déjà
+   ouvert, donc togglerPanneauCouches() le repliait plutôt que de
+   changer de vue). Désormais : bascule sur SA propre vue si une autre
+   vue est affichée (ferme l'autre, ouvre la sienne) ; simple
+   replier/déplier seulement si c'est déjà sa propre vue qui est
+   affichée - jamais les deux en même temps, jamais un simple clic qui
+   referme tout par accident. */
+document.getElementById("menu-button").addEventListener("click", () => {
+    const surCouches = panneauEstOuvert() && !document.getElementById("layers-normal-view").hidden;
+    if (surCouches) {
+        togglerPanneauCouches(false);
+        return;
+    }
+    if (!document.getElementById("recherche-view").hidden) viderSelectionCarte(map);
+    fermerVuesPanneau();
+    togglerPanneauCouches(true);
+});
 document.getElementById("layers-close").addEventListener("click", () => {
     /* Fermer le panneau entier (×) pendant que la recherche foncière est
        affichée revient à quitter cette vue : même vidage automatique de
@@ -301,5 +280,18 @@ document.getElementById("home-button").addEventListener("click", () => {
 
 document.getElementById("results-back").addEventListener("click", fermerResultatsProximite);
 
-document.getElementById("recherche-button").addEventListener("click", () => ouvrirRecherche(map));
+/* Même logique de bascule symétrique que "menu-button" ci-dessus : si
+   la recherche foncière est déjà la vue affichée, un nouveau clic la
+   replie (comme le × / recherche-back) plutôt que de reconstruire le
+   formulaire pour rien ; sinon elle prend la place de la vue couches
+   actuellement affichée. */
+document.getElementById("recherche-button").addEventListener("click", () => {
+    const surRecherche = panneauEstOuvert() && !document.getElementById("recherche-view").hidden;
+    if (surRecherche) {
+        fermerRechercheFonciere(map);
+        togglerPanneauCouches(false);
+        return;
+    }
+    ouvrirRecherche(map);
+});
 document.getElementById("recherche-back").addEventListener("click", () => fermerRechercheFonciere(map));

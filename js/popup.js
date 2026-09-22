@@ -1979,11 +1979,17 @@ function construirePopupVigieau(props) {
         ? `<a class="popup-fiche-contact" href="${echapperHtml(arrete.fichier)}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-file-pdf"></i>Voir l'arrêté complet</a>`
         : "";
 
+    /* Icône/tag en terracotta fixe plutôt que niveau.color (variable
+       jaune/orange/rouge selon la gravité) - retour direct de
+       l'utilisatrice, même principe déjà établi pour construirePopupDemographie/
+       construireCarteQualiteEau : une couleur fixe pour l'en-tête, la
+       couleur variable réservée au badge qui porte vraiment
+       l'information (le niveau réel de l'alerte). */
     return `<div class="popup-fiche">
         <div class="popup-fiche-entete">
-            <div class="popup-fiche-icon" style="background:${niveau.color}"><i class="fa-solid fa-droplet-slash"></i></div>
+            <div class="popup-fiche-icon" style="background:${PALETTE.terracotta}"><i class="fa-solid fa-droplet-slash"></i></div>
             <div class="popup-fiche-titre-wrap">
-                <div class="popup-fiche-tag" style="color:${niveau.color}">Restrictions sécheresse (Vigieau)</div>
+                <div class="popup-fiche-tag" style="color:${PALETTE.terracotta}">Restrictions sécheresse (Vigieau)</div>
                 <div class="popup-fiche-titre">${echapperHtml(props.nom || "Zone")}</div>
                 <div class="popup-fiche-adresse">${[typeEau, departement].filter(Boolean).map(echapperHtml).join(" · ")}</div>
             </div>

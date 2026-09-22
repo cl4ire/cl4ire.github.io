@@ -372,6 +372,41 @@ function construireDashboardCommune(codeInsee, mairies, demographieFeature) {
    fois pour rien - la délégation évite d'avoir à rebrancher quoi que ce
    soit après chaque construireDashboardCommune. */
 let ecouteurTuilesBranche = false;
+/* Couche Leaflet temporaire (pas groupesLeaflet[layerId], la vraie couche
+   partagée avec sa case à cocher du panneau) affichée par un clic sur une
+   tuile du décompte : retour direct de l'utilisatrice, "Restaurants"
+   n'affichait pas que les restaurants DE LA COMMUNE mais toute la couche
+   commerces du territoire. Un seul écran à la fois : la précédente est
+   retirée avant d'en construire une nouvelle plutôt que de les empiler à
+   chaque clic. */
+let coucheFiltreeCommuneActuelle = null;
+
+function afficherCoucheFiltreeCommune(map, layerId, codeInsee) {
+    const layerConf = LAYERS.find(l => l.id === layerId);
+    /* La configuration de filtrage (parGeometrie ou non) vient de
+       COUCHES_DECOMPTE_COMMUNE, pas de LAYERS : c'est elle qui sait
+       comment rattacher une feature à une commune (featuresCommune,
+       plus haut dans ce fichier) - toujours trouvée en pratique, chaque
+       tuile du décompte vient forcément d'une de ses entrées. */
+    const decompteConf = COUCHES_DECOMPTE_COMMUNE.find(c => c.id === layerId);
+    if (!layerConf || !decompteConf) return;
+
+    chargerCouche(layerConf, () => {
+        if (coucheFiltreeCommuneActuelle) {
+            map.removeLayer(coucheFiltreeCommuneActuelle);
+            coucheFiltreeCommuneActuelle = null;
+        }
+        const features = featuresCommune(decompteConf, codeInsee);
+        if (!features.length) return;
+        /* construireCoucheDonnees (js/layers.js) : même construction
+           (style, popup, index de recherche) que la vraie couche, pour
+           un rendu identique - juste un sous-ensemble de features en
+           entrée plutôt que le fichier complet. */
+        coucheFiltreeCommuneActuelle = construireCoucheDonnees({ type: "FeatureCollection", features }, layerConf);
+        coucheFiltreeCommuneActuelle.addTo(map);
+    });
+}
+
 function initClicTuilesDecompte(map) {
     if (ecouteurTuilesBranche) return;
     ecouteurTuilesBranche = true;
@@ -382,7 +417,7 @@ function initClicTuilesDecompte(map) {
         if (!codeInsee) return;
         fermerVueCommune();
         if (typeof zoomerSurCommune === "function") zoomerSurCommune(map, codeInsee);
-        chargerEtAfficherCouche(map, tuile.dataset.couche);
+        afficherCoucheFiltreeCommune(map, tuile.dataset.couche, codeInsee);
     });
 }
 
