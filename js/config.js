@@ -37,6 +37,30 @@ const GROUPS = {
    qu'un nom de champ figé, pour rester robuste aux évolutions
    du fournisseur de données)
    ========================================================= */
+/* Retour direct de l'utilisatrice : le flux Vigieau couvre toute la
+   France (des centaines de zones), très long à charger/construire en
+   objets Leaflet pour un intérêt local seulement. Filtré à la boîte
+   englobante du territoire (bboxTerritoire, calculée une fois dans
+   js/map.js depuis couches/epci.geojson) avec une marge de 0,15° (environ
+   15 à 17km à cette latitude) plutôt qu'un filtre exact sur le polygone
+   précis de l'EPCI : les zones Vigieau sont souvent à l'échelle du
+   bassin versant ou du département, largement plus grandes que notre
+   territoire - un simple test d'intersection de boîtes englobantes
+   suffit à ne garder que celles qui le touchent réellement, sans jamais
+   risquer d'en exclure une par excès de précision. Si bboxTerritoire
+   n'est pas encore prêt (epci.geojson pas encore résolu), ne filtre rien
+   plutôt que de tout masquer. */
+function clipperAuTerritoire(geo) {
+    if (!bboxTerritoire) return geo;
+    const marge = 0.15;
+    const zone = [bboxTerritoire[0] - marge, bboxTerritoire[1] - marge, bboxTerritoire[2] + marge, bboxTerritoire[3] + marge];
+    const features = (geo.features || []).filter(f => {
+        const bbox = bboxFeature(f);
+        return bbox && bbox[0] <= zone[2] && bbox[2] >= zone[0] && bbox[1] <= zone[3] && bbox[3] >= zone[1];
+    });
+    return { type: "FeatureCollection", features };
+}
+
 function couleurVigieau(feature) {
     const props = feature.properties || {};
     const texte = Object.values(props)
@@ -63,8 +87,8 @@ function couleurVigieau(feature) {
    distinctes) - ici, tant que le nombre d'itinéraires d'une couche ne
    dépasse pas la taille de la palette, chacun est garanti unique.
    Rouge volontairement absent de cette palette : déjà réservé aux
-   couleurs d'alerte/risque ailleurs sur le site (Vigieau, Vigicrues),
-   inutile de prêter à confusion sur un simple tracé de randonnée. */
+   couleurs d'alerte/risque ailleurs sur le site (Vigieau), inutile de
+   prêter à confusion sur un simple tracé de randonnée. */
 const PALETTE_ITINERAIRES = ["#1D9E75", "#378ADD", "#D85A30", "#8E44AD", "#E1B12C", "#16A085", "#D63384", "#2C3E50"];
 const compteurCouleurItineraires = {}; // id de couche -> nombre déjà attribués
 const couleurParItineraire = {}; // "idCouche|idTrace" -> couleur déjà attribuée
@@ -78,27 +102,6 @@ function couleurItineraire(feature, idCouche) {
         compteurCouleurItineraires[idCouche] = position + 1;
     }
     return couleurParItineraire[cle];
-}
-
-/* Même principe que couleurVigieau ci-dessus (nom de champ distant non
-   vérifiable en conditions réelles depuis cet environnement), mais avec
-   un repli plus précis en priorité : NivSituVigiCruEnt est le nom de
-   champ documenté par Vigicrues pour le niveau de vigilance (1 à 4,
-   même échelle que la vigilance météo), pas une supposition - seul son
-   éventuel remplacement par le fournisseur n'est pas vérifiable ici,
-   d'où le repli sur un scan de mots-clés si jamais absent. */
-function couleurVigicrues(feature) {
-    const props = feature.properties || {};
-    const COULEURS_NIVEAU_CRUE = { 1: "#31B44C", 2: "#FFD500", 3: "#FF8300", 4: "#C9182C" };
-    const niveau = Number(premierChampValide(props, ["NivSituVigiCruEnt", "niveau", "NivSitu", "niveau_vigilance"]));
-    if (COULEURS_NIVEAU_CRUE[niveau]) return { color: COULEURS_NIVEAU_CRUE[niveau], weight: 4, opacity: 0.85 };
-
-    const texte = Object.values(props).filter(v => typeof v === "string").join(" ").toLowerCase();
-    if (texte.includes("rouge")) return { color: "#C9182C", weight: 4, opacity: 0.85 };
-    if (texte.includes("orange")) return { color: "#FF8300", weight: 4, opacity: 0.85 };
-    if (texte.includes("jaune")) return { color: "#FFD500", weight: 4, opacity: 0.85 };
-    if (texte.includes("vert")) return { color: "#31B44C", weight: 4, opacity: 0.85 };
-    return { color: PALETTE.riviere, weight: 3, opacity: 0.6 };
 }
 
 /* =========================================================
@@ -1093,21 +1096,12 @@ const LAYERS = [
            publié par le Ministère (source du jeu de données data.gouv.fr
            "VigiEau : Arrêtés sécheresse en vigueur"), mis à jour quotidiennement. */
         file: "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_arretes_en_vigueur.geojson",
+        transform: clipperAuTerritoire,
         type: "polygon", color: "#F2994A",
         styleFn: couleurVigieau,
         lazy: true, searchable: false, cluster: false,
         titleFields: ["nom_zone", "nomZone", "nom", "zone_nom", "libelle", "nomBassin"],
         subtitleFields: ["niveauGravite", "niveau_gravite", "type_eau", "zoneType", "departement", "nom_dept"]
-    },
-    {
-        id: "vigicrues", group: "risques", label: "Vigilance crues (Vigicrues)",
-        /* Flux GeoJSON public des tronçons de cours d'eau sous surveillance
-           Vigicrues, avec leur niveau de vigilance courant (SCHAPI/DREAL) -
-           même principe que Vigieau juste au-dessus. */
-        file: "https://www.vigicrues.gouv.fr/services/1/InfoVigiCru.geojson",
-        type: "line", color: PALETTE.riviere,
-        styleFn: couleurVigicrues,
-        lazy: true, searchable: false, cluster: false
     },
     {
         id: "old", group: "risques", label: "Obligations légales de débroussaillement",

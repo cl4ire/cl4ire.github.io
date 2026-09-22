@@ -36,7 +36,7 @@ function construirePanneauCouches(map) {
             checkbox.id = "layer-" + conf.id;
 
             /* Badge d'état (chargement / échec) à côté du libellé : sans
-               ça, cocher une couche "en flux" (Vigieau, Vigicrues, SUP,
+               ça, cocher une couche "en flux" (Vigieau, SUP,
                Overpass...) ne donne aucun signe de vie pendant les
                quelques secondes d'attente - retour direct de
                l'utilisatrice ("on sait pas trop si ça fonctionne ou
