@@ -2478,6 +2478,180 @@ entrée de test (badge, note, date, horaires/contact masqués), commerce
 non concerné inchangé, icône revenue à la normale après retrait de
 l'entrée.
 
+## Cours d'eau : tronçons fusionnés par cours d'eau
+
+Retour direct de l'utilisatrice : le tracé OSM des cours d'eau (voir
+plus haut) était morcelé en de nombreux petits tronçons (un `way` par
+section entre deux intersections/changements de tag, convention OSM
+normale) - un même cours d'eau nommé pouvait ainsi apparaître en une
+douzaine de bouts distincts, chacun avec sa propre popup/zone de clic.
+
+Script Python jetable (`shapely.ops.linemerge`, même esprit "hors
+dépôt" que le script de filtrage territorial) : regroupe les 401
+tronçons par `name` (172 tronçons nommés, 25 noms distincts - les 229
+tronçons sans nom, en général de petits fossés isolés, n'ont rien pour
+être identifiés comme faisant partie du même cours d'eau, donc jamais
+fusionnés), puis recolle bout à bout tous les tronçons d'un même nom
+qui se touchent exactement. Résultat : **401 tronçons → 297** ; les
+rivières simples deviennent une seule ligne continue (L'Yre : 21 → 1,
+Ruisseau de Dauvers : 20 → 1, Le Dinan : 12 → 1, Le Ponceau : 12 → 1).
+
+Le Loir (25 → 19) et La Dême (11 → 11, aucune fusion) ne se réduisent
+pas complètement à une seule ligne : deux raisons différentes, toutes
+les deux réelles plutôt qu'un problème de méthode : (1) de vrais
+embranchements à trois tronçons ou plus au même point (bras de moulin,
+courants sur l'histoire de ces rivières - vérifié : 5 points à degré 3
+rien que sur La Dême), où `linemerge` refuse à raison de choisir une
+direction plutôt qu'une autre ; (2) de vrais trous dans le tracé OSM
+(deux tronçons voisins du même cours d'eau qui ne se touchent pas du
+tout, jusqu'à 3,6 km d'écart mesuré sur un cas du Loir) - un maillage
+incomplet côté OpenStreetMap, rien à fusionner sans inventer une
+géométrie qui n'existe pas dans la donnée source.
+
+Propriétés recalculées par nom (pas par ligne fusionnée individuelle -
+un embranchement partage son point de jonction entre plusieurs bras,
+réattribuer fiablement chaque tronçon d'origine à son bras exact
+n'aurait servi à rien vu la donnée : `waterway`/`intermittent` ne
+varient quasiment jamais en cours de route pour un même cours d'eau
+nommé) : `waterway` le plus fréquent du groupe, `intermittent=yes`
+seulement si TOUS les tronçons du nom le sont, `ref:sandre` gardé s'il
+est identique partout dans le groupe. Le champ `tunnel` (passage busé)
+est en revanche abandonné à la fusion - resterait pertinent seulement
+sur le petit tronçon concerné, pas sur toute une rivière fusionnée.
+
+Testé (Playwright, même suite que plus haut rejouée sur le fichier
+fusionné) : 297 tronçons confirmés, styles et popups toujours corrects
+après la fusion (rivière épaisse, tronçon intermittent en pointillé
+clair, fossé fin, popup nom/type).
+
+## Vigieau : transparence, masque hors-territoire, hiérarchie de la popup, badge dashboard
+
+Quatre retours directs de l'utilisatrice sur la couche Vigieau.
+
+**Transparence** : `fillOpacity` de l'aplat de couleur abaissée de 0,5 à
+0,28 (`couleurVigieau`, `js/config.js`) - l'aplat plein masquait trop le
+fond de carte (routes, cours d'eau, limites communales) en dessous.
+
+**"Toute la couche région qui se charge"** : `clipperAuTerritoire`
+(existant) ne fait qu'un FILTRE par boîte englobante - il exclut les
+zones qui ne touchent le territoire nulle part, mais une zone qui le
+touche ne serait-ce qu'un peu (fréquent pour Vigieau, zones à l'échelle
+d'un bassin versant ou d'un département) garde toute son étendue réelle,
+pas juste la partie qui nous concerne. Un vrai découpage géométrique
+(cette zone, rognée pile au contour du territoire) demanderait soit une
+librairie de géométrie externe - impossible à vérifier dans cet
+environnement de développement au réseau restreint (`hubeau.eaufrance.fr`
+et la plupart des CDN y sont bloqués, comme documenté ailleurs dans ce
+fichier), impossible donc de garantir sans risque qu'elle soit
+correctement intégrée - soit un algorithme de découpe écrit à la main,
+risqué pour la même raison (aucun moyen de le vérifier visuellement ici).
+
+Solution retenue à la place, sans nouvelle dépendance : un **masque
+visuel** (`construireMasqueHorsTerritoire`, `js/map.js`) - un polygone
+"le monde entier moins le territoire" (grand rectangle englobant avec un
+trou à la forme exacte de l'EPCI, `couches/epci.geojson`), posé dans une
+pane Leaflet dédiée (`masque-donnees`, z-index 450) au-dessus de
+`overlayPane` (400, où vivent toutes les couches de données par défaut,
+y compris Vigieau). Comme le trou correspond pile à la vraie forme du
+territoire (mêmes ~4174 sommets que le contour EPCI, pas une
+approximation), rien à l'intérieur du territoire n'est jamais recouvert
+- seul ce qui déborde à l'extérieur disparaît sous le masque, quelle que
+soit la couche concernée (Vigieau aujourd'hui, n'importe quelle future
+couche "flux" national demain, sans code à ajouter par couche). Le
+contour pointillé de l'EPCI lui-même est posé dans une pane encore
+au-dessus (`masque-dessus`, 460) pour rester net par-dessus le masque.
+`interactive:false` sur le masque : ne capte aucun clic, la carte reste
+utilisable normalement en dessous.
+
+**Hiérarchie de la popup** : la liste des usages réglementés (jusqu'à
+23 sur la zone testée) était plate - nom + description empilés sans
+repère visuel, illisible même repliée dans son `<details>`.
+`grouperRestrictionsParThematique` (`js/popup.js`) regroupe par champ
+réel `thematique` (Arrosage, Lavage...), avec un sous-titre par groupe
+et un séparateur entre chaque usage individuel (`.popup-fiche-
+restriction-groupe`/`-theme`/`-item`, `css/style.css`).
+
+**Badge d'alerte sur le dashboard commune** : `alerteVigieauPourCommune`
+(`js/communes.js`) charge Vigieau indépendamment de sa case à cocher
+(`chargerCouche` direct, même mécanisme que les couches différées
+rouvertes depuis la fiche parcelle - ne l'affiche jamais sur la carte ni
+ne coche sa case), puis cherche la zone qui contient la commune par test
+point-dans-polygone sur le centre de sa boîte englobante (une commune
+n'a pas de zone Vigieau dédiée, les zones sont bien plus grandes qu'une
+commune - approximation suffisante). `construireBadgeVigieau` affiche un
+badge coloré par niveau à côté du nom de la commune (`#commune-titre`) -
+un vrai lien cliquable vers le PDF de l'arrêté quand disponible
+(`arreteRestriction.fichier`), un simple badge sinon ; rien du tout si
+aucune zone Vigieau ne concerne la commune (dashboard propre par défaut,
+pas de badge "aucune alerte" superflu).
+
+Testé (Playwright) : extraction des anneaux du masque vérifiée sur le
+vrai fichier `couches/epci.geojson` (anneau fermé, 4174 sommets,
+correspond au contour réel) ; popup Vigieau vérifiée avec un jeu de
+données réaliste à plusieurs thématiques (regroupement correct, usages
+non destinés aux particuliers toujours exclus) ; badge vérifié pour les
+trois cas (zone trouvée avec lien vers l'arrêté, zone trouvée sans lien,
+aucune zone) ; ouverture complète du dashboard vérifiée sans erreur avec
+l'emplacement du badge bien injecté à côté du titre. Rendu Leaflet réel
+du masque (panes, ordre d'empilement visuel) non vérifiable dans ce
+sandbox (Leaflet n'y charge pas, limite déjà documentée) - capture
+d'écran à confirmer une fois déployé.
+
+## Raccourcis réordonnés, tri des carburants par prix, sous-titres lisibles
+
+Trois retours directs de l'utilisatrice.
+
+**Ordre des raccourcis d'accueil** (`RACCOURCIS`, `js/config.js`) : les
+5 jugés les plus utiles au quotidien en premier, dans l'ordre demandé -
+carburant, boulangerie, courrier, casier colis, assistante maternelle.
+Ce dernier n'existait pas encore comme raccourci : filtre sur
+`properties.type === "Assistant maternel"` de la couche `petiteEnfance`
+(valeur confirmée sur les 63 assistants maternels du fichier), même
+principe que le filtre déjà existant pour "La boulangerie la plus
+proche" (`type === "bakery"`).
+
+**Tri des résultats carburant par prix** : le filtre par type de
+carburant existait déjà (`filtreCarburantActif`), mais le tri restait
+toujours par distance. Nouveau bloc `#results-tri-carburant`
+("Plus proche"/"Moins cher", `index.html`), visible seulement pour les
+résultats carburant (même logique d'affichage conditionnel que le
+filtre par type) : `triCarburantActif` (`js/proximite.js`) pilote le tri
+final dans `rendreResultatsProximite`, réinitialisé à "distance" à
+chaque nouvelle recherche.
+
+**Sous-titres illisibles dans les résultats** ("bakery", horaires au
+format OSM brut "Mo-Fr 08:00-19:00...") : `ajouterAuIndex`
+(`js/layers.js`) construisait le sous-titre des résultats de recherche/
+"près de chez moi" en concaténant tels quels les champs bruts de
+`subtitleFields` - directement exploitable pour des champs déjà en
+français (ex. `com_nom`), mais pas pour un type OSM ou des horaires au
+format machine. Nouveau point d'extension optionnel
+`layerConf.sousTitrePourFeature(feature)` (même principe que
+`iconePourFeature` déjà existant), qui prend le dessus sur
+`subtitleFields` quand présent :
+
+- **`sousTitreCommerce`** (`js/config.js`) : catégorie déjà traduite
+  (`categorieCommerce`, la même que celle affichée sur l'icône/dans la
+  popup) + statut "Ouvert maintenant"/"Fermé actuellement" résumé en un
+  mot (le détail complet des horaires reste dans la popup au clic) -
+  "Fermé définitivement" à la place pour un commerce dans
+  `COMMERCES_FERMES`.
+- **`sousTitreBanque`** : corrige au passage un vrai bug d'affichage
+  trouvé en testant - `subtitleFields: ["com_nom", "has_atm"]`
+  affichait le mot "true" en toutes lettres pour un distributeur
+  (`has_atm` est un booléen, pas du texte), et rien du tout pour une
+  agence (`has_atm: false`, traité comme une valeur vide par le filtre
+  générique). Remplacé par "Distributeur"/"Agence bancaire" en clair.
+
+Testé (Playwright) : ordre des 5 premiers raccourcis vérifié, tri
+carburant vérifié dans les deux sens (3 stations de test, ordre par
+distance puis par prix puis retour à la distance, tous corrects) ;
+sous-titres vérifiés pour un commerce ouvert, un commerce fermé
+(catalogué dans `COMMERCES_FERMES`), un commerce sans horaires, un DAB
+et une agence bancaire - aucun ne laisse plus fuiter de valeur brute
+("bakery", "true") ; confirmé que `ajouterAuIndex` utilise bien
+`sousTitrePourFeature` quand la config d'une couche le déclare.
+
 ## Ce qui reste à faire
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.

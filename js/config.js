@@ -107,8 +107,12 @@ function niveauVigieau(feature) {
         .toLowerCase();
     return NIVEAUX_VIGIEAU.find(n => texte.includes(n.motCle)) || NIVEAU_VIGIEAU_DEFAUT;
 }
+/* fillOpacity abaissée (0.5 -> 0.28) : retour direct de l'utilisatrice,
+   l'aplat plein masquait trop le fond de carte en dessous (routes,
+   cours d'eau, limites communales) pour une couche qui se superpose à
+   presque tout le reste du territoire en cas d'alerte large. */
 function couleurVigieau(feature) {
-    return { color: "#fff", weight: 1, fillColor: niveauVigieau(feature).color, fillOpacity: 0.5 };
+    return { color: "#fff", weight: 1, fillColor: niveauVigieau(feature).color, fillOpacity: 0.28 };
 }
 
 /* Une couleur par itinéraire (randonnées, itinéraires cyclables) plutôt
@@ -248,6 +252,34 @@ function iconeCommerce(feature) {
    affichable/masquable séparément depuis la légende du panneau. */
 function categoriePourFeature(feature) {
     return categorieCommerce((feature.properties || {}).type).id;
+}
+
+/* Point d'extension utilisé par layers.js (ajouterAuIndex) : sous-titre
+   affiché dans la recherche et "près de chez moi", à la place de
+   subtitleFields (["type", "opening_hours", "phone"]) qui affichait tel
+   quel le type OSM brut ("bakery") et les horaires au format OSM
+   ("Mo-Fr 08:00-19:00...") - illisible pour le grand public, retour
+   direct de l'utilisatrice. Catégorie déjà traduite
+   (categorieCommerce) + statut ouvert/fermé résumé en un mot plutôt que
+   la plage horaire complète (trop long pour une ligne de résultat, le
+   détail complet reste dans la popup au clic). */
+function sousTitreCommerce(feature) {
+    const props = feature.properties || {};
+    if (COMMERCES_FERMES[props.osm_id]) return "Fermé définitivement";
+    const cat = categorieCommerce(props.type);
+    const horaires = (typeof parserHorairesOsm === "function") ? parserHorairesOsm(props.opening_hours) : null;
+    const statut = horaires ? ((typeof estOuvertMaintenant === "function" && estOuvertMaintenant(horaires)) ? "Ouvert maintenant" : "Fermé actuellement") : null;
+    return [cat.label, statut].filter(Boolean).join(" · ");
+}
+
+/* Même souci que sousTitreCommerce, sur "banques" (subtitleFields
+   ["com_nom","has_atm"] affichait le mot "true" en toutes lettres pour
+   un distributeur, et rien du tout pour une agence - has_atm valant
+   false, un booléen filtré comme une valeur vide). */
+function sousTitreBanque(feature) {
+    const props = feature.properties || {};
+    const estDab = props.type === "atm";
+    return [props.com_nom, estDab ? "Distributeur" : "Agence bancaire"].filter(Boolean).join(" · ");
 }
 
 /* =========================================================
@@ -996,19 +1028,18 @@ const LAYERS = [
         id: "commerces", group: "commerces", label: "Commerces",
         file: "couches/commerces/commerces.geojson", type: "point",
         icon: "fa-solid fa-basket-shopping", color: PALETTE.feuille,
-        iconePourFeature: iconeCommerce,
+        iconePourFeature: iconeCommerce, sousTitrePourFeature: sousTitreCommerce,
         legend: TYPES_COMMERCES, legendDefaut: TYPE_COMMERCE_DEFAUT, categoriser: categoriePourFeature,
         lazy: false, searchable: true, cluster: true,
-        titleFields: ["name", "brand", "type"],
-        subtitleFields: ["type", "opening_hours", "phone"]
+        titleFields: ["name", "brand", "type"]
     },
     {
         id: "banques", group: "commerces", label: "Banques & DAB",
         file: "couches/commerces/banques.geojson", type: "point",
         icon: "fa-solid fa-money-bill-wave", color: PALETTE.ardoise,
+        sousTitrePourFeature: sousTitreBanque,
         lazy: false, searchable: true, cluster: true,
-        titleFields: ["name", "brand", "com_nom"],
-        subtitleFields: ["com_nom", "has_atm"]
+        titleFields: ["name", "brand", "com_nom"]
     },
     /* venteFerme (vente directe à la ferme) supprimée : filtrage précis sur
        le vrai polygone du territoire (voir README) donne 0 résultat réel -
@@ -1368,11 +1399,14 @@ const THEMES = [
    courrier"/"la boulangerie la plus proche" parlent à tout le monde,
    contrairement par exemple à "Assistante maternelle" (utile, mais à un
    public bien plus restreint) qui n'a donc plus sa place ici. */
+/* Ordre retour direct de l'utilisatrice : les 5 premiers sont les
+   raccourcis jugés les plus utiles au quotidien, dans cet ordre précis -
+   le reste suit sans ordre particulier demandé. */
 const RACCOURCIS = [
     {
-        label: "Où déposer mon courrier ?",
-        icon: "fa-solid fa-envelope",
-        layerIds: ["bal"]
+        label: "Carburant le plus proche de chez moi",
+        icon: "fa-solid fa-gas-pump",
+        layerIds: ["carburants"]
     },
     {
         label: "La boulangerie la plus proche",
@@ -1381,20 +1415,26 @@ const RACCOURCIS = [
         filtre: item => item.layer.feature && item.layer.feature.properties.type === "bakery"
     },
     {
-        label: "La pharmacie la plus proche",
-        icon: "fa-solid fa-prescription-bottle-medical",
-        layerIds: ["commerces"],
-        filtre: item => item.layer.feature && item.layer.feature.properties.type === "pharmacy"
-    },
-    {
-        label: "Stations essence près de chez moi",
-        icon: "fa-solid fa-gas-pump",
-        layerIds: ["carburants"]
+        label: "Où déposer mon courrier ?",
+        icon: "fa-solid fa-envelope",
+        layerIds: ["bal"]
     },
     {
         label: "Point relais / casier colis le plus proche",
         icon: "fa-solid fa-box",
         layerIds: ["lockers"]
+    },
+    {
+        label: "Assistante maternelle proche de chez moi",
+        icon: "fa-solid fa-baby",
+        layerIds: ["petiteEnfance"],
+        filtre: item => item.layer.feature && item.layer.feature.properties.type === "Assistant maternel"
+    },
+    {
+        label: "La pharmacie la plus proche",
+        icon: "fa-solid fa-prescription-bottle-medical",
+        layerIds: ["commerces"],
+        filtre: item => item.layer.feature && item.layer.feature.properties.type === "pharmacy"
     },
     {
         label: "Commerces près de chez moi",

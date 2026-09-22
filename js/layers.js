@@ -73,10 +73,18 @@ function ajouterAuIndex(feature, latlng, layerConf, layer) {
 
     const { icon, color } = resoudreIconeCouleur(feature, layerConf);
 
+    /* layerConf.sousTitrePourFeature (optionnel, même principe que
+       iconePourFeature) prend le dessus sur subtitleFields quand présent :
+       certains champs bruts (type OSM "bakery", horaires au format OSM
+       "Mo-Fr 08:00-19:00"...) ne sont pas présentables tels quels dans la
+       recherche/"près de chez moi" - retour direct de l'utilisatrice. */
+    const sousTitre = layerConf.sousTitrePourFeature
+        ? layerConf.sousTitrePourFeature(feature)
+        : (layerConf.subtitleFields || []).map(c => props[c]).filter(Boolean).join(" · ");
+
     window.indexRecherche.push({
         titre: String(titre),
-        sousTitre: (layerConf.subtitleFields || [])
-            .map(c => props[c]).filter(Boolean).join(" · "),
+        sousTitre,
         icon: icon,
         color: color,
         latlng: latlng,

@@ -15,13 +15,55 @@ L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r
 
 L.control.locate({ position: "topright", flyTo: true, keepCurrentZoomLevel: false }).addTo(map);
 
+/* Panes dédiées pour le masque hors-territoire (voir plus bas) : la
+   filtration par boîte englobante (clipperAuTerritoire, js/config.js)
+   exclut les zones qui ne touchent le territoire nulle part, mais une
+   zone qui le touche ne serait-ce qu'un peu (fréquent pour Vigieau, dont
+   les zones sont à l'échelle d'un bassin versant ou d'un département)
+   garde toute son étendue réelle - "toute la couche région qui se
+   charge", retour direct de l'utilisatrice. Plutôt que de découper
+   chaque géométrie au vrai contour du territoire (nécessiterait soit une
+   librairie de géométrie externe non vérifiable dans cet environnement
+   de développement au réseau restreint, soit un algorithme de découpe
+   maison risqué à écrire sans jamais pouvoir le tester visuellement
+   ici), un masque visuel : un polygone "monde entier moins le
+   territoire" (anneau extérieur + trou à la forme exacte de l'EPCI),
+   semi-opaque, posé au-dessus de TOUTE couche de données. Comme le trou
+   correspond pile à la vraie forme du territoire, rien à l'intérieur
+   n'est jamais affecté (le masque n'a littéralement aucune surface à cet
+   endroit) - seul ce qui déborde à l'extérieur (Vigieau aujourd'hui,
+   n'importe quelle future couche "flux" national) est recouvert, quelle
+   que soit sa géométrie propre. "masque-donnees" (z-index 450, au-dessus
+   du pane "overlayPane" à 400 où vivent toutes les couches de données
+   par défaut) porte le masque ; le contour pointillé de l'EPCI est posé
+   dans "masque-dessus" (460) pour rester net par-dessus, plutôt que
+   noyé sous le masque comme s'il était une couche de données ordinaire. */
+map.createPane("masque-donnees");
+map.getPane("masque-donnees").style.zIndex = 450;
+map.getPane("masque-donnees").style.pointerEvents = "none";
+map.createPane("masque-dessus");
+map.getPane("masque-dessus").style.zIndex = 460;
+
+function construireMasqueHorsTerritoire(geometrieTerritoire) {
+    const enveloppe = [[-179, -89], [179, -89], [179, 89], [-179, 89], [-179, -89]];
+    const polygones = geometrieTerritoire.type === "MultiPolygon"
+        ? geometrieTerritoire.coordinates
+        : [geometrieTerritoire.coordinates];
+    const trous = polygones.map(poly => poly[0]);
+    const anneaux = [enveloppe, ...trous].map(anneau => L.GeoJSON.coordsToLatLngs(anneau));
+    return L.polygon(anneaux, {
+        pane: "masque-donnees", interactive: false, stroke: false,
+        fillColor: "#FAFAF8", fillOpacity: 0.82
+    });
+}
 
 /* ---------- 2. Couches de référence (limites communes / EPCI) ---------- */
 fetch("couches/epci.geojson")
     .then(r => r.json())
     .then(data => {
-        L.geoJSON(data, { style: { color: PALETTE.riviere, weight: 2, fill: false, dashArray: "4 3" } }).addTo(map);
+        L.geoJSON(data, { pane: "masque-dessus", style: { color: PALETTE.riviere, weight: 2, fill: false, dashArray: "4 3" } }).addTo(map);
         bboxTerritoire = bboxFeature(data.features[0]);
+        construireMasqueHorsTerritoire(data.features[0].geometry).addTo(map);
     })
     .catch(err => console.error("epci.geojson :", err));
 
