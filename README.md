@@ -1184,6 +1184,17 @@ simplement rien. Les fonctions `construirePopupFontaine`/
 `construirePopupParking`/`construirePopupAntenne` devenues inutilisées
 ont été supprimées plutôt que laissées en code mort.
 
+**Aires de jeux** a rejoint la liste plus tard (même retour, même
+raison) : vérifié sur les 14 features du fichier, aucune n'a de `name`
+renseigné, `min_age`/`max_age`/`access` chacun sur une seule. En
+vérifiant, `searchable: true` s'est avéré déjà inerte pour cette couche
+avant même ce changement : `ajouterAuIndex` (`layers.js`) exige un
+titre non vide (issu de `titleFields`, donc `name` ici) pour indexer une
+entrée - `name` étant systématiquement absent, aucune des 14 aires de
+jeux n'a jamais été indexée. Laissé tel quel (le flag redevient actif de
+lui-même si `name` finit par être renseigné un jour dans OSM), pas
+retiré pour ce que ça change concrètement aujourd'hui.
+
 D'autres couches au contenu parfois tout aussi pauvre (toilettes
 publiques, petit patrimoine rural) ont volontairement été **gardées**
 avec leur fiche complète : décision explicite de l'utilisatrice de ne

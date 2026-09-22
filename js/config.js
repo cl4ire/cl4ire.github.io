@@ -667,8 +667,13 @@ const LAYERS = [
     },
     {
         id: "airesJeu", group: "services", label: "Aires de jeux",
+        /* sansPopup : voir fontaines/parkings/antennes plus haut, même
+           raison - vérifié sur les 14 features du fichier, aucune n'a de
+           "name" renseigné et min_age/max_age/access ne le sont chacun
+           que sur 1 seule. */
         file: "couches/services/airesJeu.geojson", type: "point",
         icon: "fa-solid fa-child-reaching", color: PALETTE.terracotta,
+        sansPopup: true,
         lazy: false, searchable: true, cluster: true,
         titleFields: ["name"],
         subtitleFields: ["min_age", "max_age"]
