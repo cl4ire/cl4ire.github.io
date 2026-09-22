@@ -1530,6 +1530,57 @@ l'ancien badge en le remplaçant par le nouveau sans le retirer, laissant
 un spinner orphelin indéfiniment affiché à côté du badge d'erreur -
 trouvé en testant le scénario d'échec puis de nouvelle tentative.
 
+## Ordre des icônes de la barre du haut
+
+Retour direct de l'utilisatrice : l'ordre n'était pas cohérent (Accueil,
+Recherche foncière, Actualités, À propos, Couches). Réordonné en
+Accueil → Couches → Recherche foncière → Actualités → À propos
+(`#topbar-actions` dans `index.html`) - la barre de recherche générale
+(adresse/lieu/service) reste à sa place actuelle, bien visible entre le
+logo et ces icônes, plutôt qu'intercalée parmi elles : c'est l'outil
+principal du site, la mélanger avec des icônes utilitaires la ferait
+paraître moins importante qu'elle ne l'est. Réorganisation par ID
+uniquement (aucun sélecteur CSS/JS du site ne dépendait de leur ordre
+dans le DOM), sans risque de régression.
+
+Au passage, `#recherche-button` a maintenant un `title="Recherche
+foncière"` (infobulle au survol) : son libellé texte est masqué sur
+petit écran (icône seule, `@media max-width: 780px`), l'infobulle
+comble ce manque de clarté sans reprendre la place qu'occuperait un
+libellé toujours visible.
+
+## Visite guidée (première visite)
+
+Suite de bulles qui met en avant quelques éléments clés (recherche,
+raccourcis, dashboard commune, couches, actualités), affichée
+automatiquement à la première visite. Fait maison en JS/CSS pur
+(`js/tour.js`) plutôt qu'avec une librairie de tour guidé tierce
+(Intro.js, Shepherd...), pour rester dans le même style visuel que le
+reste du site et ne pas ajouter de dépendance externe de plus.
+
+- **5 étapes** : barre de recherche, raccourcis "près de chez moi",
+  sélecteur de commune, bouton "Couches", bouton "Actualités"
+  (`ETAPES_VISITE` dans `js/tour.js`) - une étape dont l'élément cible
+  serait absent du DOM est sautée automatiquement plutôt que de mettre
+  en avant du vide.
+- **Effet spot** : un unique `box-shadow: 0 0 0 9999px rgba(...)` sur un
+  petit rectangle positionné exactement sur la cible (`#tour-spot`)
+  assombrit tout l'écran sauf cet élément - pas de masque/clip-path à
+  calculer pour "découper" un calque semi-transparent.
+- **Une seule fois** : mémorisé dans `localStorage`
+  (`geoberce_visite_vue`) une fois terminée ou passée ; en échec
+  d'accès (navigation privée stricte), la visite se relance à chaque
+  fois plutôt que de bloquer quoi que ce soit - dégradation sans casse.
+- **Rejouable** depuis "À propos" (`#tour-relancer`) : rouvre aussi
+  l'écran d'accueil au passage, pour que les étapes qui s'appuient
+  dessus (raccourcis, sélecteur de commune) restent visibles même si
+  l'utilisatrice l'avait déjà fermé.
+- **Bloque les clics en arrière-plan** tant qu'elle n'est pas fermée
+  (comportement voulu, pas juste un effet de bord) : `#tour` couvre tout
+  l'écran, seuls les boutons "Suivant"/"Passer" de la bulle restent
+  cliquables - un visiteur pressé peut passer la visite en un clic à
+  n'importe quelle étape.
+
 ## Ce qui reste à faire
 - **Vigicrues : endpoint et nom de champ À VÉRIFIER EN CONDITIONS
   RÉELLES**, voir la section dédiée plus haut — cocher la couche ; si

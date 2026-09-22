@@ -478,6 +478,34 @@ button { font-family: inherit; cursor: pointer; }
 .about-source { font-size: 11.5px; color: var(--ardoise); }
 .info-close { position: absolute; top: 10px; right: 14px; background: none; border: none; font-size: 20px; color: var(--ardoise); }
 
+/* ---------- VISITE GUIDÉE (première visite) ---------- */
+#tour[hidden] { display: none; }
+#tour { position: fixed; inset: 0; z-index: 2000; }
+/* box-shadow géant plutôt qu'un vrai calque semi-transparent découpé :
+   une seule règle CSS suffit à assombrir tout l'écran SAUF le
+   rectangle de la cible, sans masque/clip-path à calculer. */
+#tour-spot {
+    position: fixed;
+    border-radius: 12px;
+    box-shadow: 0 0 0 9999px rgba(20, 30, 28, 0.6);
+    transition: top 0.3s ease, left 0.3s ease, width 0.3s ease, height 0.3s ease;
+    pointer-events: none;
+}
+#tour-bulle {
+    position: fixed;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    padding: 16px;
+    transition: top 0.3s ease, bottom 0.3s ease, left 0.3s ease;
+}
+#tour-texte { font-size: 13.5px; color: #2A2A28; margin-bottom: 14px; line-height: 1.5; }
+.tour-bas { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+#tour-compteur { font-size: 11.5px; color: var(--ardoise); font-weight: 700; }
+.tour-boutons { display: flex; align-items: center; gap: 12px; }
+.tour-bouton-texte { border: none; background: none; color: var(--ardoise); font-size: 12.5px; }
+#tour-suivant { padding: 9px 16px; }
+
 .contact-form { text-align: left; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--bordure); }
 .contact-titre { font-weight: 700; font-size: 13.5px; color: #2A2A28; margin-bottom: 10px; }
 .contact-statut { margin-top: 10px; font-size: 12.5px; min-height: 15px; }
