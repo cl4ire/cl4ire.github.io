@@ -1914,9 +1914,20 @@ Alternative envisagée avec l'utilisatrice : Hub'Eau
 (`hubeau.eaufrance.fr`), l'API officielle française conçue pour l'usage
 externe (contrairement à celle de Vigicrues) - propose bien plus que la
 seule vigilance crues (hydrométrie, qualité de l'eau, piézométrie...).
-Non vérifiable depuis cet environnement (accès réseau restreint au
-moment d'écrire ceci) : reste à explorer en conditions réelles pour
-confirmer les endpoints/schémas exacts avant toute implémentation.
+**Qualité de l'eau potable** explorée par la suite et bien implémentée
+(voir plus bas, carte du dashboard commune + couche cartographique).
+
+**Niveau/débit en temps réel (hydrométrie) : abandonné.** Testé en
+conditions réelles par l'utilisatrice (le point bloquant de ce
+sandbox) : `hubeau.eaufrance.fr/api/v1/hydrometrie/referentiel/stations`
+renvoie "Forbidden - You don't have permission to access this
+resource" - pas un simple souci de schéma de champs corrigible dans le
+code, un vrai blocage d'accès à l'endpoint depuis son navigateur.
+Alternative proposée (page officielle de documentation de l'API avec
+son bouton "Try it out", plus fiable qu'une URL tapée à la main) jamais
+retentée - laissé de côté, pas de couche hydrométrie sur ce site pour
+l'instant. À reconsidérer si l'accès à cette API se débloque un jour
+(reprendre depuis cette section).
 
 ## Filtrage territorial de Vigieau
 
