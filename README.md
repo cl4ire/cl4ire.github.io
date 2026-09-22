@@ -1787,6 +1787,79 @@ encore en hiver, le 15 déjà en été, le 15 septembre encore en été, le
 existant, et des plages non reconnues, continuent de fonctionner comme
 avant (testés en non-régression).
 
+**Mise à jour** : retour de l'utilisatrice - une fois les vraies
+horaires saisies dans `couches/services/dechets.geojson`, aucune des
+trois déchèteries n'affichait ses horaires dans la popup. En cause,
+deux écarts entre la donnée réellement saisie à la main et la syntaxe
+stricte que `parserHorairesOsm` acceptait :
+
+- `Sept 15-Jun 14: ...` (abréviation française à 4 lettres) au lieu du
+  `Sep` anglais à 3 lettres attendu par la regex de plage saisonnière -
+  le mois entier échouait donc à être reconnu comme une saison.
+  `dateOsmDansPlage` compare désormais seulement les 3 premières lettres
+  du mot (insensible à la casse), ce qui accepte `Sep` comme `Sept`
+  sans rien changer pour les formats déjà corrects.
+- `Mo,Fr,Sa:9:30-12:30` (`:` entre la liste de jours et les horaires)
+  au lieu de l'espace attendu (`Mo,Fr,Sa 9:30-12:30`) - la recherche du
+  premier espace pour séparer les deux ne trouvait rien et ignorait le
+  bloc entier. La liste de jours est maintenant repérée par motif
+  (`Mo`/`Tu`/`We`/`Th`/`Fr`/`Sa`/`Su` et leurs plages/listes) plutôt que
+  par position, et ce qui suit (espace, `:`, ou les deux) est retiré
+  quel que soit le séparateur réellement utilisé.
+
+Un bloc qui, malgré ça, ne redonne pas une liste d'horaires valides
+(ex. deux plages saisonnières collées sans point-virgule entre elles,
+un vrai oubli de saisie plutôt qu'une variante de format) est
+maintenant ignoré silencieusement au lieu d'afficher du texte
+tronqué/corrompu dans la popup - mieux vaut ne rien montrer pour ce
+jour-là que quelque chose de faux. Vérifié sur l'ensemble des valeurs
+`opening_hours` réellement présentes dans le dépôt (108 valeurs
+distinctes, tous types de couches confondus) : aucune sortie
+corrompue, aucun format qui marchait avant qui casse maintenant.
+
+## Indicateur de chargement du panneau recherche foncière
+
+Retour de l'utilisatrice : depuis l'accueil, la recherche rapide de
+parcelle (`#hero-parcelle`) ouvre bien le panneau complet, mais pendant
+le chargement des données foncières (`chargerDonneesFoncieres`, peut
+prendre plusieurs secondes la première fois - cadastre, DVF, DPE, SUP,
+bâtiments) rien ne montrait clairement que ça travaillait, donnant
+l'impression que la recherche ne fonctionnait pas.
+
+Le message `#rf-statut` ("Chargement des données...") existait déjà
+mais restait un texte statique discret. Il porte maintenant une icône
+`fa-circle-notch fa-spin` (même motif que le chargement de la fiche
+parcelle dans les popups, `.popup-fiche-chargement`) et une classe
+`.rf-statut-chargement` (couleur primaire, icône+texte centrés) tant
+que le chargement est en cours. Cette classe est retirée dès que
+`mettreAJourStatut()` affiche un vrai résultat (nombre de parcelles),
+ou que le message "zoomez pour lancer une recherche" s'affiche à la
+place (carte pas assez zoomée) - dans les deux cas ce n'est plus un
+état de chargement. Comme `chargerDonneesFoncieres` est idempotente
+(couches déjà chargées mises en cache), les ouvertures suivantes du
+panneau affichent le spinner un instant à peine, le temps que
+`mettreAJourStatut()` s'exécute.
+
+## Légende des antennes-relais (couleur par opérateur)
+
+La couleur par opérateur (voir plus haut, "Parkings, vente directe à
+la ferme, antennes-relais...") n'était visible qu'en devinant sur la
+carte - aucune légende n'indiquait à quoi correspondait chaque
+couleur. `OPERATEURS_ANTENNES` (`js/config.js`) porte maintenant un
+`label`/`icon` par opérateur en plus de sa couleur, plus une entrée par
+défaut `OPERATEUR_ANTENNE_DEFAUT` ("Autre / non renseigné"), et la
+couche `antennes` déclare `legend`/`legendDefaut`/`categoriser` -
+exactement le même mécanisme déjà utilisé par les commerces
+(`TYPES_COMMERCES`/`categoriePourFeature`, voir `construireLegende`
+dans `js/panel.js`) : une légende repliable apparaît sous la couche
+dans le panneau, avec une case à cocher par opérateur (affichable/
+masquable indépendamment, comme les catégories de commerces) en plus
+d'expliquer les couleurs. Vérifié sur les 33 antennes réelles du
+fichier : la répartition par catégorie (Orange 5, SFR 5, Bouygues 1,
+Free 3, Autre 19) correspond à celle déjà validée pour la coloration
+des marqueurs, et la légende générée affiche bien les 5 entrées avec
+les bonnes couleurs/libellés.
+
 ## Ce qui reste à faire
 - **Vigicrues : endpoint et nom de champ À VÉRIFIER EN CONDITIONS
   RÉELLES**, voir la section dédiée plus haut — cocher la couche ; si

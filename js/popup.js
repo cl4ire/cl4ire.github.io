@@ -153,8 +153,11 @@ function jourOsmAujourdhui() {
    4*100+31 par défaut si aucun jour n'est précisé). */
 const ORDRE_MOIS_OSM = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 function dateOsmDansPlage(mois1, jour1, mois2, jour2, moisActuel, jourActuel) {
-    const i = ORDRE_MOIS_OSM.indexOf(mois1.toUpperCase());
-    const j = ORDRE_MOIS_OSM.indexOf(mois2.toUpperCase());
+    /* .slice(0,3) : tolère les variantes à 4 lettres et + rencontrées dans
+       les données saisies à la main ("Sept" pour septembre) plutôt que
+       d'exiger la forme anglaise stricte à 3 lettres de la spec OSM. */
+    const i = ORDRE_MOIS_OSM.indexOf(mois1.slice(0, 3).toUpperCase());
+    const j = ORDRE_MOIS_OSM.indexOf(mois2.slice(0, 3).toUpperCase());
     if (i === -1 || j === -1) return true; // motif non reconnu : ne filtre pas plutôt que de tout masquer
     const debut = i * 100 + (jour1 ? Number(jour1) : 1);
     const fin = j * 100 + (jour2 ? Number(jour2) : 31);
@@ -209,20 +212,33 @@ function parserHorairesOsm(valeur) {
            actuelle est simplement ignoré, pas affiché en dehors de sa
            période - le reste du bloc (jours + horaires) est traité
            normalement une fois la plage retirée. */
-        const saison = bloc.match(/^([A-Za-z]{3})(?:\s+(\d{1,2}))?\s*-\s*([A-Za-z]{3})(?:\s+(\d{1,2}))?\s*:\s*(.+)$/);
+        const saison = bloc.match(/^([A-Za-z]{3,9})(?:\s+(\d{1,2}))?\s*-\s*([A-Za-z]{3,9})(?:\s+(\d{1,2}))?\s*:\s*(.+)$/);
         if (saison) {
             const [, mois1, jour1, mois2, jour2, reste] = saison;
             if (!dateOsmDansPlage(mois1, jour1, mois2, jour2, moisActuel, jourActuel)) return;
             bloc = reste.trim();
         }
-        const espace = bloc.indexOf(" ");
-        if (espace === -1) return;
-        const jours = developperJoursOsm(bloc.slice(0, espace));
-        const horaireBrut = bloc.slice(espace + 1).trim();
+        /* Le séparateur entre la liste des jours et les horaires est
+           censé être un espace ("Mo-Sa 09:00-12:00"), mais les données
+           saisies à la main utilisent parfois ":" ("Mo,Fr,Sa:9:30-
+           12:30") : on capture d'abord la liste de jours par motif plutôt
+           que par position, puis on retire l'espace et/ou le ":" qui suit,
+           quel que soit celui utilisé. */
+        const motifJours = bloc.match(/^((?:Mo|Tu|We|Th|Fr|Sa|Su)(?:[-,](?:Mo|Tu|We|Th|Fr|Sa|Su))*)/);
+        if (!motifJours) return;
+        const jours = developperJoursOsm(motifJours[1]);
+        const horaireBrut = bloc.slice(motifJours[0].length).replace(/^[\s:]+/, "").trim();
         if (!jours.length) return;
+        const ferme = /^off$|^closed$/i.test(horaireBrut);
+        const segments = horaireBrut.split(",").map(s => s.trim());
+        /* Un bloc mal formé (ex. deux plages saisonnières collées sans
+           point-virgule entre elles) produit un horaireBrut qui ne
+           ressemble à rien de connu : on préfère ne rien afficher plutôt
+           que du texte corrompu dans la popup. */
+        if (!ferme && !segments.every(s => /^\d{1,2}:\d{2}-\d{1,2}:\d{2}$/.test(s))) return;
         auMoinsUn = true;
         jours.forEach(j => {
-            horaires[j] = /^off$|^closed$/i.test(horaireBrut) ? [] : horaireBrut.split(",").map(s => s.trim());
+            horaires[j] = ferme ? [] : segments;
         });
     });
     return auMoinsUn ? horaires : null;
@@ -1086,13 +1102,12 @@ function construirePopupDechet(props) {
 
 function construirePopupDecheterie(props) {
     const operateur = operateurDechet(props.operator);
-    /* opening_hours pas encore renseigné dans le fichier source au
-       moment d'écrire ce code (voir README) : géré exactement comme
-       les commerces (parserHorairesOsm/construireBadgeOuvert/
-       construireLignesHoraires, y compris les horaires saisonnières
-       été/hiver, ex. "Apr-Sep: Mo-Sa 09:00-19:00; Oct-Mar: Mo-Sa
-       09:00-17:00") - n'affiche simplement rien tant que le champ est
-       vide, comme partout ailleurs sur le site. */
+    /* Géré exactement comme les commerces (parserHorairesOsm/
+       construireBadgeOuvert/construireLignesHoraires, y compris les
+       horaires saisonnières été/hiver, ex. "Apr-Sep: Mo-Sa 09:00-19:00;
+       Oct-Mar: Mo-Sa 09:00-17:00") - n'affiche simplement rien tant que
+       le champ est vide ou mal formé, comme partout ailleurs sur le
+       site. */
     const horaires = parserHorairesOsm(props.opening_hours);
     const lignesHoraires = construireLignesHoraires(horaires);
 
