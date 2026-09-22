@@ -122,7 +122,13 @@ function togglerPanneauCouches(forcerOuvert) {
 }
 
 document.getElementById("menu-button").addEventListener("click", () => togglerPanneauCouches());
-document.getElementById("layers-close").addEventListener("click", () => togglerPanneauCouches(false));
+document.getElementById("layers-close").addEventListener("click", () => {
+    /* Fermer le panneau entier (×) pendant que la recherche foncière est
+       affichée revient à quitter cette vue : même vidage automatique de
+       la sélection que le bouton retour (fermerRechercheFonciere). */
+    if (!document.getElementById("recherche-view").hidden) viderSelectionCarte(map);
+    togglerPanneauCouches(false);
+});
 
 document.getElementById("actu-button").addEventListener("click", () => toggleActuDropdown());
 document.getElementById("actu-dropdown-close").addEventListener("click", () => toggleActuDropdown(false));
@@ -205,4 +211,4 @@ document.getElementById("home-button").addEventListener("click", () => {
 document.getElementById("results-back").addEventListener("click", fermerResultatsProximite);
 
 document.getElementById("recherche-button").addEventListener("click", () => ouvrirRecherche(map));
-document.getElementById("recherche-back").addEventListener("click", fermerVuesPanneau);
+document.getElementById("recherche-back").addEventListener("click", () => fermerRechercheFonciere(map));

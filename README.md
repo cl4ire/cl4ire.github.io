@@ -1566,6 +1566,17 @@ paraître moins importante qu'elle ne l'est. Réorganisation par ID
 uniquement (aucun sélecteur CSS/JS du site ne dépendait de leur ordre
 dans le DOM), sans risque de régression.
 
+**Mise à jour** : retour de l'utilisatrice - Recherche foncière et
+À propos partagent le même gabarit de bouton (icône + libellé masqué
+sur mobile, voir juste en dessous), plus cohérent de les mettre l'un à
+côté de l'autre plutôt que de les séparer par les Actualités. Ordre
+final : Accueil → Couches → Actualités → Recherche foncière → À propos.
+Vérifié que rien ne dépend de l'ordre exact dans le DOM (toujours par
+ID, `#topbar-actions` reste en `display:flex` simple sans
+`nth-child`), et que la visite guidée (étapes "Couches" puis
+"Actualités") continue de cibler les bons éléments par sélecteur CSS,
+pas par position - testée entièrement, aucune régression.
+
 Au passage, `#recherche-button` a maintenant un `title="Recherche
 foncière"` (infobulle au survol) : son libellé texte est masqué sur
 petit écran (icône seule, `@media max-width: 780px`), l'infobulle
@@ -1859,6 +1870,30 @@ fichier : la répartition par catégorie (Orange 5, SFR 5, Bouygues 1,
 Free 3, Autre 19) correspond à celle déjà validée pour la coloration
 des marqueurs, et la légende générée affiche bien les 5 entrées avec
 les bonnes couleurs/libellés.
+
+## Fermer la recherche foncière vide automatiquement la sélection
+
+Retour direct de l'utilisatrice : fermer le panneau recherche foncière
+(flèche retour, ou le "×" du panneau pendant que cette vue est
+affichée) laissait les parcelles surlignées sur la carte, obligeant à
+cliquer "Vider la sélection" séparément - contre-intuitif, fermer le
+panneau devrait suffire à en effacer les traces sur la carte.
+
+`fermerRechercheFonciere(map)` (`js/recherche.js`) enchaîne
+`viderSelectionCarte(map)` (déjà existant, utilisé par le bouton
+"Vider la sélection sur la carte") puis `fermerVuesPanneau()`, branché
+sur la flèche retour (`#recherche-back`, `js/map.js`) à la place de
+`fermerVuesPanneau` seul. Le "×" qui ferme le panneau entier
+(`#layers-close`) ne passe pas par cette même route (il ne change pas
+de vue, juste la visibilité du panneau) : vide donc la sélection
+séparément, seulement si la vue recherche foncière était affichée au
+moment du clic - pas d'effet si on ferme le panneau depuis l'arbre de
+couches normal, où il n'y a de toute façon rien à vider.
+
+Testé : fermeture par la flèche retour (removeLayer appelé, bouton
+"Vider" redésactivé, vue normale réaffichée) et par le "×" dans les
+deux cas (vue recherche affichée → vide ; vue normale affichée → ne
+touche à rien).
 
 ## Ce qui reste à faire
 - **Vigicrues : endpoint et nom de champ À VÉRIFIER EN CONDITIONS
