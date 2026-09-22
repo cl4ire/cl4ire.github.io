@@ -280,6 +280,40 @@ function stylePrixMutation(feature) {
 }
 
 /* =========================================================
+   COURS D'EAU (OpenStreetMap, extrait statique)
+   Demande directe de l'utilisatrice, envisagé un temps via Hub'Eau -
+   mais Hub'Eau ne fournit pas le tracé du réseau hydrographique
+   (uniquement des stations de mesure ponctuelles), le tracé vient donc
+   d'OSM. Même méthode que les autres couches OSM du site (voir la
+   section "Couches converties en fichiers statiques" du README) :
+   export overpass-turbo.eu (`way["waterway"~"^(river|stream|canal|
+   drain|ditch)$"]`) sur le rectangle englobant le territoire, filtré
+   ensuite par un vrai test point-dans-polygone contre couches/epci.geojson
+   (1431 tronçons dans l'export brut, 401 réellement dans le territoire).
+   Une ligne est gardée dès qu'AU MOINS UN de ses points tombe dans le
+   polygone plutôt que de découper le tronçon pile à la frontière : un
+   cours d'eau qui sort du territoire sur quelques mètres reste lisible
+   d'un seul tenant plutôt que tronqué net. */
+const LABELS_COURS_EAU = {
+    river: "Rivière", stream: "Ruisseau", canal: "Canal",
+    drain: "Fossé de drainage", ditch: "Fossé"
+};
+/* Épaisseur dégressive par importance (rivière > canal > ruisseau >
+   fossé), plutôt qu'un trait uniforme qui noierait les vraies rivières
+   (Le Loir...) au milieu des centaines de petits fossés agricoles.
+   Tronçons intermittents (à sec une partie de l'année, tag OSM
+   "intermittent=yes") en trait plus clair et pointillé, même code
+   visuel que la ligne pointillée de l'EPCI (js/map.js) - distingue d'un
+   coup d'œil un vrai ruisseau permanent d'un fossé qui ne coule qu'en
+   hiver. */
+function styleCoursEau(feature) {
+    const type = feature.properties.waterway;
+    const weight = type === "river" ? 3 : type === "canal" ? 2.5 : type === "stream" ? 1.5 : 1;
+    const intermittent = feature.properties.intermittent === "yes";
+    return { color: PALETTE.riviere, weight, opacity: intermittent ? 0.55 : 0.85, dashArray: intermittent ? "4 3" : null };
+}
+
+/* =========================================================
    DÉCHÈTERIES / TRI
    Une seule couche mélange trois choses bien différentes (champ
    "type") : déchèterie ("centre"), composteur partagé ("compost"), et
@@ -1114,6 +1148,16 @@ const LAYERS = [
         type: "point", icon: "fa-solid fa-tree", color: PALETTE.foret,
         iconePourFeature: iconePointRemarquableBerce,
         lazy: false, searchable: true, cluster: true,
+        titleFields: ["name"],
+        subtitleFields: []
+    },
+    {
+        id: "coursEau", group: "tourisme", label: "Cours d'eau (rivières, ruisseaux)",
+        /* Voir plus haut dans ce fichier (LABELS_COURS_EAU/styleCoursEau)
+           pour le détail de l'extraction et le choix du style. */
+        file: "couches/tourisme/cours_eau.geojson", type: "line",
+        color: PALETTE.riviere, styleFn: styleCoursEau,
+        lazy: true, searchable: true, cluster: false,
         titleFields: ["name"],
         subtitleFields: []
     },

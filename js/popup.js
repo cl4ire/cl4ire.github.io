@@ -1053,6 +1053,33 @@ function construirePopupQualiteEau(props) {
     </div>`;
 }
 
+/* nom !== type : la ligne "Ruisseau"/"Rivière"... n'est ajoutée que
+   quand le titre affiché est un vrai nom propre (ex. "Le Rhonne") -
+   sinon ("Ruisseau" utilisé comme titre faute de nom OSM) elle
+   répéterait exactement le titre juste au-dessus, pour rien. */
+function construirePopupCoursEau(props) {
+    const type = LABELS_COURS_EAU[props.waterway] || "Cours d'eau";
+    const nom = premierChampValide(props, ["name"]) || type;
+    const couleur = PALETTE.riviere;
+
+    const lignes = [
+        nom !== type ? `<div class="popup-fiche-ligne"><i class="fa-solid fa-water"></i> ${type}</div>` : null,
+        props.intermittent === "yes" ? `<div class="popup-fiche-ligne"><i class="fa-solid fa-droplet-slash"></i> Intermittent : peut s'assécher en été</div>` : null,
+        props.tunnel === "culvert" ? `<div class="popup-fiche-precision">Passe en partie sous terre (busé) sur ce tronçon.</div>` : null
+    ].filter(Boolean);
+
+    return `<div class="popup-fiche">
+        <div class="popup-fiche-entete">
+            <div class="popup-fiche-icon" style="background:${couleur}"><i class="fa-solid fa-water"></i></div>
+            <div class="popup-fiche-titre-wrap">
+                <div class="popup-fiche-tag" style="color:${couleur}">${type}</div>
+                <div class="popup-fiche-titre">${echapperHtml(nom)}</div>
+            </div>
+        </div>
+        ${lignes.length ? `<div class="popup-fiche-section">${lignes.join("")}</div>` : ""}
+    </div>`;
+}
+
 const LABELS_INTERNET_BIBLIOTHEQUE = { yes: "Accès Internet", wlan: "Wifi disponible", terminal: "Poste informatique" };
 function construirePopupBibliotheque(props) {
     const nom = premierChampValide(props, ["name"]) || "Bibliothèque";
@@ -2089,6 +2116,7 @@ function construirePopup(feature, layerConf) {
     else if (layerConf.id === "prixImmobilier") html = construirePopupPrixCommune(props);
     else if (layerConf.id === "demographie") html = construirePopupDemographie(props);
     else if (layerConf.id === "qualiteEau") html = construirePopupQualiteEau(props);
+    else if (layerConf.id === "coursEau") html = construirePopupCoursEau(props);
     else if (layerConf.id === "zonagePLUi") html = construirePopupZonePLUi(props);
     else if (layerConf.id === "rga") html = construirePopupRga(props);
     else if (layerConf.id === "vigieau") html = construirePopupVigieau(props);

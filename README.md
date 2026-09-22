@@ -2395,6 +2395,49 @@ utilisant la même construction générique que les autres choroplèthes
 déjà en production (démographie, prix immobilier, CATNAT), aucune
 raison de fonctionner différemment en conditions réelles.
 
+## Cours d'eau (rivières, ruisseaux)
+
+Demande directe de l'utilisatrice, envisagée un temps via Hub'Eau -
+mais Hub'Eau ne fournit que des stations de mesure ponctuelles, pas le
+tracé du réseau hydrographique lui-même. Le tracé vient donc
+d'OpenStreetMap, avec la même méthode que les autres couches OSM du
+site (voir "Couches converties en fichiers statiques" plus haut) :
+export overpass-turbo.eu sur le rectangle englobant le territoire
+(`way["waterway"~"^(river|stream|canal|drain|ditch)$"]`), envoyé par
+l'utilisatrice, puis filtré côté script par un vrai test
+point-dans-polygone contre `couches/epci.geojson` - 1431 tronçons dans
+l'export brut, 401 réellement dans le territoire une fois le
+débordement sur les communes limitrophes écarté (couches/tourisme/cours_eau.geojson).
+Une ligne est gardée dès qu'au moins un de ses points tombe dans le
+polygone plutôt que d'être découpée pile à la frontière : un cours
+d'eau qui sort du territoire sur quelques mètres reste lisible d'un
+seul tenant.
+
+Nouvelle couche `coursEau` (`js/config.js`, groupe "tourisme" - à côté
+des points remarquables de la forêt de Bercé) :
+
+- **`styleCoursEau`** : épaisseur dégressive par type (rivière 3px,
+  canal 2,5px, ruisseau 1,5px, fossé/drain 1px) plutôt qu'un trait
+  uniforme qui aurait noyé les vraies rivières (Le Loir, la Veuve...)
+  au milieu des centaines de petits fossés agricoles. Tronçons
+  intermittents (`intermittent=yes`, peuvent s'assécher en été) en
+  trait plus clair et pointillé - même code visuel que le contour EPCI
+  déjà en pointillés (`js/map.js`).
+- **`construirePopupCoursEau`** (`js/popup.js`) : nom si disponible
+  (172 tronçons sur 401 sont nommés), type (rivière/ruisseau/canal/
+  fossé), alerte "intermittent" et mention des passages busés/souterrains
+  (`tunnel=culvert`, 99 tronçons - explique une ligne qui semble
+  s'interrompre sans raison sur la carte).
+
+Testé (Playwright : fichier chargé directement, `L.geoJSON`/rendu
+Leaflet réel non vérifiable dans ce sandbox comme les autres couches -
+voir plus haut) : 401 tronçons confirmés (284 ruisseaux, 54 rivières,
+51 fossés, 11 fossés de drainage, 1 canal), styles vérifiés pour les
+trois cas (rivière épaisse, tronçon intermittent en pointillé clair,
+fossé fin), popups vérifiées (nom + type pour une rivière nommée,
+libellé générique "Ruisseau" pour un tronçon sans nom, alerte
+"peut s'assécher en été" pour un tronçon intermittent).
+
 ## Ce qui reste à faire
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.
