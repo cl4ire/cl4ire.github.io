@@ -134,6 +134,42 @@ function ouvrirPopupIndex(map, item) {
 
 function construireCoucheDonnees(data, layerConf) {
 
+    function calculerStyle(feature) {
+        if (layerConf.styleFn) {
+            return layerConf.styleFn(feature);
+        }
+        if (layerConf.type === "line") {
+            return { color: layerConf.color, weight: 3, opacity: 0.8 };
+        }
+        if (layerConf.type === "polygon") {
+            return { color: layerConf.color, weight: 1, fillColor: layerConf.color, fillOpacity: 0.25 };
+        }
+        if (layerConf.type === "choropleth") {
+            const v = feature.properties[layerConf.valueField];
+            return { color: "#fff", weight: 1, fillColor: couleurPrix(v), fillOpacity: 0.6 };
+        }
+        return {};
+    }
+
+    /* Surbrillance de la ligne sélectionnée (randonnées, itinéraires
+       cyclables...) : une seule à la fois PAR COUCHE (une ligne mise en
+       avant côté rando n'éteint pas une sélection côté vélo) - état
+       fermé sur cet appel de construireCoucheDonnees, pas une variable
+       globale au module. */
+    let ligneSurbrillance = null;
+    function retirerSurbrillanceLigne() {
+        if (ligneSurbrillance) {
+            ligneSurbrillance.layer.setStyle(ligneSurbrillance.styleOriginal);
+            ligneSurbrillance = null;
+        }
+    }
+    function surbrillerLigne(layer, styleOriginal) {
+        retirerSurbrillanceLigne();
+        layer.setStyle({ weight: styleOriginal.weight + 4, opacity: 1 });
+        layer.bringToFront();
+        ligneSurbrillance = { layer, styleOriginal };
+    }
+
     let cible = L.geoJSON(null, {
 
         pointToLayer: function (feature, latlng) {
@@ -142,24 +178,37 @@ function construireCoucheDonnees(data, layerConf) {
             return marker;
         },
 
-        style: function (feature) {
-            if (layerConf.styleFn) {
-                return layerConf.styleFn(feature);
-            }
-            if (layerConf.type === "line") {
-                return { color: layerConf.color, weight: 3, opacity: 0.8 };
-            }
-            if (layerConf.type === "polygon") {
-                return { color: layerConf.color, weight: 1, fillColor: layerConf.color, fillOpacity: 0.25 };
-            }
-            if (layerConf.type === "choropleth") {
-                const v = feature.properties[layerConf.valueField];
-                return { color: "#fff", weight: 1, fillColor: couleurPrix(v), fillOpacity: 0.6 };
-            }
-            return {};
-        },
+        style: calculerStyle,
 
         onEachFeature: function (feature, layer) {
+            if (layerConf.type === "line" && typeof layer.getLatLngs === "function") {
+                /* Zone de clic élargie : une ligne fine (3px visible) est
+                   difficile à cliquer précisément, et sans marge un clic
+                   à côté retombe sur ce qu'il y a en dessous (ex. le
+                   contour de commune, lui-même cliquable) plutôt que sur
+                   l'itinéraire - retour direct de l'utilisatrice. Une
+                   polyligne invisible bien plus large (weight 16),
+                   superposée, sert de vraie cible de clic sans changer
+                   l'apparence ; la ligne visible d'origine devient
+                   purement décorative (interactive: false), toute
+                   l'interaction passe par cette zone de clic, y compris
+                   la surbrillance au clic (deuxième retour) et le
+                   retour à l'état d'origine à la fermeture de la popup. */
+                const styleOriginal = calculerStyle(feature);
+                layer.options.interactive = false;
+
+                const zoneClic = L.polyline(layer.getLatLngs(), { weight: 16, opacity: 0, interactive: true });
+                if (!layerConf.sansPopup) {
+                    zoneClic.bindPopup(construirePopup(feature, layerConf), OPTIONS_POPUP);
+                }
+                zoneClic.on("click", () => surbrillerLigne(layer, styleOriginal));
+                zoneClic.on("popupclose", retirerSurbrillanceLigne);
+                cible.addLayer(zoneClic);
+
+                ajouterAuIndex(feature, layer.getBounds ? layer.getBounds().getCenter() : null, layerConf, zoneClic);
+                return;
+            }
+
             /* sansPopup : quelques couches dont les données OSM sont
                presque toujours trop pauvres pour justifier une fiche
                (juste un point d'intérêt à repérer sur la carte, sans

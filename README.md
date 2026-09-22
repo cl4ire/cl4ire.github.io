@@ -1604,6 +1604,45 @@ reste du site et ne pas ajouter de dépendance externe de plus.
   cliquables - un visiteur pressé peut passer la visite en un clic à
   n'importe quelle étape.
 
+## Itinéraires (randonnées, vélo) : couleurs distinctes, clic plus tolérant, surbrillance
+
+Trois retours groupés de l'utilisatrice sur ces deux couches en ligne :
+les tracés se mélangeaient tous dans la même couleur, cliquer dessus
+retombait souvent sur le contour de la commune en dessous, et rien
+n'indiquait quel tracé était sélectionné.
+
+- **Couleur par itinéraire** : `couleurItineraire` (`js/config.js`)
+  attribue une couleur distincte à chaque tracé, dans l'ordre
+  d'apparition et par couche (rando et vélo ont chacune leur propre
+  compteur, pas mélangés). Une première version utilisait un hash de
+  l'identifiant du tracé plutôt qu'un compteur - testé, et un hash peut
+  faire retomber deux itinéraires sur la même couleur même avec très peu
+  d'entrées (8 tracés vélo ne donnaient que 5 couleurs distinctes en
+  pratique) ; le compteur garantit une couleur unique tant que le nombre
+  d'itinéraires d'une couche ne dépasse pas la taille de la palette (8
+  teintes, rouge volontairement exclu - déjà réservé aux couleurs
+  d'alerte/risque ailleurs sur le site).
+- **Zone de clic élargie** : une ligne fine (3px visible) est difficile
+  à cliquer précisément, et sans marge un clic à côté retombait sur le
+  contour de commune en dessous (lui-même rendu cliquable depuis le
+  dashboard par commune) plutôt que sur l'itinéraire. `construireCoucheDonnees`
+  (`js/layers.js`) superpose désormais, pour toute couche `type: "line"`,
+  une polyligne invisible bien plus large (`weight: 16`, `opacity: 0`)
+  sur la ligne visible d'origine (devenue `interactive: false`, purement
+  décorative) : toute l'interaction (popup, surbrillance) passe par
+  cette zone de clic élargie, sans rien changer à l'apparence. Générique
+  à toutes les couches en ligne du site (randonnées, vélo, lignes
+  ALÉOP, Vigicrues), pas seulement aux deux couches concernées par le
+  retour initial.
+- **Surbrillance au clic** : `surbrillerLigne`/`retirerSurbrillanceLigne`
+  (fermées sur chaque appel de `construireCoucheDonnees`, donc une
+  sélection en cours côté rando n'efface pas une sélection en cours côté
+  vélo) épaississent et opacifient la ligne visible du tracé sélectionné
+  (`bringToFront` en plus, pour qu'elle passe au-dessus des tracés
+  voisins), remise à son style d'origine à la fermeture de la popup ou
+  au clic sur un autre tracé - une seule surbrillance active à la fois
+  par couche.
+
 ## Ce qui reste à faire
 - **Vigicrues : endpoint et nom de champ À VÉRIFIER EN CONDITIONS
   RÉELLES**, voir la section dédiée plus haut — cocher la couche ; si
