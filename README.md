@@ -3184,6 +3184,63 @@ types d'eau bien affichés séparément avec leurs propres usages et lien
 PDF, date correctement formatée ; badge du dashboard vérifié avec lien
 et libellé corrects.
 
+## Commerces, artisans & services : nouveaux artisans + symbologie dédiée
+
+Retour direct de l'utilisatrice : ajout de commerces, artisans et
+services dans `couches/commerces/commerces.geojson`, avec une demande
+de symbologie dédiée pour les nouveaux métiers du bâtiment (plombiers,
+couvreurs...) plutôt que l'icône générique "Autres commerces".
+
+21 entrées réellement nouvelles (244 contre 223 avant), ajoutées à la
+main plutôt qu'importées d'OSM : `osm_id` à `"0"`, et surtout
+`com_insee`/`com_nom` absents de la source - un problème réel, pas
+cosmétique, puisque tout le filtrage par commune du site (dashboard,
+recherche "près de chez moi"...) dépend de ce champ. Déduits par
+point-dans-polygone contre `couches/communes.geojson` (déjà utilisé
+partout ailleurs sur le site, même mécanisme que la recherche
+foncière) plutôt que de renvoyer le fichier à l'utilisatrice pour
+qu'elle les renseigne à la main : les 22 concernées tombent toutes
+dans le territoire, aucune ambiguïté.
+
+Deux nouvelles catégories dans `TYPES_COMMERCES` (js/config.js), sur
+le même mécanisme déjà en place pour les commerces classiques (icône +
+couleur + entrée de légende cochable) : **Artisans du bâtiment**
+(`fa-solid fa-hammer`, plombier/menuisier/couverture/charpente/
+clôtures/chaudronnerie, et "artisan" générique - un seul cas réel,
+plus proche d'un artisan du bâtiment que d'un commerce classique) et
+**Producteurs locaux** (`fa-solid fa-carrot`, "producteur local").
+"informatique" ajouté à la catégorie High-tech existante et "museum" à
+Culture & loisirs plutôt que d'inventer une catégorie pour un seul cas
+chacun. La couche elle-même renommée **"Commerces, artisans &
+services"** (panneau des couches) pour refléter son contenu élargi -
+seul le libellé affiché a changé, pas le nom du fichier ni son
+identifiant interne, pour ne rien casser ailleurs.
+
+Un vrai bug trouvé en testant avec les données réelles :
+`categorieCommerce` découpe le type brut sur `/` (en plus de `;` et
+`,`, pour les valeurs composées comme `butcher;convenience`) - une
+première version de la catégorie listait `"couverture/charpente"` tel
+quel, qui ne matchait donc jamais. Corrigé en listant `"couverture"` et
+`"charpente"` séparément.
+
+À signaler : la nouvelle donnée fournie par l'utilisatrice ne contient
+plus deux commerces présents dans la version précédente ("8 à Huit",
+supermarché à La Chartre-sur-le-Loir, et "Bercé en Promenade", loueur
+de vélos à Jupilles) - ni l'un ni l'autre dans `COMMERCES_FERMES`
+(fermetures déjà suivies). Gardés retirés en suivant fidèlement le
+nouvel export plutôt que de deviner s'il s'agit d'une fermeture réelle
+ou d'un oubli - à confirmer avec l'utilisatrice.
+
+Testé (Playwright, données réelles) : les 244 commerces classés sans
+exception, aucune icône manquante ; les 22 nouvelles entrées toutes
+avec un `com_insee`/`com_nom` valide après enrichissement ; légende à
+16 catégories uniques ; icône/couleur vérifiées sur un vrai artisan
+plombier (marteau, gris ardoise) ; sous-titre de recherche vérifié sans
+fuite de valeur brute ("Producteurs locaux", pas "producteur local") ;
+décompte par commune revérifié sur une commune réelle (Chahaignes)
+comportant plusieurs nouveaux artisans - catégories correctement
+représentées aux côtés des commerces existants.
+
 ## Ce qui reste à faire
 - Vigieau (voir section précédente) n'interroge qu'un seul point (le
   centre) par commune : une commune à cheval sur deux zones d'alerte de
