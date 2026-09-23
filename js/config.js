@@ -216,7 +216,10 @@ const TYPES_COMMERCES = [
     },
     {
         id: "alimentation", label: "Alimentation", icon: "fa-solid fa-basket-shopping", color: PALETTE.feuille,
-        types: ["supermarket", "convenience", "butcher", "deli", "seafood", "greengrocer", "winery", "variety_store", "newsagent"]
+        /* "caterer" (traiteur) : préparation/vente de nourriture comme
+           les autres entrées de cette catégorie, plutôt que "restauration"
+           (repas sur place) où il ne correspond pas vraiment. */
+        types: ["supermarket", "convenience", "butcher", "deli", "seafood", "greengrocer", "winery", "variety_store", "newsagent", "caterer"]
     },
     {
         id: "restauration", label: "Restaurants & bars", icon: "fa-solid fa-utensils", color: PALETTE.terracotta,

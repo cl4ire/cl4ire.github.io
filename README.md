@@ -3244,6 +3244,33 @@ décompte par commune revérifié sur une commune réelle (Chahaignes)
 comportant plusieurs nouveaux artisans - catégories correctement
 représentées aux côtés des commerces existants.
 
+## Import d'un export Overpass Turbo (artisans OSM par tag "craft")
+
+Suite directe de la demande "j'ai encore plein d'artisans à mettre mais
+un peu flemme" : plutôt que de tout ressaisir à la main, une requête
+Overpass Turbo (fournie par nous, filtrée aux 24 communes du
+territoire via `area["ref:INSEE"=...]`, tous les tags `craft=*` +
+`shop=trade`) permet de retrouver directement une partie des artisans
+déjà cartographiés sur OpenStreetMap - l'utilisatrice a ensuite exporté
+le résultat en GeoJSON.
+
+Format d'export différent de `couches/commerces/commerces.geojson` :
+les tags OSM bruts directement en `properties` (`craft`, `contact:*`,
+`addr:*`, `ref:FR:SIRET`...) plutôt que le schéma normalisé du site.
+Script d'import ponctuel : dédoublonnage par `osm_id` (5 des 6 entrées
+de cet export étaient déjà présentes - la donnée d'origine du site
+incluait déjà les tags `craft=*`, pas seulement `shop=*` - un seul
+ajout réel, "Ô Saveurs de Bercé", traiteur à Montval-sur-Loir) ;
+`com_insee`/`com_nom` déduits par point-dans-polygone comme pour les
+artisans ajoutés à la main précédemment ; adresse reconstruite depuis
+`addr:housenumber`/`addr:street` (ou leur équivalent `contact:*`) ;
+`facebook` normalisé en URL complète quand OSM ne fournit qu'un
+identifiant de page (`contact:facebook`) plutôt que l'URL entière.
+
+Nouveau type "caterer" (traiteur) ajouté à la catégorie Alimentation
+existante (préparation/vente de nourriture, pas un repas sur place
+comme "Restaurants & bars").
+
 ## Ce qui reste à faire
 - Vigieau (voir section précédente) n'interroge qu'un seul point (le
   centre) par commune : une commune à cheval sur deux zones d'alerte de
