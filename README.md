@@ -3185,6 +3185,15 @@ PDF, date correctement formatée ; badge du dashboard vérifié avec lien
 et libellé corrects.
 
 ## Ce qui reste à faire
+- Vigieau (voir section précédente) n'interroge qu'un seul point (le
+  centre) par commune : une commune à cheval sur deux zones d'alerte de
+  niveaux différents (déjà observé ailleurs en France - message d'erreur
+  "plusieurs zones de même type" rencontré en testant l'API) pourrait
+  afficher un niveau plus faible que ce qui s'applique réellement à une
+  partie de ses habitants. Retour direct de l'utilisatrice, laissé tel
+  quel pour l'instant : amélioration possible en interrogeant plusieurs
+  points par commune (centre + coins) et en gardant le niveau le plus
+  sévère trouvé, si le besoin s'en fait sentir.
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.
 - Ajouter les commerces comme thématique dédiée sur la page d'accueil si
