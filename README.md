@@ -3070,6 +3070,50 @@ sur ce sandbox (hostname `localhost`) ; `injecterGoatCounter()` testé
 directement, script bien ajouté à `<head>` avec la bonne URL et le bon
 code de site.
 
+## Couche Vigieau bloquée en chargement (fichier distant passé à ~400 Mo)
+
+Retour direct de l'utilisatrice, juste après le lancement public du
+site : "la couche vigieau ne fonctionne pas" - capture d'écran des
+devtools à l'appui, montrant la requête vers le fichier national des
+zones sécheresse toujours "pending" après plus de 70 secondes.
+
+Cause confirmée par la capture : `Content-Length: 420046159` (~400 Mo)
+sur `zones_arretes_en_vigueur.geojson` - ce fichier était déjà
+documenté comme "gros fichier national" avec un mécanisme de nouvel
+essai pour les timeouts ponctuels, mais 400 Mo dépasse largement ce
+que cette protection pouvait couvrir : un onglet (surtout mobile) reste
+bloqué en plein téléchargement, voire gèle en tentant de parser un JSON
+de cette taille d'un coup - jamais de badge d'erreur, juste un chargement
+qui ne finit jamais.
+
+Corrigé en lisant la réponse en flux (`response.body.getReader()`)
+plutôt qu'avec un simple `.json()` qui attend tout le fichier : dès que
+`LIMITE_TAILLE_VIGIEAU` (30 Mo - large marge par rapport à un export de
+quelques centaines de polygones, mais très en dessous des 400 Mo
+observés) est dépassée, le flux est annulé et l'échec remonte
+immédiatement, sans jamais tenter de parser le fichier complet. Une
+taille excessive n'est plus retentée (le fichier distant restera aussi
+gros à la prochaine tentative), contrairement à une vraie coupure
+réseau transitoire qui, elle, continue de bénéficier des 3 essais
+existants. Résultat visible dans le panneau : badge d'erreur normal
+("Échec du chargement - recochez pour réessayer") en quelques
+millisecondes au lieu d'un chargement qui ne finit jamais.
+
+À noter : ceci rend l'échec propre, mais ne fait pas réapparaître les
+zones sécheresse tant que ce fichier distant reste aussi volumineux -
+une vraie API officielle plus légère existe
+([api.vigieau.gouv.fr](https://api.vigieau.gouv.fr), interrogeable par
+code INSEE de commune) mais son format exact de réponse (présence ou
+non d'une géométrie exploitable pour dessiner les zones sur la carte)
+n'a pas pu être vérifié en conditions réelles depuis cet environnement
+(accès réseau restreint) - migration éventuelle à envisager séparément.
+
+Testé (Playwright, réponses HTTP simulées en flux) : fichier de taille
+normale toujours chargé correctement (1 seul appel réseau) ; fichier
+simulé à 50 Mo interrompu dès le dépassement des 30 Mo, sans retry
+(1 seul appel réseau, échec quasi instantané) ; coupure réseau
+transitoire toujours retentée avec succès au 2ᵉ essai, comme avant.
+
 ## Ce qui reste à faire
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.

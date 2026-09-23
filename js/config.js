@@ -42,16 +42,65 @@ const GROUPS = {
    possible côté serveur) peut ponctuellement dépasser le délai réseau
    avant même d'avoir fini de télécharger ("ERR_TIMED_OUT" constaté en
    conditions réelles) - un nouvel essai suffit généralement (aléa
-   réseau ponctuel plutôt qu'une vraie panne du service). Jusqu'à 3
-   tentatives avant d'abandonner pour de bon (affiche alors le badge
-   d'erreur normal du panneau, voir js/panel.js). */
+   réseau ponctuel plutôt qu'une vraie panne du service).
+
+   Repéré en conditions réelles (devtools, retour direct de
+   l'utilisatrice "la couche vigieau ne fonctionne pas") : ce fichier a
+   grossi jusqu'à ~400 Mo (Content-Length observé : 420 046 159 octets),
+   bien au-delà de ce qu'un onglet mobile peut télécharger et parser
+   (JSON.parse()) sans geler durablement - la case à cocher restait
+   bloquée en "Chargement..." au lieu d'échouer proprement. Lu en flux
+   (response.body.getReader()) plutôt qu'un simple .json(), pour pouvoir
+   abandonner dès que LIMITE_TAILLE_VIGIEAU est dépassée sans attendre
+   la fin du téléchargement ni bloquer le thread principal sur un
+   JSON.parse() géant. Une taille excessive n'est PAS retentée (le
+   fichier distant restera aussi gros à la prochaine tentative,
+   contrairement à un vrai aléa réseau transitoire) - échoue tout de
+   suite, badge d'erreur du panneau affiché sans attendre 3 tentatives
+   inutiles. 30 Mo choisi large par rapport à la taille attendue d'un
+   export national de polygones de zones (quelques centaines d'entrées)
+   tout en coupant très largement en dessous des 400 Mo observés. */
 const URL_VIGIEAU = "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_arretes_en_vigueur.geojson";
-function fetchAvecReessai(url, tentativesRestantes) {
+const LIMITE_TAILLE_VIGIEAU = 30 * 1024 * 1024;
+
+function concatenerMorceaux(morceaux) {
+    const total = morceaux.reduce((n, m) => n + m.length, 0);
+    const resultat = new Uint8Array(total);
+    let offset = 0;
+    morceaux.forEach(m => { resultat.set(m, offset); offset += m.length; });
+    return resultat;
+}
+
+function fetchAvecLimiteTaille(url, limiteOctets) {
     return fetch(url).then(r => {
         if (!r.ok) throw new Error("Erreur HTTP " + r.status + " sur " + url);
-        return r.json();
-    }).catch(err => {
-        if (tentativesRestantes <= 1) throw err;
+        if (!r.body) return r.json(); // pas de streaming disponible : repli sur le comportement normal
+
+        const lecteur = r.body.getReader();
+        const morceaux = [];
+        let recu = 0;
+
+        function lire() {
+            return lecteur.read().then(({ done, value }) => {
+                if (done) return JSON.parse(new TextDecoder("utf-8").decode(concatenerMorceaux(morceaux)));
+                recu += value.length;
+                if (recu > limiteOctets) {
+                    lecteur.cancel();
+                    const err = new Error("Fichier trop volumineux (> " + Math.round(limiteOctets / 1024 / 1024) + " Mo) sur " + url);
+                    err.tropVolumineux = true;
+                    throw err;
+                }
+                morceaux.push(value);
+                return lire();
+            });
+        }
+        return lire();
+    });
+}
+
+function fetchAvecReessai(url, tentativesRestantes) {
+    return fetchAvecLimiteTaille(url, LIMITE_TAILLE_VIGIEAU).catch(err => {
+        if (tentativesRestantes <= 1 || err.tropVolumineux) throw err;
         return fetchAvecReessai(url, tentativesRestantes - 1);
     });
 }
