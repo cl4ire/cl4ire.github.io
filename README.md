@@ -3035,6 +3035,41 @@ sans erreur visible dans la console.
 Corrigé en la remplaçant par `fa-download`, une icône équivalente
 disponible dans le jeu gratuit.
 
+## Suivi de visites (GoatCounter), uniquement sur la prod
+
+Retour direct de l'utilisatrice : après le passage en "prod" du site
+sur `swallowage.github.io/geoberce`, besoin de compter les visites -
+mais surtout pas sur ce dépôt (`cl4ire.github.io`), qui n'est qu'un
+environnement de test sans visiteurs réels à mesurer.
+
+Contrainte propre à l'architecture à deux dépôts : `index.html` et
+`js/` de CE dépôt sont copiés tels quels vers `geoberce/` par le
+workflow de synchro automatique (`sync-geoberce.yml`, côté
+swallowage) - il ne peut donc pas exister deux versions différentes de
+ces fichiers, une "avec tracking" et une "sans". La seule option
+propre est un seul fichier qui décide lui-même où il s'active.
+
+**`js/analytics.js`** (nouveau) : `estProdGeoberce(hostname)` compare
+le nom d'hôte réel du navigateur à `"swallowage.github.io"` (égalité
+stricte - un sous-domaine comme `www.swallowage.github.io` ne
+matcherait pas, volontairement, pour éviter tout faux positif) ;
+`injecterGoatCounter()` insère le script GoatCounter
+(`//gc.zgo.at/count.js`, `data-goatcounter` pointant vers
+`https://geoberce.goatcounter.com/count`, le compte créé par
+l'utilisatrice) seulement quand `estProdGeoberce(location.hostname)`
+est vrai. Sur `cl4ire.github.io` ou en local (ce sandbox de test), rien
+n'est injecté : aucune visite de dev ou de test n'est comptée.
+[GoatCounter](https://www.goatcounter.com) choisi plutôt que Google
+Analytics : open source, gratuit pour ce volume de trafic, aucun
+cookie ni bandeau de consentement RGPD nécessaire.
+
+Testé (Playwright) : `estProdGeoberce` vérifié sur les quatre cas
+(prod réel, dev cl4ire, localhost, sous-domaine piège) ; confirmé
+qu'aucun script `data-goatcounter` ne s'injecte tout seul au chargement
+sur ce sandbox (hostname `localhost`) ; `injecterGoatCounter()` testé
+directement, script bien ajouté à `<head>` avec la bonne URL et le bon
+code de site.
+
 ## Ce qui reste à faire
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.
