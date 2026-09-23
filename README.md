@@ -3114,6 +3114,76 @@ simulé à 50 Mo interrompu dès le dépassement des 30 Mo, sans retry
 (1 seul appel réseau, échec quasi instantané) ; coupure réseau
 transitoire toujours retentée avec succès au 2ᵉ essai, comme avant.
 
+## Vigieau : abandon du fichier national, vraie API officielle par commune
+
+Suite directe du correctif précédent : "faut qu'on trouve une autre
+solution ça ne peut pas marcher que de temps en temps" (retour direct
+de l'utilisatrice) - échouer proprement quand le fichier national
+dépasse 30 Mo rendait l'erreur propre, mais ne réparait rien : la
+couche restait indisponible tant que ce fichier restait aussi gros,
+ce qui n'est pas une vraie solution.
+
+Plutôt que deviner le format d'une éventuelle meilleure source, la
+vraie API officielle Vigieau (`api.vigieau.gouv.fr`) a été vérifiée en
+conditions réelles directement par l'utilisatrice depuis son propre
+navigateur (accès à ce domaine bloqué dans cet environnement) : essais
+successifs par code commune (409 "plusieurs zones de même type" sur
+une commune à cheval sur deux zones - l'API ne peut pas trancher par
+commune seule), puis par coordonnées précises (`lon`/`lat`), qui a fini
+par renvoyer un vrai exemple exploitable. Schéma réel confirmé : un
+tableau d'objets zone, un par type d'eau concerné à ce point
+(SUP/AEP/SOU), chacun avec son propre `niveauGravite`, un lien PDF vers
+l'arrêté (`arrete.cheminFichier`) et le détail des usages réglementés
+(`usages`) - **aucune géométrie de zone dans la réponse**, contrairement
+à ce qu'on espérait : cette API répond "quelles restrictions s'appliquent
+à ce point", pas "dessine-moi les zones".
+
+Cette absence de géométrie a orienté la solution : plutôt que de
+dessiner les zones (impossible sans le fichier national problématique),
+la couche dessine désormais **nos 24 communes elles-mêmes**
+(`couches/communes.geojson`, déjà utilisé partout ailleurs sur le
+site), coloriées chacune selon la restriction qui s'applique en son
+centre - interrogée une fois par commune (24 petits appels de
+quelques Ko, contre un seul fichier de 400 Mo). Un point plus fiable
+qu'un code commune pour cette API (pas d'ambiguïté 409 constatée sur
+un point précis). Une commune sans restriction active (tableau vide,
+cas normal et fréquent - pas une erreur) n'apparaît simplement pas sur
+la carte, comme avant. Un échec isolé (ex. 409 sur un point limite)
+n'empêche pas les 23 autres communes de s'afficher : chaque appel est
+protégé indépendamment (`.catch(() => [])`).
+
+Remplacé/retiré : `URL_VIGIEAU`, `fetchAvecLimiteTaille`,
+`fetchAvecReessai`, `concatenerMorceaux`, `clipperAuTerritoire` et
+`bboxTerritoire` (plus aucun appelant après ce changement, supprimés
+plutôt que laissés morts). `niveauVigieau`/`couleurVigieau`
+(js/config.js) inchangés : la nouvelle réponse utilise le même nom de
+champ `niveauGravite`, en tirent parti sans modification.
+
+Une commune pouvant avoir des niveaux différents selon le type d'eau
+(ex. "alerte" pour les eaux superficielles mais "vigilance" pour l'eau
+potable), `construirePopupVigieau` (js/popup.js) a été réécrite pour
+afficher une section par type plutôt qu'un seul niveau fusionné qui
+aurait fait perdre cette nuance réelle ; le badge du dashboard commune
+et la couleur du polygone gardent un seul niveau (le plus sévère parmi
+les types concernés, `zonePireNiveau`) pour rester lisibles d'un coup
+d'œil. Le lookup du badge (`alerteVigieauPourCommune`, js/communes.js)
+est aussi devenu une simple égalité sur le code INSEE (chaque feature
+correspond maintenant directement à une commune) au lieu d'un test
+point-dans-polygone, devenu inutile.
+
+Testé (Playwright) : `zonePireNiveau` vérifié sur les vraies zones
+communiquées par l'utilisatrice (3 zones "alerte" détectées) et sur des
+cas synthétiques (niveaux mélangés, valeur non reconnue, tableau vide) ;
+`construireFeatureVigieauCommune` vérifié avec une vraie commune du
+territoire (Montval-sur-Loir) et les vraies zones - propriétés
+correctement dérivées, cas vide géré ; `zonesVigieauPourPoint` vérifié
+sur 200 OK, 409 et panne réseau simulés (jamais d'exception qui
+remonterait, toujours `[]` en repli) ; `construirePopupVigieau` généré
+à partir des vraies données - aucune fuite `[object Object]`, les 3
+types d'eau bien affichés séparément avec leurs propres usages et lien
+PDF, date correctement formatée ; badge du dashboard vérifié avec lien
+et libellé corrects.
+
 ## Ce qui reste à faire
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.
