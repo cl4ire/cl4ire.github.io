@@ -3184,7 +3184,103 @@ types d'eau bien affichés séparément avec leurs propres usages et lien
 PDF, date correctement formatée ; badge du dashboard vérifié avec lien
 et libellé corrects.
 
+## Commerces, artisans & services : nouveaux artisans + symbologie dédiée
+
+Retour direct de l'utilisatrice : ajout de commerces, artisans et
+services dans `couches/commerces/commerces.geojson`, avec une demande
+de symbologie dédiée pour les nouveaux métiers du bâtiment (plombiers,
+couvreurs...) plutôt que l'icône générique "Autres commerces".
+
+21 entrées réellement nouvelles (244 contre 223 avant), ajoutées à la
+main plutôt qu'importées d'OSM : `osm_id` à `"0"`, et surtout
+`com_insee`/`com_nom` absents de la source - un problème réel, pas
+cosmétique, puisque tout le filtrage par commune du site (dashboard,
+recherche "près de chez moi"...) dépend de ce champ. Déduits par
+point-dans-polygone contre `couches/communes.geojson` (déjà utilisé
+partout ailleurs sur le site, même mécanisme que la recherche
+foncière) plutôt que de renvoyer le fichier à l'utilisatrice pour
+qu'elle les renseigne à la main : les 22 concernées tombent toutes
+dans le territoire, aucune ambiguïté.
+
+Deux nouvelles catégories dans `TYPES_COMMERCES` (js/config.js), sur
+le même mécanisme déjà en place pour les commerces classiques (icône +
+couleur + entrée de légende cochable) : **Artisans du bâtiment**
+(`fa-solid fa-hammer`, plombier/menuisier/couverture/charpente/
+clôtures/chaudronnerie, et "artisan" générique - un seul cas réel,
+plus proche d'un artisan du bâtiment que d'un commerce classique) et
+**Producteurs locaux** (`fa-solid fa-carrot`, "producteur local").
+"informatique" ajouté à la catégorie High-tech existante et "museum" à
+Culture & loisirs plutôt que d'inventer une catégorie pour un seul cas
+chacun. La couche elle-même renommée **"Commerces, artisans &
+services"** (panneau des couches) pour refléter son contenu élargi -
+seul le libellé affiché a changé, pas le nom du fichier ni son
+identifiant interne, pour ne rien casser ailleurs.
+
+Un vrai bug trouvé en testant avec les données réelles :
+`categorieCommerce` découpe le type brut sur `/` (en plus de `;` et
+`,`, pour les valeurs composées comme `butcher;convenience`) - une
+première version de la catégorie listait `"couverture/charpente"` tel
+quel, qui ne matchait donc jamais. Corrigé en listant `"couverture"` et
+`"charpente"` séparément.
+
+La nouvelle donnée fournie par l'utilisatrice ne contenait plus deux
+commerces présents dans la version précédente ("8 à Huit", supermarché
+à La Chartre-sur-le-Loir, et "Bercé en Promenade", loueur de vélos à
+Jupilles) - ni l'un ni l'autre dans `COMMERCES_FERMES` (fermetures déjà
+suivies). Vérifié directement avec l'utilisatrice plutôt que deviné :
+"8 à Huit" existe toujours (oubli de l'export, sa fiche d'origine
+réintégrée telle quelle) ; "Bercé en Promenade" n'existe pas (reste
+retiré, pas ajouté à `COMMERCES_FERMES` non plus - "n'existe pas" et
+non "a fermé récemment", pas la même nuance que ce que suit cette
+liste).
+
+Testé (Playwright, données réelles) : les 245 commerces classés sans
+exception, aucune icône manquante ; les 22 nouvelles entrées toutes
+avec un `com_insee`/`com_nom` valide après enrichissement ; légende à
+16 catégories uniques ; icône/couleur vérifiées sur un vrai artisan
+plombier (marteau, gris ardoise) ; sous-titre de recherche vérifié sans
+fuite de valeur brute ("Producteurs locaux", pas "producteur local") ;
+décompte par commune revérifié sur une commune réelle (Chahaignes)
+comportant plusieurs nouveaux artisans - catégories correctement
+représentées aux côtés des commerces existants.
+
+## Import d'un export Overpass Turbo (artisans OSM par tag "craft")
+
+Suite directe de la demande "j'ai encore plein d'artisans à mettre mais
+un peu flemme" : plutôt que de tout ressaisir à la main, une requête
+Overpass Turbo (fournie par nous, filtrée aux 24 communes du
+territoire via `area["ref:INSEE"=...]`, tous les tags `craft=*` +
+`shop=trade`) permet de retrouver directement une partie des artisans
+déjà cartographiés sur OpenStreetMap - l'utilisatrice a ensuite exporté
+le résultat en GeoJSON.
+
+Format d'export différent de `couches/commerces/commerces.geojson` :
+les tags OSM bruts directement en `properties` (`craft`, `contact:*`,
+`addr:*`, `ref:FR:SIRET`...) plutôt que le schéma normalisé du site.
+Script d'import ponctuel : dédoublonnage par `osm_id` (5 des 6 entrées
+de cet export étaient déjà présentes - la donnée d'origine du site
+incluait déjà les tags `craft=*`, pas seulement `shop=*` - un seul
+ajout réel, "Ô Saveurs de Bercé", traiteur à Montval-sur-Loir) ;
+`com_insee`/`com_nom` déduits par point-dans-polygone comme pour les
+artisans ajoutés à la main précédemment ; adresse reconstruite depuis
+`addr:housenumber`/`addr:street` (ou leur équivalent `contact:*`) ;
+`facebook` normalisé en URL complète quand OSM ne fournit qu'un
+identifiant de page (`contact:facebook`) plutôt que l'URL entière.
+
+Nouveau type "caterer" (traiteur) ajouté à la catégorie Alimentation
+existante (préparation/vente de nourriture, pas un repas sur place
+comme "Restaurants & bars").
+
 ## Ce qui reste à faire
+- Vigieau (voir section précédente) n'interroge qu'un seul point (le
+  centre) par commune : une commune à cheval sur deux zones d'alerte de
+  niveaux différents (déjà observé ailleurs en France - message d'erreur
+  "plusieurs zones de même type" rencontré en testant l'API) pourrait
+  afficher un niveau plus faible que ce qui s'applique réellement à une
+  partie de ses habitants. Retour direct de l'utilisatrice, laissé tel
+  quel pour l'instant : amélioration possible en interrogeant plusieurs
+  points par commune (centre + coins) et en gardant le niveau le plus
+  sévère trouvé, si le besoin s'en fait sentir.
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.
 - Ajouter les commerces comme thématique dédiée sur la page d'accueil si
