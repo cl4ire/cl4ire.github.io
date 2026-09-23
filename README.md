@@ -3223,15 +3223,18 @@ première version de la catégorie listait `"couverture/charpente"` tel
 quel, qui ne matchait donc jamais. Corrigé en listant `"couverture"` et
 `"charpente"` séparément.
 
-À signaler : la nouvelle donnée fournie par l'utilisatrice ne contient
-plus deux commerces présents dans la version précédente ("8 à Huit",
-supermarché à La Chartre-sur-le-Loir, et "Bercé en Promenade", loueur
-de vélos à Jupilles) - ni l'un ni l'autre dans `COMMERCES_FERMES`
-(fermetures déjà suivies). Gardés retirés en suivant fidèlement le
-nouvel export plutôt que de deviner s'il s'agit d'une fermeture réelle
-ou d'un oubli - à confirmer avec l'utilisatrice.
+La nouvelle donnée fournie par l'utilisatrice ne contenait plus deux
+commerces présents dans la version précédente ("8 à Huit", supermarché
+à La Chartre-sur-le-Loir, et "Bercé en Promenade", loueur de vélos à
+Jupilles) - ni l'un ni l'autre dans `COMMERCES_FERMES` (fermetures déjà
+suivies). Vérifié directement avec l'utilisatrice plutôt que deviné :
+"8 à Huit" existe toujours (oubli de l'export, sa fiche d'origine
+réintégrée telle quelle) ; "Bercé en Promenade" n'existe pas (reste
+retiré, pas ajouté à `COMMERCES_FERMES` non plus - "n'existe pas" et
+non "a fermé récemment", pas la même nuance que ce que suit cette
+liste).
 
-Testé (Playwright, données réelles) : les 244 commerces classés sans
+Testé (Playwright, données réelles) : les 245 commerces classés sans
 exception, aucune icône manquante ; les 22 nouvelles entrées toutes
 avec un `com_insee`/`com_nom` valide après enrichissement ; légende à
 16 catégories uniques ; icône/couleur vérifiées sur un vrai artisan
