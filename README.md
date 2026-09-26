@@ -3271,6 +3271,60 @@ Nouveau type "caterer" (traiteur) ajouté à la catégorie Alimentation
 existante (préparation/vente de nourriture, pas un repas sur place
 comme "Restaurants & bars").
 
+## Référencement (SEO) : balises meta, Open Graph, données structurées
+
+Retour direct de l'utilisatrice : "en cherchant GéoBercé sur Google
+faudrait tomber dessus" - le site n'avait jusqu'ici aucune balise
+pensée pour le référencement (pas de `<meta description>`, pas
+d'Open Graph pour les partages Facebook, titre de page générique).
+
+Ajoutés dans `<head>` (`index.html`) : `<title>` complété avec le nom
+du territoire ("...du territoire Loir-Lucé-Bercé", pas juste "Le SIG
+local") pour mieux correspondre aux recherches locales ; `<meta
+description>` et Open Graph (`og:title`, `og:description`, `og:image`,
+`og:url`) repris du texte déjà existant dans la modale "À propos"
+plutôt qu'inventés - description cohérente partout sur le site ;
+données structurées `schema.org` (`WebSite`, JSON-LD) pour aider Google
+à comprendre de quoi parle la page.
+
+**Particularité propre à l'architecture à deux dépôts** : `canonical`,
+`og:url` et l'URL de l'image Open Graph pointent en dur vers
+`https://swallowage.github.io/geoberce/` - jamais une URL relative au
+domaine qui sert réellement la page à l'instant T, puisque ce même
+`index.html` est servi aussi bien depuis ce dépôt de développement que
+depuis la vraie prod (mécanisme de synchro déjà en place, voir plus
+haut). Ce choix sert doublement : sur la prod, l'URL canonique se
+confirme elle-même ; sur le dépôt de dev, elle indique explicitement à
+Google que la page de référence est ailleurs - évite un risque de
+contenu dupliqué entre les deux copies qui nuirait au référencement de
+la vraie prod.
+
+**Ce qui reste hors de portée du code** (nécessite une action manuelle
+de l'utilisatrice, propriétaire des comptes concernés) : ces balises
+aident Google à bien comprendre/afficher la page une fois qu'il l'a
+trouvée, mais ne garantissent pas qu'il la trouve vite. Pour accélérer
+l'indexation :
+1. Google Search Console (search.google.com/search-console) : ajouter
+   la propriété `https://swallowage.github.io/geoberce/`, puis
+   "Inspection de l'URL" → "Demander une indexation" - généralement
+   indexé en quelques heures à quelques jours plutôt que d'attendre le
+   passage naturel des robots.
+2. Un lien vers `/geoberce/` depuis la page d'accueil personnelle de
+   swallowage.github.io (déjà indexée) aiderait Google à découvrir la
+   page plus vite - pas fait ici, cette page est hors du périmètre
+   synchronisé automatiquement (voir plus haut, "geoberce/README.md
+   n'est jamais touché" - même principe pour tout le reste de la racine
+   du dépôt swallowage) : à faire à la demande explicite de
+   l'utilisatrice si elle le souhaite.
+3. Un lien depuis le site officiel de la Communauté de communes
+   Loir-Lucé-Bercé, si elle peut l'obtenir, serait le signal le plus
+   fort pour le référencement local - démarche relationnelle, hors de
+   portée du code.
+
+Testé (Playwright) : toutes les balises meta/Open Graph et le JSON-LD
+vérifiés présents avec le bon contenu après chargement de la page ;
+JSON-LD confirmé syntaxiquement valide (`JSON.parse` réussi).
+
 ## Ce qui reste à faire
 - Vigieau (voir section précédente) n'interroge qu'un seul point (le
   centre) par commune : une commune à cheval sur deux zones d'alerte de
