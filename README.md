@@ -3393,6 +3393,43 @@ sélection" confirmé stopper le direct (un déplacement après ne
 réaffiche plus rien) ; zoom insuffisant toujours refusé proprement
 avec le bon message.
 
+## Recherche foncière : filtre "nombre de bâtiments max"
+
+Retour direct de l'utilisatrice : "faudrait rajouter un nombre de
+bâtiment max comme ça si je mets 0 je vois les parcelles constructibles
+et sans bâtiment donc potentiellement à acheter".
+
+Le champ "Nombre de bâtiments (min)" existant est devenu une plage
+min→max (même convention que surface/prix/année de vente). Un piège
+identifié en écrivant le filtre, avant même de le livrer : le nombre de
+bâtiments affiché vient de la dernière mutation DVF connue (`nbBatiments`,
+`infosParcelle`) - `null` quand la parcelle n'a jamais été revendue,
+qu'elle soit réellement vide OU qu'elle porte une vraie maison jamais
+revendue depuis l'existence du DVF. Un filtre "max=0" naïf aurait donc
+soit exclu à tort de vraies parcelles vides (si `null` était traité comme
+"inconnu, à exclure par prudence"), soit pire, laissé passer une
+parcelle avec une vraie maison dessus (si `null` était traité comme "0
+par défaut") - trompeur pour une recherche qui sert justement à
+identifier des terrains "potentiellement à acheter".
+
+Le code portait déjà, pour un besoin voisin (calcul de proximité, voir
+plus haut dans `infosParcelle`), un vrai test géométrique contre les
+bâtiments réels du cadastre (`aUnBatiment`) - jusqu'ici calculé mais
+jamais exposé en dehors de cette fonction. Réutilisé ici (nouvelle
+fonction `nbBatimentsEffectif`) comme filet de sécurité quand le DVF ne
+sait pas trancher : `nbBatiments` fait foi quand connu, sinon 0 ou 1
+selon qu'un bâtiment réel est détecté géométriquement sur la parcelle.
+Bénéfice secondaire : le filtre "min" existant profite de la même
+correction (il ratait lui aussi les maisons jamais revendues).
+
+Testé (Playwright) : les 3 cas de `nbBatimentsEffectif` vérifiés
+(DVF connu, DVF inconnu + bâti réel détecté, DVF inconnu + rien détecté) ;
+`correspond()` avec `nbBatimentsMax:0` vérifié sur 4 parcelles
+synthétiques - la vraie parcelle vide (jamais vendue, aucun bâtiment
+géométrique) et la parcelle vendue sans bâti passent le filtre comme
+attendu, la parcelle jamais vendue mais réellement bâtie et celle avec
+une maison connue sont bien exclues.
+
 ## Ce qui reste à faire
 - Vigieau (voir section précédente) n'interroge qu'un seul point (le
   centre) par commune : une commune à cheval sur deux zones d'alerte de
