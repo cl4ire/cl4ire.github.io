@@ -3482,6 +3482,38 @@ les deux à `null` ; rendu de la fiche vérifié avec et sans obligation -
 la section n'apparaît que lorsqu'elle a quelque chose à dire, exactement
 comme pour les SUP.
 
+## Popups de la recherche foncière qui se ferment près du bord de l'écran
+
+Retour direct de l'utilisatrice : "sur mes parcelles mes popups se
+ferment j'ai l'impression quand elles touchent le bord de l'écran".
+
+Cause réelle, une interaction entre deux mécanismes existants plutôt
+qu'un bug isolé : la recherche foncière se réaffiche automatiquement à
+chaque déplacement de carte (`moveend`, voir plus haut "Recherche
+foncière liée au cadre de la carte"), en DÉTRUISANT puis RECONSTRUISANT
+toute la couche de résultats affichés. Or Leaflet déplace lui-même la
+carte (`autoPan`) pour garder visible une popup qui vient de s'ouvrir
+près du bord - et ce déplacement programmatique déclenche, lui aussi, un
+"moveend". Résultat : ouvrir une popup près du bord relançait
+immédiatement la reconstruction de la couche de résultats, détruisant au
+passage le marqueur dont la popup venait tout juste de s'ouvrir.
+
+Corrigé via l'évènement `autopanstart`, que Leaflet ne déclenche QUE
+lorsqu'un panoramique automatique est réellement nécessaire (confirmé
+dans le code source de `Popup._adjustPan`) : un simple garde-fou
+(`ignorerProchainMoveend`) armé sur cet évènement fait ignorer le
+"moveend" programmatique qui suit, sans toucher au comportement normal
+pour un déplacement de carte volontaire. La logique du `moveend` a été
+extraite en fonction nommée (`gererDeplacementCarteRecherche`) pour
+rester testable indépendamment de l'enregistrement de l'écouteur
+Leaflet.
+
+Testé (Playwright) : un `moveend` normal continue de réafficher les
+résultats (comportement inchangé) ; un `moveend` précédé d'un
+`autopanstart` ne touche plus à la couche affichée ; le garde-fou se
+réinitialise bien après usage, sans bloquer durablement les
+réaffichages suivants.
+
 ## Ce qui reste à faire
 - Vigieau (voir section précédente) n'interroge qu'un seul point (le
   centre) par commune : une commune à cheval sur deux zones d'alerte de
