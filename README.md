@@ -3325,6 +3325,32 @@ Testé (Playwright) : toutes les balises meta/Open Graph et le JSON-LD
 vérifiés présents avec le bon contenu après chargement de la page ;
 JSON-LD confirmé syntaxiquement valide (`JSON.parse` réussi).
 
+## Procédure d'urgence dans la popup des défibrillateurs
+
+Retour direct de l'utilisatrice, qui avait ce contenu sur une toute
+première version du site (un dépôt local qu'elle a retrouvé et
+envoyé) : la popup défibrillateur manquait le rappel des gestes à
+faire en cas d'arrêt cardiaque.
+
+Repris quasiment à l'identique de cette première version (texte et
+structure en 4 étapes déjà bons) dans `construirePopupDae`
+(js/popup.js), avec le numéro d'urgence ajouté ("15 ou 112") et un
+style adapté aux classes `.popup-fiche-*` actuelles plutôt que les
+anciennes classes `.dae-emergency-*` (même ton visuel que
+`.popup-fiche-badge.ferme` - fond rose pâle, texte terracotta - plutôt
+qu'une nouvelle couleur d'alerte inventée pour l'occasion).
+
+Le bouton "itinéraire" que cette première version construisait
+spécifiquement pour les DAE existe déjà, en mieux, sur la version
+actuelle du site : `injecterItineraire` (js/popup.js) l'ajoute
+automatiquement à TOUTES les popups du site (Google Maps ET Waze, pas
+seulement Google Maps) - rien à faire de ce côté.
+
+Testé (Playwright, vraie donnée du territoire) : popup générée avec un
+vrai défibrillateur de `couches/securite/dae.geojson` - encart urgence
+présent avec son titre et ses 4 étapes, aucune fuite `[object Object]`,
+bouton itinéraire (Google Maps + Waze) toujours présent par-dessus.
+
 ## Ce qui reste à faire
 - Vigieau (voir section précédente) n'interroge qu'un seul point (le
   centre) par commune : une commune à cheval sur deux zones d'alerte de
