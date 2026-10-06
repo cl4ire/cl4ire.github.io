@@ -3325,6 +3325,74 @@ Testé (Playwright) : toutes les balises meta/Open Graph et le JSON-LD
 vérifiés présents avec le bon contenu après chargement de la page ;
 JSON-LD confirmé syntaxiquement valide (`JSON.parse` réussi).
 
+## Procédure d'urgence dans la popup des défibrillateurs
+
+Retour direct de l'utilisatrice, qui avait ce contenu sur une toute
+première version du site (un dépôt local qu'elle a retrouvé et
+envoyé) : la popup défibrillateur manquait le rappel des gestes à
+faire en cas d'arrêt cardiaque.
+
+Repris quasiment à l'identique de cette première version (texte et
+structure en 4 étapes déjà bons) dans `construirePopupDae`
+(js/popup.js), avec le numéro d'urgence ajouté ("15 ou 112") et un
+style adapté aux classes `.popup-fiche-*` actuelles plutôt que les
+anciennes classes `.dae-emergency-*` (même ton visuel que
+`.popup-fiche-badge.ferme` - fond rose pâle, texte terracotta - plutôt
+qu'une nouvelle couleur d'alerte inventée pour l'occasion).
+
+Le bouton "itinéraire" que cette première version construisait
+spécifiquement pour les DAE existe déjà, en mieux, sur la version
+actuelle du site : `injecterItineraire` (js/popup.js) l'ajoute
+automatiquement à TOUTES les popups du site (Google Maps ET Waze, pas
+seulement Google Maps) - rien à faire de ce côté.
+
+Testé (Playwright, vraie donnée du territoire) : popup générée avec un
+vrai défibrillateur de `couches/securite/dae.geojson` - encart urgence
+présent avec son titre et ses 4 étapes, aucune fuite `[object Object]`,
+bouton itinéraire (Google Maps + Waze) toujours présent par-dessus.
+
+## Recherche foncière liée au cadre de la carte (fini le recentrage au déplacement)
+
+Retour direct de l'utilisatrice : "je veux que la recherche foncière
+les résultats se rechargent au fur et à mesure que je déplace la
+carte... je veux que la recherche soit liée au cadre de ma carte".
+
+La recherche réagissait déjà à un déplacement de carte (un `moveend`
+était bien branché), mais seulement pour faire apparaître un bouton
+"Rechercher ici" à cliquer manuellement - et une fois cliqué,
+`afficherResultatsRecherche` appelait systématiquement
+`map.fitBounds(...)`, recentrant la carte sur les nouveaux résultats :
+exactement l'effet inverse de ce qui était demandé ("ça recentre sur
+où c'était au début").
+
+Corrigé en deux temps dans `js/recherche.js` :
+1. `afficherResultatsRecherche` prend désormais une option
+   `{ recentrer }` (true par défaut, préservant le comportement actuel
+   au premier clic sur "Afficher les parcelles correspondantes" - zoomer
+   sur les résultats y reste utile).
+2. Le `moveend` réenrichit et réaffiche maintenant automatiquement les
+   résultats pour la nouvelle vue à chaque déplacement, avec
+   `recentrer:false` - plus besoin de rebouton "Rechercher ici"
+   (supprimé) : la recherche suit la carte plutôt que l'inverse. Un
+   nouveau drapeau `rechercheActive` (vrai dès le premier clic sur
+   "Afficher", remis à faux par "Vider la sélection") évite de réafficher
+   quoi que ce soit tant qu'aucune recherche n'a encore été lancée.
+   Le mode "commune ciblée" (recherche rapide de l'écran d'accueil,
+   voir la note en tête de fichier) reste volontairement exclu de ce
+   réenrichissement automatique : il porte sur toute la commune plutôt
+   que sur la vue carte, un déplacement ne doit pas basculer
+   silencieusement vers l'autre logique de filtrage.
+
+Testé (Playwright, données cadastrales synthétiques mais de structure
+réelle, chargement réseau du vrai cadastre impossible depuis ce
+sandbox) : enrichissement initial puis premier affichage confirmé avec
+`fitBounds` appelé une fois (zoom normal) ; déplacement simulé vers une
+nouvelle zone avec de nouvelles parcelles - résultats mis à jour,
+`fitBounds` appelé **zéro fois** (plus de recentrage) ; "Vider la
+sélection" confirmé stopper le direct (un déplacement après ne
+réaffiche plus rien) ; zoom insuffisant toujours refusé proprement
+avec le bon message.
+
 ## Ce qui reste à faire
 - Vigieau (voir section précédente) n'interroge qu'un seul point (le
   centre) par commune : une commune à cheval sur deux zones d'alerte de
