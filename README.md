@@ -3430,6 +3430,58 @@ géométrique) et la parcelle vendue sans bâti passent le filtre comme
 attendu, la parcelle jamais vendue mais réellement bâtie et celle avec
 une maison connue sont bien exclues.
 
+## Fiche parcelle : obligation légale de débroussaillement (OLD)
+
+Retour direct de l'utilisatrice, arrivé en même temps que le filtre
+"nombre de bâtiments max" ci-dessus : "profite en sur ma fiche parcelle
+de dire si elle est en Obligation légale de débroussaillement" -
+l'obligation réglementaire de débroussailler aux abords d'un massif
+boisé (prévention incendie), qui pèse sur le propriétaire et peut
+représenter un coût ou une contrainte non négligeable à l'achat d'un
+terrain.
+
+Premier chemin envisagé (même logique que les SUP existantes) : l'API
+Carto de l'IGN, via son module générique `wfs-geoportail`. Vérifié
+directement dans le code source du module (dépôt `IGNF/apicarto` sur
+GitHub) plutôt que deviné : sa liste blanche de flux WFS proxyfiés
+(`ressources_cle_wfs2022-05-20.csv`) ne contient aucune entrée
+"débroussaillement" - cette API ne couvre tout simplement pas cette
+donnée, abandon confirmé et pas une simple erreur d'URL.
+
+Chemin retenu : la couche WMS `DEBROUSSAILLEMENT` de la Géoplateforme
+IGN (`data.geopf.fr/wms-r/wms`), déjà utilisée ailleurs sur le site pour
+l'affichage cartographique, interrogée ici en `GetFeatureInfo` au
+centroïde de la parcelle plutôt qu'en affichage de tuile. Un aller-retour
+nécessaire avec l'utilisatrice (seule à avoir un accès réseau non
+restreint pendant le développement) pour confirmer que l'appel
+fonctionne réellement : premier essai refusé par le serveur
+("`MissingParameterValue: FORMAT query parameter missing`" - le
+paramètre `FORMAT`, pourtant pensé pour l'affichage d'image, s'est
+révélé obligatoire même pour une requête d'info), second essai avec
+`FORMAT` ajouté retourné avec succès, confirmant le format réel de la
+réponse. Attribut `zonage` de la réponse : `1` = dans le massif boisé
+lui-même, `2` = dans la bande des 200 m autour d'un massif boisé (de
+loin le cas le plus fréquent en zone rurale) - confirmé sur le retour
+réel de l'utilisatrice et recoupé par recherche complémentaire. La
+réponse porte aussi un champ `url` pointant vers la page de la
+préfecture concernée détaillant les obligations applicables (sur le
+test réel, la préfecture de la Sarthe) - repris tel quel en lien dans la
+fiche plutôt que reformulé.
+
+Même schéma que les servitudes d'utilité publique (SUP) déjà présentes
+sur la fiche : un seul appel réseau par parcelle, déclenché en parallèle
+du reste à la première ouverture de la popup (`ouvrirPopupParcelle`),
+dégradant vers une section absente (et non une fiche cassée) si la
+parcelle n'est pas concernée ou si le service ne répond pas.
+
+Testé (Playwright) : `fetchOldPourParcelle` avec la réponse réelle
+fournie par l'utilisatrice (zonage 2, lien préfecture Sarthe) - libellé
+et lien corrects, aucune fuite `[object Object]` ; cas "parcelle non
+concernée" (réponse sans feature) et cas d'échec réseau vérifiés tous
+les deux à `null` ; rendu de la fiche vérifié avec et sans obligation -
+la section n'apparaît que lorsqu'elle a quelque chose à dire, exactement
+comme pour les SUP.
+
 ## Ce qui reste à faire
 - Vigieau (voir section précédente) n'interroge qu'un seul point (le
   centre) par commune : une commune à cheval sur deux zones d'alerte de

@@ -228,6 +228,66 @@ function fetchSupPourParcelle(feature) {
         .catch(() => []);
 }
 
+/* =========================================================
+   OBLIGATION LÉGALE DE DÉBROUSSAILLEMENT (OLD)
+   Pas de couverture par l'API Carto de l'IGN (vérifié dans le code
+   source du module apicarto - IGNF/apicarto sur GitHub - la couche
+   débroussaillement n'apparaît pas dans sa liste blanche de flux WFS
+   proxyfiés). La couche existe en revanche en WMS sur la Géoplateforme
+   IGN et répond à une requête GetFeatureInfo classique - confirmé en
+   conditions réelles (retour de l'utilisatrice, une vraie parcelle du
+   territoire) une fois le paramètre FORMAT ajouté (étonnamment
+   obligatoire même pour une requête d'info, sinon
+   "MissingParameterValue: FORMAT query parameter missing"). Comme pour
+   les SUP, interrogée PAR PARCELLE (un seul point, le centroïde),
+   jamais préchargée pour tout le territoire. */
+const URL_OLD_WMS = "https://data.geopf.fr/wms-r/wms";
+
+/* Valeurs de l'attribut `zonage` confirmées en conditions réelles
+   (retour de l'utilisatrice) et par recherche complémentaire : 1 = dans
+   le massif boisé lui-même, 2 = dans la bande des 200 m autour d'un
+   massif boisé (le cas le plus fréquent en zone rurale). Une ancienne
+   valeur 3 ("données temporaires") existait dans des versions plus
+   anciennes de la couche, non reprise ici. */
+const LABELS_ZONAGE_OLD = {
+    1: "Dans un massif boisé soumis à l'obligation",
+    2: "Dans la bande des 200 m autour d'un massif boisé"
+};
+
+/* Récupère l'éventuelle obligation de débroussaillement au centroïde de
+   cette parcelle - un seul appel réseau, déclenché seulement à
+   l'ouverture d'une fiche parcelle (voir ouvrirPopupParcelle, popup.js).
+   Dégrade vers null en cas d'échec (réseau, parcelle hors couverture,
+   format de réponse inattendu) : une section "Débroussaillement"
+   absente plutôt qu'une fiche cassée - comme pour les SUP. */
+function fetchOldPourParcelle(feature) {
+    const centre = centroideFeature(feature);
+    if (!centre) return Promise.resolve(null);
+    const [lon, lat] = centre;
+    const marge = 0.001;
+    const params = new URLSearchParams({
+        SERVICE: "WMS", VERSION: "1.3.0", REQUEST: "GetFeatureInfo",
+        LAYERS: "DEBROUSSAILLEMENT", QUERY_LAYERS: "DEBROUSSAILLEMENT", STYLES: "",
+        FORMAT: "image/png", CRS: "EPSG:4326",
+        BBOX: `${lat - marge},${lon - marge},${lat + marge},${lon + marge}`,
+        WIDTH: "256", HEIGHT: "256", I: "128", J: "128",
+        INFO_FORMAT: "application/json"
+    });
+    return fetch(`${URL_OLD_WMS}?${params}`)
+        .then(r => r.ok ? r.json() : { features: [] })
+        .then(data => {
+            const f = (data.features || [])[0];
+            if (!f || !f.properties) return null;
+            const zonage = f.properties.zonage;
+            return {
+                zonage,
+                libelle: LABELS_ZONAGE_OLD[zonage] || "Zone soumise à l'obligation (détail non précisé)",
+                url: f.properties.url || null
+            };
+        })
+        .catch(() => null);
+}
+
 function chargerDonneesFoncieres() {
     return Promise.all([
         ...COUCHES_RECHERCHE.map(id => new Promise(resolve => {
