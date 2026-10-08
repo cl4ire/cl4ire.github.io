@@ -3184,7 +3184,346 @@ types d'eau bien affichés séparément avec leurs propres usages et lien
 PDF, date correctement formatée ; badge du dashboard vérifié avec lien
 et libellé corrects.
 
+## Commerces, artisans & services : nouveaux artisans + symbologie dédiée
+
+Retour direct de l'utilisatrice : ajout de commerces, artisans et
+services dans `couches/commerces/commerces.geojson`, avec une demande
+de symbologie dédiée pour les nouveaux métiers du bâtiment (plombiers,
+couvreurs...) plutôt que l'icône générique "Autres commerces".
+
+21 entrées réellement nouvelles (244 contre 223 avant), ajoutées à la
+main plutôt qu'importées d'OSM : `osm_id` à `"0"`, et surtout
+`com_insee`/`com_nom` absents de la source - un problème réel, pas
+cosmétique, puisque tout le filtrage par commune du site (dashboard,
+recherche "près de chez moi"...) dépend de ce champ. Déduits par
+point-dans-polygone contre `couches/communes.geojson` (déjà utilisé
+partout ailleurs sur le site, même mécanisme que la recherche
+foncière) plutôt que de renvoyer le fichier à l'utilisatrice pour
+qu'elle les renseigne à la main : les 22 concernées tombent toutes
+dans le territoire, aucune ambiguïté.
+
+Deux nouvelles catégories dans `TYPES_COMMERCES` (js/config.js), sur
+le même mécanisme déjà en place pour les commerces classiques (icône +
+couleur + entrée de légende cochable) : **Artisans du bâtiment**
+(`fa-solid fa-hammer`, plombier/menuisier/couverture/charpente/
+clôtures/chaudronnerie, et "artisan" générique - un seul cas réel,
+plus proche d'un artisan du bâtiment que d'un commerce classique) et
+**Producteurs locaux** (`fa-solid fa-carrot`, "producteur local").
+"informatique" ajouté à la catégorie High-tech existante et "museum" à
+Culture & loisirs plutôt que d'inventer une catégorie pour un seul cas
+chacun. La couche elle-même renommée **"Commerces, artisans &
+services"** (panneau des couches) pour refléter son contenu élargi -
+seul le libellé affiché a changé, pas le nom du fichier ni son
+identifiant interne, pour ne rien casser ailleurs.
+
+Un vrai bug trouvé en testant avec les données réelles :
+`categorieCommerce` découpe le type brut sur `/` (en plus de `;` et
+`,`, pour les valeurs composées comme `butcher;convenience`) - une
+première version de la catégorie listait `"couverture/charpente"` tel
+quel, qui ne matchait donc jamais. Corrigé en listant `"couverture"` et
+`"charpente"` séparément.
+
+La nouvelle donnée fournie par l'utilisatrice ne contenait plus deux
+commerces présents dans la version précédente ("8 à Huit", supermarché
+à La Chartre-sur-le-Loir, et "Bercé en Promenade", loueur de vélos à
+Jupilles) - ni l'un ni l'autre dans `COMMERCES_FERMES` (fermetures déjà
+suivies). Vérifié directement avec l'utilisatrice plutôt que deviné :
+"8 à Huit" existe toujours (oubli de l'export, sa fiche d'origine
+réintégrée telle quelle) ; "Bercé en Promenade" n'existe pas (reste
+retiré, pas ajouté à `COMMERCES_FERMES` non plus - "n'existe pas" et
+non "a fermé récemment", pas la même nuance que ce que suit cette
+liste).
+
+Testé (Playwright, données réelles) : les 245 commerces classés sans
+exception, aucune icône manquante ; les 22 nouvelles entrées toutes
+avec un `com_insee`/`com_nom` valide après enrichissement ; légende à
+16 catégories uniques ; icône/couleur vérifiées sur un vrai artisan
+plombier (marteau, gris ardoise) ; sous-titre de recherche vérifié sans
+fuite de valeur brute ("Producteurs locaux", pas "producteur local") ;
+décompte par commune revérifié sur une commune réelle (Chahaignes)
+comportant plusieurs nouveaux artisans - catégories correctement
+représentées aux côtés des commerces existants.
+
+## Import d'un export Overpass Turbo (artisans OSM par tag "craft")
+
+Suite directe de la demande "j'ai encore plein d'artisans à mettre mais
+un peu flemme" : plutôt que de tout ressaisir à la main, une requête
+Overpass Turbo (fournie par nous, filtrée aux 24 communes du
+territoire via `area["ref:INSEE"=...]`, tous les tags `craft=*` +
+`shop=trade`) permet de retrouver directement une partie des artisans
+déjà cartographiés sur OpenStreetMap - l'utilisatrice a ensuite exporté
+le résultat en GeoJSON.
+
+Format d'export différent de `couches/commerces/commerces.geojson` :
+les tags OSM bruts directement en `properties` (`craft`, `contact:*`,
+`addr:*`, `ref:FR:SIRET`...) plutôt que le schéma normalisé du site.
+Script d'import ponctuel : dédoublonnage par `osm_id` (5 des 6 entrées
+de cet export étaient déjà présentes - la donnée d'origine du site
+incluait déjà les tags `craft=*`, pas seulement `shop=*` - un seul
+ajout réel, "Ô Saveurs de Bercé", traiteur à Montval-sur-Loir) ;
+`com_insee`/`com_nom` déduits par point-dans-polygone comme pour les
+artisans ajoutés à la main précédemment ; adresse reconstruite depuis
+`addr:housenumber`/`addr:street` (ou leur équivalent `contact:*`) ;
+`facebook` normalisé en URL complète quand OSM ne fournit qu'un
+identifiant de page (`contact:facebook`) plutôt que l'URL entière.
+
+Nouveau type "caterer" (traiteur) ajouté à la catégorie Alimentation
+existante (préparation/vente de nourriture, pas un repas sur place
+comme "Restaurants & bars").
+
+## Référencement (SEO) : balises meta, Open Graph, données structurées
+
+Retour direct de l'utilisatrice : "en cherchant GéoBercé sur Google
+faudrait tomber dessus" - le site n'avait jusqu'ici aucune balise
+pensée pour le référencement (pas de `<meta description>`, pas
+d'Open Graph pour les partages Facebook, titre de page générique).
+
+Ajoutés dans `<head>` (`index.html`) : `<title>` complété avec le nom
+du territoire ("...du territoire Loir-Lucé-Bercé", pas juste "Le SIG
+local") pour mieux correspondre aux recherches locales ; `<meta
+description>` et Open Graph (`og:title`, `og:description`, `og:image`,
+`og:url`) repris du texte déjà existant dans la modale "À propos"
+plutôt qu'inventés - description cohérente partout sur le site ;
+données structurées `schema.org` (`WebSite`, JSON-LD) pour aider Google
+à comprendre de quoi parle la page.
+
+**Particularité propre à l'architecture à deux dépôts** : `canonical`,
+`og:url` et l'URL de l'image Open Graph pointent en dur vers
+`https://swallowage.github.io/geoberce/` - jamais une URL relative au
+domaine qui sert réellement la page à l'instant T, puisque ce même
+`index.html` est servi aussi bien depuis ce dépôt de développement que
+depuis la vraie prod (mécanisme de synchro déjà en place, voir plus
+haut). Ce choix sert doublement : sur la prod, l'URL canonique se
+confirme elle-même ; sur le dépôt de dev, elle indique explicitement à
+Google que la page de référence est ailleurs - évite un risque de
+contenu dupliqué entre les deux copies qui nuirait au référencement de
+la vraie prod.
+
+**Ce qui reste hors de portée du code** (nécessite une action manuelle
+de l'utilisatrice, propriétaire des comptes concernés) : ces balises
+aident Google à bien comprendre/afficher la page une fois qu'il l'a
+trouvée, mais ne garantissent pas qu'il la trouve vite. Pour accélérer
+l'indexation :
+1. Google Search Console (search.google.com/search-console) : ajouter
+   la propriété `https://swallowage.github.io/geoberce/`, puis
+   "Inspection de l'URL" → "Demander une indexation" - généralement
+   indexé en quelques heures à quelques jours plutôt que d'attendre le
+   passage naturel des robots.
+2. Un lien vers `/geoberce/` depuis la page d'accueil personnelle de
+   swallowage.github.io (déjà indexée) aiderait Google à découvrir la
+   page plus vite - pas fait ici, cette page est hors du périmètre
+   synchronisé automatiquement (voir plus haut, "geoberce/README.md
+   n'est jamais touché" - même principe pour tout le reste de la racine
+   du dépôt swallowage) : à faire à la demande explicite de
+   l'utilisatrice si elle le souhaite.
+3. Un lien depuis le site officiel de la Communauté de communes
+   Loir-Lucé-Bercé, si elle peut l'obtenir, serait le signal le plus
+   fort pour le référencement local - démarche relationnelle, hors de
+   portée du code.
+
+Testé (Playwright) : toutes les balises meta/Open Graph et le JSON-LD
+vérifiés présents avec le bon contenu après chargement de la page ;
+JSON-LD confirmé syntaxiquement valide (`JSON.parse` réussi).
+
+## Procédure d'urgence dans la popup des défibrillateurs
+
+Retour direct de l'utilisatrice, qui avait ce contenu sur une toute
+première version du site (un dépôt local qu'elle a retrouvé et
+envoyé) : la popup défibrillateur manquait le rappel des gestes à
+faire en cas d'arrêt cardiaque.
+
+Repris quasiment à l'identique de cette première version (texte et
+structure en 4 étapes déjà bons) dans `construirePopupDae`
+(js/popup.js), avec le numéro d'urgence ajouté ("15 ou 112") et un
+style adapté aux classes `.popup-fiche-*` actuelles plutôt que les
+anciennes classes `.dae-emergency-*` (même ton visuel que
+`.popup-fiche-badge.ferme` - fond rose pâle, texte terracotta - plutôt
+qu'une nouvelle couleur d'alerte inventée pour l'occasion).
+
+Le bouton "itinéraire" que cette première version construisait
+spécifiquement pour les DAE existe déjà, en mieux, sur la version
+actuelle du site : `injecterItineraire` (js/popup.js) l'ajoute
+automatiquement à TOUTES les popups du site (Google Maps ET Waze, pas
+seulement Google Maps) - rien à faire de ce côté.
+
+Testé (Playwright, vraie donnée du territoire) : popup générée avec un
+vrai défibrillateur de `couches/securite/dae.geojson` - encart urgence
+présent avec son titre et ses 4 étapes, aucune fuite `[object Object]`,
+bouton itinéraire (Google Maps + Waze) toujours présent par-dessus.
+
+## Recherche foncière liée au cadre de la carte (fini le recentrage au déplacement)
+
+Retour direct de l'utilisatrice : "je veux que la recherche foncière
+les résultats se rechargent au fur et à mesure que je déplace la
+carte... je veux que la recherche soit liée au cadre de ma carte".
+
+La recherche réagissait déjà à un déplacement de carte (un `moveend`
+était bien branché), mais seulement pour faire apparaître un bouton
+"Rechercher ici" à cliquer manuellement - et une fois cliqué,
+`afficherResultatsRecherche` appelait systématiquement
+`map.fitBounds(...)`, recentrant la carte sur les nouveaux résultats :
+exactement l'effet inverse de ce qui était demandé ("ça recentre sur
+où c'était au début").
+
+Corrigé en deux temps dans `js/recherche.js` :
+1. `afficherResultatsRecherche` prend désormais une option
+   `{ recentrer }` (true par défaut, préservant le comportement actuel
+   au premier clic sur "Afficher les parcelles correspondantes" - zoomer
+   sur les résultats y reste utile).
+2. Le `moveend` réenrichit et réaffiche maintenant automatiquement les
+   résultats pour la nouvelle vue à chaque déplacement, avec
+   `recentrer:false` - plus besoin de rebouton "Rechercher ici"
+   (supprimé) : la recherche suit la carte plutôt que l'inverse. Un
+   nouveau drapeau `rechercheActive` (vrai dès le premier clic sur
+   "Afficher", remis à faux par "Vider la sélection") évite de réafficher
+   quoi que ce soit tant qu'aucune recherche n'a encore été lancée.
+   Le mode "commune ciblée" (recherche rapide de l'écran d'accueil,
+   voir la note en tête de fichier) reste volontairement exclu de ce
+   réenrichissement automatique : il porte sur toute la commune plutôt
+   que sur la vue carte, un déplacement ne doit pas basculer
+   silencieusement vers l'autre logique de filtrage.
+
+Testé (Playwright, données cadastrales synthétiques mais de structure
+réelle, chargement réseau du vrai cadastre impossible depuis ce
+sandbox) : enrichissement initial puis premier affichage confirmé avec
+`fitBounds` appelé une fois (zoom normal) ; déplacement simulé vers une
+nouvelle zone avec de nouvelles parcelles - résultats mis à jour,
+`fitBounds` appelé **zéro fois** (plus de recentrage) ; "Vider la
+sélection" confirmé stopper le direct (un déplacement après ne
+réaffiche plus rien) ; zoom insuffisant toujours refusé proprement
+avec le bon message.
+
+## Recherche foncière : filtre "nombre de bâtiments max"
+
+Retour direct de l'utilisatrice : "faudrait rajouter un nombre de
+bâtiment max comme ça si je mets 0 je vois les parcelles constructibles
+et sans bâtiment donc potentiellement à acheter".
+
+Le champ "Nombre de bâtiments (min)" existant est devenu une plage
+min→max (même convention que surface/prix/année de vente). Un piège
+identifié en écrivant le filtre, avant même de le livrer : le nombre de
+bâtiments affiché vient de la dernière mutation DVF connue (`nbBatiments`,
+`infosParcelle`) - `null` quand la parcelle n'a jamais été revendue,
+qu'elle soit réellement vide OU qu'elle porte une vraie maison jamais
+revendue depuis l'existence du DVF. Un filtre "max=0" naïf aurait donc
+soit exclu à tort de vraies parcelles vides (si `null` était traité comme
+"inconnu, à exclure par prudence"), soit pire, laissé passer une
+parcelle avec une vraie maison dessus (si `null` était traité comme "0
+par défaut") - trompeur pour une recherche qui sert justement à
+identifier des terrains "potentiellement à acheter".
+
+Le code portait déjà, pour un besoin voisin (calcul de proximité, voir
+plus haut dans `infosParcelle`), un vrai test géométrique contre les
+bâtiments réels du cadastre (`aUnBatiment`) - jusqu'ici calculé mais
+jamais exposé en dehors de cette fonction. Réutilisé ici (nouvelle
+fonction `nbBatimentsEffectif`) comme filet de sécurité quand le DVF ne
+sait pas trancher : `nbBatiments` fait foi quand connu, sinon 0 ou 1
+selon qu'un bâtiment réel est détecté géométriquement sur la parcelle.
+Bénéfice secondaire : le filtre "min" existant profite de la même
+correction (il ratait lui aussi les maisons jamais revendues).
+
+Testé (Playwright) : les 3 cas de `nbBatimentsEffectif` vérifiés
+(DVF connu, DVF inconnu + bâti réel détecté, DVF inconnu + rien détecté) ;
+`correspond()` avec `nbBatimentsMax:0` vérifié sur 4 parcelles
+synthétiques - la vraie parcelle vide (jamais vendue, aucun bâtiment
+géométrique) et la parcelle vendue sans bâti passent le filtre comme
+attendu, la parcelle jamais vendue mais réellement bâtie et celle avec
+une maison connue sont bien exclues.
+
+## Fiche parcelle : obligation légale de débroussaillement (OLD)
+
+Retour direct de l'utilisatrice, arrivé en même temps que le filtre
+"nombre de bâtiments max" ci-dessus : "profite en sur ma fiche parcelle
+de dire si elle est en Obligation légale de débroussaillement" -
+l'obligation réglementaire de débroussailler aux abords d'un massif
+boisé (prévention incendie), qui pèse sur le propriétaire et peut
+représenter un coût ou une contrainte non négligeable à l'achat d'un
+terrain.
+
+Premier chemin envisagé (même logique que les SUP existantes) : l'API
+Carto de l'IGN, via son module générique `wfs-geoportail`. Vérifié
+directement dans le code source du module (dépôt `IGNF/apicarto` sur
+GitHub) plutôt que deviné : sa liste blanche de flux WFS proxyfiés
+(`ressources_cle_wfs2022-05-20.csv`) ne contient aucune entrée
+"débroussaillement" - cette API ne couvre tout simplement pas cette
+donnée, abandon confirmé et pas une simple erreur d'URL.
+
+Chemin retenu : la couche WMS `DEBROUSSAILLEMENT` de la Géoplateforme
+IGN (`data.geopf.fr/wms-r/wms`), déjà utilisée ailleurs sur le site pour
+l'affichage cartographique, interrogée ici en `GetFeatureInfo` au
+centroïde de la parcelle plutôt qu'en affichage de tuile. Un aller-retour
+nécessaire avec l'utilisatrice (seule à avoir un accès réseau non
+restreint pendant le développement) pour confirmer que l'appel
+fonctionne réellement : premier essai refusé par le serveur
+("`MissingParameterValue: FORMAT query parameter missing`" - le
+paramètre `FORMAT`, pourtant pensé pour l'affichage d'image, s'est
+révélé obligatoire même pour une requête d'info), second essai avec
+`FORMAT` ajouté retourné avec succès, confirmant le format réel de la
+réponse. Attribut `zonage` de la réponse : `1` = dans le massif boisé
+lui-même, `2` = dans la bande des 200 m autour d'un massif boisé (de
+loin le cas le plus fréquent en zone rurale) - confirmé sur le retour
+réel de l'utilisatrice et recoupé par recherche complémentaire. La
+réponse porte aussi un champ `url` pointant vers la page de la
+préfecture concernée détaillant les obligations applicables (sur le
+test réel, la préfecture de la Sarthe) - repris tel quel en lien dans la
+fiche plutôt que reformulé.
+
+Même schéma que les servitudes d'utilité publique (SUP) déjà présentes
+sur la fiche : un seul appel réseau par parcelle, déclenché en parallèle
+du reste à la première ouverture de la popup (`ouvrirPopupParcelle`),
+dégradant vers une section absente (et non une fiche cassée) si la
+parcelle n'est pas concernée ou si le service ne répond pas.
+
+Testé (Playwright) : `fetchOldPourParcelle` avec la réponse réelle
+fournie par l'utilisatrice (zonage 2, lien préfecture Sarthe) - libellé
+et lien corrects, aucune fuite `[object Object]` ; cas "parcelle non
+concernée" (réponse sans feature) et cas d'échec réseau vérifiés tous
+les deux à `null` ; rendu de la fiche vérifié avec et sans obligation -
+la section n'apparaît que lorsqu'elle a quelque chose à dire, exactement
+comme pour les SUP.
+
+## Popups de la recherche foncière qui se ferment près du bord de l'écran
+
+Retour direct de l'utilisatrice : "sur mes parcelles mes popups se
+ferment j'ai l'impression quand elles touchent le bord de l'écran".
+
+Cause réelle, une interaction entre deux mécanismes existants plutôt
+qu'un bug isolé : la recherche foncière se réaffiche automatiquement à
+chaque déplacement de carte (`moveend`, voir plus haut "Recherche
+foncière liée au cadre de la carte"), en DÉTRUISANT puis RECONSTRUISANT
+toute la couche de résultats affichés. Or Leaflet déplace lui-même la
+carte (`autoPan`) pour garder visible une popup qui vient de s'ouvrir
+près du bord - et ce déplacement programmatique déclenche, lui aussi, un
+"moveend". Résultat : ouvrir une popup près du bord relançait
+immédiatement la reconstruction de la couche de résultats, détruisant au
+passage le marqueur dont la popup venait tout juste de s'ouvrir.
+
+Corrigé via l'évènement `autopanstart`, que Leaflet ne déclenche QUE
+lorsqu'un panoramique automatique est réellement nécessaire (confirmé
+dans le code source de `Popup._adjustPan`) : un simple garde-fou
+(`ignorerProchainMoveend`) armé sur cet évènement fait ignorer le
+"moveend" programmatique qui suit, sans toucher au comportement normal
+pour un déplacement de carte volontaire. La logique du `moveend` a été
+extraite en fonction nommée (`gererDeplacementCarteRecherche`) pour
+rester testable indépendamment de l'enregistrement de l'écouteur
+Leaflet.
+
+Testé (Playwright) : un `moveend` normal continue de réafficher les
+résultats (comportement inchangé) ; un `moveend` précédé d'un
+`autopanstart` ne touche plus à la couche affichée ; le garde-fou se
+réinitialise bien après usage, sans bloquer durablement les
+réaffichages suivants.
+
 ## Ce qui reste à faire
+- Vigieau (voir section précédente) n'interroge qu'un seul point (le
+  centre) par commune : une commune à cheval sur deux zones d'alerte de
+  niveaux différents (déjà observé ailleurs en France - message d'erreur
+  "plusieurs zones de même type" rencontré en testant l'API) pourrait
+  afficher un niveau plus faible que ce qui s'applique réellement à une
+  partie de ses habitants. Retour direct de l'utilisatrice, laissé tel
+  quel pour l'instant : amélioration possible en interrogeant plusieurs
+  points par commune (centre + coins) et en gardant le niveau le plus
+  sévère trouvé, si le besoin s'en fait sentir.
 - Le fichier DVF étant volumineux même en différé, envisager de le
   simplifier avec Mapshaper si le chargement reste lent au clic.
 - Ajouter les commerces comme thématique dédiée sur la page d'accueil si
