@@ -3514,6 +3514,35 @@ résultats (comportement inchangé) ; un `moveend` précédé d'un
 réinitialise bien après usage, sans bloquer durablement les
 réaffichages suivants.
 
+## Commerces : symbologie pour les distributeurs de producteurs locaux
+
+Retour direct de l'utilisatrice : "j'ai ajouté un type 'distributeur'
+dans les commerces pour partager les casiers de légumes/viande etc mis
+à disposition dans les villages" - un meuble à casiers en libre-service
+(pas de vendeur sur place, accessible en continu), de plus en plus
+courant pour écouler la production de fermes locales sans les
+contraintes d'un vrai point de vente.
+
+Même mécanisme que les ajouts précédents (artisans du bâtiment,
+producteurs locaux - voir plus haut) : une nouvelle entrée dans
+`TYPES_COMMERCES` (js/config.js), reconnue automatiquement partout où
+`categorieCommerce` est déjà utilisée (icône du marqueur, sous-couche
+cochable séparément, légende du panneau) sans toucher au reste du
+mécanisme. Catégorie séparée de "Producteurs locaux" plutôt que
+fusionnée avec elle : un casier en libre-service 24h/24 n'a ni horaires
+ni contact à afficher comme une vraie ferme, et mérite de rester
+identifiable d'un coup d'œil sur la carte. Icône `fa-solid
+fa-boxes-stacked` (des casiers empilés, assez littéral) et couleur
+ambrée (`#B8793A`) choisie hors des 5 teintes de la palette commune,
+déjà très sollicitées par les autres catégories de commerces.
+
+Testé (Playwright) : le type brut `"distributeur"` (et ses variantes
+en majuscule/espaces) catégorisé correctement, sans effet sur les
+autres types existants ; icône/couleur corrects via `iconeCommerce` sur
+une feature réelle ; présence confirmée dans la légende de la couche
+"Commerces, artisans & services" ; couleur bien distincte des autres
+catégories déjà en place.
+
 ## Ce qui reste à faire
 - Vigieau (voir section précédente) n'interroge qu'un seul point (le
   centre) par commune : une commune à cheval sur deux zones d'alerte de
