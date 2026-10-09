@@ -411,9 +411,9 @@ const CATEGORIES_ASSOCIATIONS = {
     culture: "Culture",
     loisirs: "Loisirs & fêtes",
     entraide: "Entraide & santé",
-    education: "École & jeunesse",
+    education: "Enfance & école",
     patrimoine: "Patrimoine & mémoire",
-    environnement: "Nature & environnement",
+    environnement: "Nature, chasse & pêche",
     autres: "Autres"
 };
 const COULEUR_ASSOCIATIONS = "#B5461F";
