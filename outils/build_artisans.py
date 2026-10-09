@@ -11,6 +11,15 @@ métier d'artisan du bâtiment ou du jardin, puis on les range par métier.
 - Un établissement déjà présent dans couches/commerces/commerces.geojson
   (même SIRET) n'est pas repris, pour éviter les doublons sur la carte.
 
+Saisie à la main (QGIS ou éditeur de texte), jamais écrasée par la mise à jour :
+- phone, email, website, opening_hours (format OSM, ex. « Mo-Fr 08:00-18:00 »),
+  note : recopiés d'un mois sur l'autre pour le même SIRET ;
+- verifie = true : la fiche a été vérifiée à la main, son nom, son adresse, sa
+  catégorie et sa position sont gardés tels quels (et elle reste même si
+  l'établissement disparaît du registre) ;
+- masquer = true : gardée dans le fichier mais pas affichée sur la carte ;
+- source = "manuel" (sans SIRET) : artisan ajouté à la main, toujours gardé.
+
 Usage : python3 outils/build_artisans.py [sortie.geojson]
 Lancé chaque mois par .github/workflows/donnees-mensuelles.yml.
 """
@@ -112,8 +121,53 @@ def non_diffusible(texte):
     return "NON-DIFFUSIBLE" in str(texte or "").upper() or "[ND]" in str(texte or "").upper()
 
 
+CHAMPS_MANUELS = ("phone", "email", "website", "opening_hours", "note", "masquer")
+CHAMPS_VERIFIES = ("nom", "adresse", "categorie")
+
+
+def precedent(chemin):
+    try:
+        with open(chemin, encoding="utf-8") as f:
+            return json.load(f).get("features", [])
+    except (FileNotFoundError, ValueError):
+        return []
+
+
+def reprendre_saisies(features, anciennes):
+    """Recopie dans les fiches du registre ce qui a été saisi à la main."""
+    par_siret = {a["properties"].get("siret"): a for a in anciennes if a["properties"].get("siret")}
+    nouveaux = {f["properties"]["siret"] for f in features}
+    for f in features:
+        p = f["properties"]
+        for champ in CHAMPS_MANUELS:
+            p.setdefault(champ, None)
+        p.setdefault("verifie", False)
+        a = par_siret.get(p["siret"])
+        if not a:
+            continue
+        ap = a["properties"]
+        for champ in CHAMPS_MANUELS:
+            if ap.get(champ) not in (None, ""):
+                p[champ] = ap[champ]
+        if ap.get("verifie"):
+            p["verifie"] = True
+            for champ in CHAMPS_VERIFIES:
+                if ap.get(champ):
+                    p[champ] = ap[champ]
+            f["geometry"] = a["geometry"]
+    # Fiches ajoutées à la main, ou vérifiées mais absentes du registre ce mois-ci.
+    for a in anciennes:
+        ap = a["properties"]
+        if ap.get("source") == "manuel" or (ap.get("verifie") and ap.get("siret") not in nouveaux):
+            if ap.get("source") != "manuel":
+                print(f"  gardée (vérifiée, absente du registre) : {ap.get('nom')} ({ap.get('com_nom')})")
+            features.append(a)
+    return features
+
+
 def main():
     sortie = sys.argv[1] if len(sys.argv) > 1 else os.path.join(RACINE, "couches", "commerces", "artisans.geojson")
+    anciennes = precedent(sortie)
     deja = sirets_commerces()
     codes = sorted(METIER_DE)
     vus, features = set(), []
@@ -174,6 +228,7 @@ def main():
 
     if not features:
         sys.exit("Aucun artisan trouvé : l'API a peut-être changé, fichier laissé tel quel.")
+    features = reprendre_saisies(features, anciennes)
     features.sort(key=lambda f: (f["properties"]["com_nom"], f["properties"]["nom"]))
     with open(sortie, "w", encoding="utf-8") as f:
         json.dump({"type": "FeatureCollection", "source": "Registre SIRENE (Insee), API Recherche d'entreprises",
