@@ -21,7 +21,7 @@
      {
       "titre": "Amicale des Chasseurs de Beaumont-Sur-Dême",
       "objet": "Exercice de la chasse, la promotion et la défense de la pérennité de la chasse, le repeuplement , la régulation des espèces nuisibles, le respect des propriétés et des récoltes, la répression du braconnage et ce, sur…",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "1946",
       "declaration": "2026",
       "site": ""
@@ -37,7 +37,7 @@
      {
       "titre": "Club de Générations Mouvement Aînés Ruraux de Beaumont sur Dême",
       "objet": "Créer, animer, développer les rencontres et les liens d'amitié entre les retraités et pré-retraités ; les aider à résoudre leurs difficultés, les informer et les soutenir, par la création de services, dans la recherche…",
-      "cat": "entraide",
+      "cat": "loisirs",
       "creation": "1985",
       "declaration": "2021",
       "site": ""
@@ -53,7 +53,7 @@
      {
       "titre": "Les Coucous du Val de Loir (L.C.V.L.)",
       "objet": "Organiser des loisirs ou autres activites culturelles en faveur de ses membres et toutes manifestations a caractere publique",
-      "cat": "environnement",
+      "cat": "sport",
       "creation": "1991",
       "declaration": "2026",
       "site": ""
@@ -77,7 +77,7 @@
      {
       "titre": "Paysages Paysans",
       "objet": "Protéger les espaces naturels, les paysages et le patrimoine bâti du sud Sarthe, Nord Touraine et l'Ouest du Loir et Chef soit dans un rayon de dix kilomètres autour de Beaumont sur Dême comprenant intégralement le…",
-      "cat": "culture",
+      "cat": "environnement",
       "creation": "2005",
       "declaration": "2024",
       "site": ""
@@ -111,7 +111,7 @@
      {
       "titre": "Amicale des Chasseurs Belmontais",
       "objet": "Pratique de la chasse",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "1991",
       "declaration": "2025",
       "site": ""
@@ -135,7 +135,7 @@
      {
       "titre": "Association des Anciens Jeunes de Beaumont Pied de Bœuf",
       "objet": "Créer, animer, développer les rencontres et les liens d'amitié entre ls membres, les aider à résoudre leurs difficultés, les informer dans la recherche de solutions.....(voir dossier)",
-      "cat": "education",
+      "cat": "loisirs",
       "creation": "2006",
       "declaration": "2023",
       "site": ""
@@ -183,7 +183,7 @@
      {
       "titre": "L'Iroise",
       "objet": "Association de pêcheurs et propriétaires riverains de l'ire et du moqueras pour préserver les terrains privés riverains de l'ire - assurer l'alevinage et protéger l'environnement.",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "1989",
       "declaration": "2024",
       "site": ""
@@ -215,7 +215,7 @@
      {
       "titre": "Organisation Caritative de Raid Automobile",
       "objet": "Notre association a pour objectif la création d'un équipage de rallye raid pour la manifestation du \"4l trophy\". Ce rallye raid est organisé dans un but caritatif puisque son but premier est d'effectuer un apport de…",
-      "cat": "education",
+      "cat": "entraide",
       "creation": "2020",
       "declaration": "2020",
       "site": ""
@@ -257,7 +257,7 @@
      {
       "titre": "Amicale Sportive de Chahaignes",
       "objet": "Pratique d' exercices physiques",
-      "cat": "loisirs",
+      "cat": "sport",
       "creation": "1945",
       "declaration": "2023",
       "site": ""
@@ -265,7 +265,7 @@
      {
       "titre": "Association Chahaignes-Marçon pour la Pêche et la Protection du Milieu Aquatique - A.p.p.m.a.",
       "objet": "Détenir et gérer droits de pêche sur les domaines publics et privés de l'etat et des collectivités locales ou de riverains",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "1942",
       "declaration": "2024",
       "site": ""
@@ -273,7 +273,7 @@
      {
       "titre": "Association des Commercants et Artisans de Chahaignes",
       "objet": "Faire revivre et animer le village",
-      "cat": "environnement",
+      "cat": "autres",
       "creation": "1986",
       "declaration": "2020",
       "site": ""
@@ -289,7 +289,7 @@
      {
       "titre": "Chahaignes Culture et Loisirs",
       "objet": "Organiser des activités et manifestations festives, culturelles, patrimoniales et sportives à Chahaignes",
-      "cat": "culture",
+      "cat": "loisirs",
       "creation": "2022",
       "declaration": "2026",
       "site": ""
@@ -297,7 +297,7 @@
      {
       "titre": "Club D'Echecs de Château du Loir",
       "objet": "Pratique sportive et enseignement des échecs",
-      "cat": "patrimoine",
+      "cat": "loisirs",
       "creation": "2001",
       "declaration": "2026",
       "site": ""
@@ -321,7 +321,7 @@
      {
       "titre": "Confrerie les Gouteux D'Vins",
       "objet": "Promouvoir les vins de la Vallée du Loir et du Vendômois",
-      "cat": "entraide",
+      "cat": "autres",
       "creation": "2017",
       "declaration": "2017",
       "site": ""
@@ -329,7 +329,7 @@
      {
       "titre": "Cyber Entraide",
       "objet": "Donner des cours d'initiation au technologie de l'information et de la communication ( tic), organiser des ateliers sur l'utilisation de programmes divers, des ateliers sur les dangers d'internet et comment déceler les…",
-      "cat": "entraide",
+      "cat": "culture",
       "creation": "2011",
       "declaration": "2023",
       "site": ""
@@ -337,7 +337,7 @@
      {
       "titre": "Declik",
       "objet": "Favoriser l évolution professionnelle l insertion l entraide et la mise en réseau de personnes éloignées de l emploi ou en transition professionnelle Elle propose des actions d accompagnement administratif des ateliers…",
-      "cat": "education",
+      "cat": "entraide",
       "creation": "2025",
       "declaration": "2025",
       "site": ""
@@ -345,7 +345,7 @@
      {
       "titre": "La Dynamique",
       "objet": "Création d'animations à la résidence pour personnes âgées.",
-      "cat": "loisirs",
+      "cat": "entraide",
       "creation": "1992",
       "declaration": "2023",
       "site": ""
@@ -353,7 +353,7 @@
      {
       "titre": "Les Amis de la Raderie",
       "objet": "Valoriser, animer, développer, sauvegarder le patrimoine,",
-      "cat": "sport",
+      "cat": "patrimoine",
       "creation": "2024",
       "declaration": "2024",
       "site": ""
@@ -361,7 +361,7 @@
      {
       "titre": "Les Chahaignots à Marocco",
       "objet": "Participer à des manifestations humanitaire",
-      "cat": "autres",
+      "cat": "entraide",
       "creation": "2024",
       "declaration": "2024",
       "site": ""
@@ -377,7 +377,7 @@
      {
       "titre": "Rallye du Val de Loir",
       "objet": "Faire connaître la vallée du loir et y développer des liens d'amitié.",
-      "cat": "environnement",
+      "cat": "sport",
       "creation": "1979",
       "declaration": "2021",
       "site": ""
@@ -393,7 +393,7 @@
      {
       "titre": "Sakartoun Chahaignes",
       "objet": "Creer des ateliers d'eveil et d'epanouissement pour les enfants",
-      "cat": "entraide",
+      "cat": "education",
       "creation": "1989",
       "declaration": "2024",
       "site": ""
@@ -409,7 +409,7 @@
      {
       "titre": "Union Nationale des Anciens Commbattants D'Indochine, T.o.e. et Afrique du Nord - Groupement du Maine - Unacita",
       "objet": "Resserrer les liens d'amitié entre tous les anciens combattants et défendre leurs intérêts matériels et moraux",
-      "cat": "entraide",
+      "cat": "patrimoine",
       "creation": "1992",
       "declaration": "2023",
       "site": ""
@@ -459,7 +459,7 @@
      {
       "titre": "Amicale des Employes Communaux de la Ville de la Chartre sur le Loir",
       "objet": "Resserrer les liens amicaux entre le personnel de la ville de la chartre sur le loir, venir en aide aux agents pouvant se trouver en difficulte et en general de toute entraide de quelque nature qu'elle soit",
-      "cat": "environnement",
+      "cat": "loisirs",
       "creation": "1974",
       "declaration": "2022",
       "site": ""
@@ -467,7 +467,7 @@
      {
       "titre": "Amicale des Pêcheurs la Chartre Lhomme Ruille (AAPPMA)",
       "objet": "Pêche et protection du milieu aquatique.",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "2006",
       "declaration": "2024",
       "site": ""
@@ -475,7 +475,7 @@
      {
       "titre": "Amicale des Sapeurs-Pompiers du Centre de Secours de la Chartre sur le Loir/ruille sur Loir",
       "objet": "Resserrer les liens d'amitié qui unissent les membres du corps et de rechercher les moyens propres à améliorer leur situation ; subvenir aux frais des fêtes et concours ayant pour but le perfectionnement de…",
-      "cat": "entraide",
+      "cat": "loisirs",
       "creation": "2011",
       "declaration": "2022",
       "site": ""
@@ -507,7 +507,7 @@
      {
       "titre": "Association des Courses Hippiques de la Chartre-Sur-Le-Loir",
       "objet": "Organisation des courses de chevaux et des activités directement liées à cet objet ou à l'exploitation des installations dont elle est propriétaire ou pour lesquelles elle est habilitée par la loi. (voir statuts)",
-      "cat": "environnement",
+      "cat": "sport",
       "creation": "1904",
       "declaration": "2024",
       "site": ""
@@ -531,7 +531,7 @@
      {
       "titre": "Association Générations Mouvement - Canton de la Chartre sur le Loir",
       "objet": "Renforcer les liens de solidarité existant entre les retraités et pré-retraités, vivant en milieu rural et assimilés, et développer en leur faveur, notamment par des clubs communaux ouverts indistinctement à tous, les…",
-      "cat": "environnement",
+      "cat": "loisirs",
       "creation": "1973",
       "declaration": "2023",
       "site": ""
@@ -555,7 +555,7 @@
      {
       "titre": "Association 'Part'Âges'",
       "objet": "Permettre à travers l'animation, une amélioration de la qualité de vie des résidents de l'etablissement d'hébergement pour personnes âgées dépendantes 'résidence catherine de courtoux' à la chartre sur le loir, par des…",
-      "cat": "environnement",
+      "cat": "entraide",
       "creation": "2007",
       "declaration": "2018",
       "site": ""
@@ -571,7 +571,7 @@
      {
       "titre": "Association Sportive 'Pierre de Ronsard' la Chartre sur le Loir",
       "objet": "93 - activités sportives",
-      "cat": "environnement",
+      "cat": "sport",
       "creation": "1973",
       "declaration": "2026",
       "site": ""
@@ -595,7 +595,7 @@
      {
       "titre": "Centre Social Val du Loir",
       "objet": "L'Association se donne pour objectifs de gérer le Centre Social, de mettre en place, de coordonner et de promouvoir les activités et services associatifs existants ou nouveaux d'ordre social, culturel, éducatif,…",
-      "cat": "entraide",
+      "cat": "loisirs",
       "creation": "2013",
       "declaration": "2018",
       "site": ""
@@ -603,7 +603,7 @@
      {
       "titre": "Club de Générations Mouvement la Chartre sur le Loir",
       "objet": "Organiser des activités pour les personnes retraitées de La Chartre ; défendre leurs intérêts matériels et moraux",
-      "cat": "environnement",
+      "cat": "loisirs",
       "creation": "1996",
       "declaration": "2025",
       "site": ""
@@ -611,7 +611,7 @@
      {
       "titre": "Comité de Jumelage et D'Echanges Internationaux des Communes du Canton de la Chartre-Sur-Le Loir",
       "objet": "Promouvoir les échanges internationaux scolaires, culturels, sportifs, professionnels ; préparer et réaliser des jumelages avec des villes d'autres états.",
-      "cat": "environnement",
+      "cat": "loisirs",
       "creation": "1972",
       "declaration": "2026",
       "site": ""
@@ -619,7 +619,7 @@
      {
       "titre": "Comité des Fêtes sur le Loir",
       "objet": "Réunir et organiser des rencontres entre des personnes souhaitant s'entraider sur l'organisation d'événement - Mise à disposition de matériel aux associations cotisantes du Comité des fêtes ;",
-      "cat": "environnement",
+      "cat": "loisirs",
       "creation": "2021",
       "declaration": "2022",
       "site": ""
@@ -627,7 +627,7 @@
      {
       "titre": "Compagnie 'Entre Scene et Loir'",
       "objet": "La pratique des arts du théâtre, et toutes les activités artistiques et logistiques rattachées à cette pratique",
-      "cat": "environnement",
+      "cat": "culture",
       "creation": "2004",
       "declaration": "2019",
       "site": ""
@@ -635,7 +635,7 @@
      {
       "titre": "Esprit Carpe 72",
       "objet": "De fédérer toute pêche",
-      "cat": "education",
+      "cat": "environnement",
       "creation": "2025",
       "declaration": "2025",
       "site": ""
@@ -667,7 +667,7 @@
      {
       "titre": "Groupement de Développement Viticole de la Sarthe",
       "objet": "Rechercher et diffuser des connaissances techniques gérer le laboratoire de la sarthe développer l'activité oenotouristique participer et animer toutes foires, salons vendre du vin et accessoires fournir toutes…",
-      "cat": "environnement",
+      "cat": "autres",
       "creation": "1998",
       "declaration": "2024",
       "site": ""
@@ -707,7 +707,7 @@
      {
       "titre": "Le Jardin du Partage",
       "objet": "Promouvoir le lien social à travers le jardinage collectif dans le respect de l'environnement, l'échange de savoir-faire, la mise en place d'actions pédagogiques en lien avec la nature , la promotion de la protection de…",
-      "cat": "environnement",
+      "cat": "loisirs",
       "creation": "2016",
       "declaration": "2024",
       "site": ""
@@ -723,7 +723,7 @@
      {
       "titre": "Les Amis de L'Orgue de la Chartre sur le Loir",
       "objet": "Entretien et amélioration de l'orgue de l' église de La Chartre-sur-le-Loir ainsi que sa mise en valeur sur le plan culturel et pédagogique ; organisation de concerts",
-      "cat": "environnement",
+      "cat": "patrimoine",
       "creation": "1977",
       "declaration": "2025",
       "site": ""
@@ -731,7 +731,7 @@
      {
       "titre": "Les Nounous du Loir",
       "objet": "Cette association a pour but l'échange verbal, rencontres entre assistantes maternelles et prêt de jeux et de matériel puériculture",
-      "cat": "environnement",
+      "cat": "education",
       "creation": "1999",
       "declaration": "2024",
       "site": ""
@@ -747,7 +747,7 @@
      {
       "titre": "Libres",
       "objet": "Organisation de la commémoration des 80 ans de la libération du Canton de la Chartre sur le loir",
-      "cat": "sport",
+      "cat": "patrimoine",
       "creation": "2023",
       "declaration": "2023",
       "site": ""
@@ -763,7 +763,7 @@
      {
       "titre": "Organisme de Gestion de l 'Ecole Catholique Sainte-Marie de la Chartre sur le Loir",
       "objet": "Assurer la fondation et l'entretien des écoles catholiques reconnues comme telles par l'autorité canonique compétente, notamment la gestion de l'école ste marie de la chartre sur le loir, ainsi",
-      "cat": "education",
+      "cat": "loisirs",
       "creation": "1988",
       "declaration": "2020",
       "site": ""
@@ -771,7 +771,7 @@
      {
       "titre": "Panaltheia",
       "objet": "Accompagner les dirigeants à résoudre leurs problématiques internes, notamment de digitalisation dans le cadre de la réforme de la facture électronique ou de toute réforme conduisant à des évolutions de processus…",
-      "cat": "loisirs",
+      "cat": "autres",
       "creation": "2026",
       "declaration": "2026",
       "site": ""
@@ -811,7 +811,7 @@
      {
       "titre": "Sarthe Recup",
       "objet": "Récupérer tout ce qui peut resservir ; donner une seconde vie aux objets ; réparer et remettre en état des objets du quotidien ; proposer à la vente à petit prix afin d'éviter d'acheter du neuf",
-      "cat": "autres",
+      "cat": "environnement",
       "creation": "2022",
       "declaration": "2022",
       "site": ""
@@ -827,7 +827,7 @@
      {
       "titre": "Société Amicale des Chasseurs de la Chartre sur le Loir",
       "objet": "Favoriser la protection du gibier et son repeuplement, la répression du braconnage, la destruction des animaux nuisibles.",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "1946",
       "declaration": "2019",
       "site": ""
@@ -851,7 +851,7 @@
      {
       "titre": "Un Pas pour Elles",
       "objet": "Soutenir la lutte contre le cancer du sein, sensibiliser le public, mener des actions solidaires, sportives et humaines, collecter des fonds, les reverser à des associations accompagnant les femmes et leurs familles,…",
-      "cat": "education",
+      "cat": "loisirs",
       "creation": "2026",
       "declaration": "2026",
       "site": ""
@@ -859,7 +859,7 @@
      {
       "titre": "Veterans du Canton de la Chartre",
       "objet": "Promotion du football de façon ludique au sein du canton de la chartre sur le loir.",
-      "cat": "patrimoine",
+      "cat": "sport",
       "creation": "2003",
       "declaration": "2026",
       "site": ""
@@ -901,7 +901,7 @@
      {
       "titre": "A.l.p.e.i Hauteclocque",
       "objet": "Gérer et organiser des projets éducatifs interdisciplinaires, qu'ils soient culturels, sportifs, linguistiques ou autres pour les élèves du lycée professionnel Maréchal Leclerc de Hauteclocque, à Château du Loir",
-      "cat": "entraide",
+      "cat": "education",
       "creation": "2009",
       "declaration": "2025",
       "site": ""
@@ -917,7 +917,7 @@
      {
       "titre": "Agora Loir et Bercé",
       "objet": "Gérer le Centre à partir d'objectifs et promouvoir, créer, coordonner toutes activités et services d'ordre sanitaire, social, culturel, éducatif, sportif, familial en faveur de l'ensemble de la population des communes…",
-      "cat": "environnement",
+      "cat": "entraide",
       "creation": "1998",
       "declaration": "2025",
       "site": ""
@@ -941,7 +941,7 @@
      {
       "titre": "Amicale de la Chasse du Petit Bois",
       "objet": "Gestion de la chasse du Petit Bois",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "2016",
       "declaration": "2018",
       "site": ""
@@ -949,7 +949,7 @@
      {
       "titre": "Amicale des Anciens Metallurgistes du Canton de Château-Du-Loir",
       "objet": "Organiser la défense des intérêts des préretraités et des retraités sur tout ce qui concerne leurs moyens d'existence et organisation d'activités culturelles et de loisirs",
-      "cat": "patrimoine",
+      "cat": "loisirs",
       "creation": "1985",
       "declaration": "2026",
       "site": ""
@@ -957,7 +957,7 @@
      {
       "titre": "Amicale des Anciens Sapeurs-Pompiers de Château du Loir",
       "objet": "Réunir et fédérer au sein d'une même entité les sapeurs-pompiers n'étant plus en activité ; elle assure un lien privilégié avec l'amicale des sapeurs-pompiers sur le plan de la communication, manifestations et autres…",
-      "cat": "patrimoine",
+      "cat": "loisirs",
       "creation": "2013",
       "declaration": "2025",
       "site": ""
@@ -965,7 +965,7 @@
      {
       "titre": "Amicale des Employes Communaux de Montval sur Loir",
       "objet": "Permettre aux employés adhérents de la ville de château du loir de profiter des réductions diverses et de participer à certains événements familiaux (ex : aide pour la naissance, le mariage, le décès...).",
-      "cat": "environnement",
+      "cat": "loisirs",
       "creation": "1974",
       "declaration": "2026",
       "site": ""
@@ -973,7 +973,7 @@
      {
       "titre": "Amicale du College de Bercé",
       "objet": "Organisation de repas, sorties. célébration des départs en retraite, naissances, mariages.",
-      "cat": "education",
+      "cat": "loisirs",
       "creation": "2004",
       "declaration": "2021",
       "site": ""
@@ -981,7 +981,7 @@
      {
       "titre": "Amicale du Personnel de L'Hopital de Château du Loir",
       "objet": "Promouvoir toutes sortes d'actions sosio-culturelles et sportives afin de favoriser et développer des liens d'amitié entre les membres.",
-      "cat": "patrimoine",
+      "cat": "sport",
       "creation": "1977",
       "declaration": "2017",
       "site": ""
@@ -989,7 +989,7 @@
      {
       "titre": "Amicale Sportive des Cheminots de Château du Loir",
       "objet": "Organisation et promotion des activités physiques et sportives. organisation pratique des dites activités.",
-      "cat": "patrimoine",
+      "cat": "sport",
       "creation": "1936",
       "declaration": "2023",
       "site": ""
@@ -997,7 +997,7 @@
      {
       "titre": "Amicale Sportive Montabonaise",
       "objet": "Organiser et animer des manifestations sportives",
-      "cat": "loisirs",
+      "cat": "sport",
       "creation": "2024",
       "declaration": "2024",
       "site": ""
@@ -1005,7 +1005,7 @@
      {
       "titre": "Animation de la Cave Touristique de Vouvray sur Loir",
       "objet": "Promouvoir l'aspect touristique, le patrimoine local et régional.",
-      "cat": "environnement",
+      "cat": "loisirs",
       "creation": "1992",
       "declaration": "2024",
       "site": ""
@@ -1037,7 +1037,7 @@
      {
       "titre": "Association C.C.P.V.L Club Collections et Passions du Val de Loir",
       "objet": "Promouvoir l'esprit de collections et faire découvrir des passions diverses en organisant des réunions, rencontres, expositions, salons et bourses, brocantes et manifestations de portée générale ainsi que toutes…",
-      "cat": "environnement",
+      "cat": "loisirs",
       "creation": "2002",
       "declaration": "2019",
       "site": ""
@@ -1045,7 +1045,7 @@
      {
       "titre": "Association Cantonale D'Aide a Domicile en Milieu Rural de Château du Loir",
       "objet": "Aider à tous les moments de leur existence toute famille ou personne habitant dans les communes et les quartiers,ou elle exerce son action ; pour ce faire, elle assure la responsabilité matérielle et morale de la marche…",
-      "cat": "patrimoine",
+      "cat": "entraide",
       "creation": "1977",
       "declaration": "2021",
       "site": ""
@@ -1053,7 +1053,7 @@
      {
       "titre": "Association de Chasse du Ruisseau",
       "objet": "Assurer une bonne organisation technique de la chasse de favoriser sur son territoire un développement du gibier et de la faune sauvage dans le respect d'un véritable équilibre agro-système cynégétique. D'assurer la…",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "2020",
       "declaration": "2026",
       "site": ""
@@ -1069,7 +1069,7 @@
      {
       "titre": "Association des Commerçants et Artisans du Bassin Montvalois",
       "objet": "Permettre à l'ensemble des commerçants du secteur d'échanger, de s'entraider, de partager des moments conviviaux ; définir les objectifs communs qui puissent contribuer à l'amélioration globale de l'image de marque du…",
-      "cat": "environnement",
+      "cat": "autres",
       "creation": "1992",
       "declaration": "2022",
       "site": ""
@@ -1077,7 +1077,7 @@
      {
       "titre": "Association des Copropriétaires la Prée D'Amont",
       "objet": "Entretenir les parties communes en herbe Gérer le point d'eau potable commun",
-      "cat": "autres",
+      "cat": "environnement",
       "creation": "2022",
       "declaration": "2023",
       "site": ""
@@ -1093,7 +1093,7 @@
      {
       "titre": "Association des Parents D'Eleves de L'Ecole Privee Saint Jean de Château du Loir",
       "objet": "Grouper les chefs de famille ayant la charge des enfants inscrits à l'école toutes activités susceptibles d'apporter un soutien matériel et moral à l'école, aux familles, aux maîtres",
-      "cat": "patrimoine",
+      "cat": "education",
       "creation": "1951",
       "declaration": "2025",
       "site": ""
@@ -1125,7 +1125,7 @@
      {
       "titre": "Association Générations Mouvement Loir et Bercé",
       "objet": "Renforcer les liens de solidarité existant entre les retraités de l'agriculture, exploitants, salariés et autres personnes membres adhérents et développer en leur faveur des activités culturelles,",
-      "cat": "environnement",
+      "cat": "loisirs",
       "creation": "1972",
       "declaration": "2023",
       "site": ""
@@ -1133,7 +1133,7 @@
      {
       "titre": "Association 'La Perche Castelorienne de Château du Loir' pour la Pêche et la Protection du Milieu Aquatique - A.p.p.m.a.",
       "objet": "Détenir et gérer droits de pêche sur les domaines publics et privés de l'etat et des collectivités locales ou de riverains",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "1956",
       "declaration": "2025",
       "site": ""
@@ -1141,7 +1141,7 @@
      {
       "titre": "Association la Petite Locomotive",
       "objet": "Aider la famille de Joanna à financer plusieurs séjours aux Etas-Unis ou à Munich à partir de 2015/2016 pour proposer une méthode non existante en France pour les enfants atteints d'infirmité cérébrale et qui permet de…",
-      "cat": "education",
+      "cat": "loisirs",
       "creation": "2013",
       "declaration": "2025",
       "site": ""
@@ -1165,7 +1165,7 @@
      {
       "titre": "Association Locale pour le Culte des Temoins de Jehovah de Château du Loir",
       "objet": "L'association a pour objet exclusif de subvenir aux frais, à l'entretien et à l'exercice public du culte des témoins de Jéhovah. Elle pourra apporter son aide et son assistance à toute association poursuivant un objet…",
-      "cat": "patrimoine",
+      "cat": "autres",
       "creation": "1978",
       "declaration": "2026",
       "site": ""
@@ -1189,7 +1189,7 @@
      {
       "titre": "Association pour la Promotion de L'Informatique Dans le Canton de Château-Du- Loir",
       "objet": "Faire decouvrir et promouvoir la micro-informatique dans tous les milieux socio-professionnels du canton",
-      "cat": "patrimoine",
+      "cat": "culture",
       "creation": "1984",
       "declaration": "2017",
       "site": ""
@@ -1197,7 +1197,7 @@
      {
       "titre": "Association pour le Don de Sang Benevole du Val de Loir",
       "objet": "Susciter le don volontaire et bénévole du sang susciter le don volontaire de moelle osseuse inciter au respect du code d'honneur des donneurs de sang bénévoles : principes éthiques",
-      "cat": "environnement",
+      "cat": "entraide",
       "creation": "2000",
       "declaration": "2026",
       "site": ""
@@ -1221,7 +1221,7 @@
      {
       "titre": "Association Sportive du College Saint-Jean de Château du Loir",
       "objet": "Faire participer les élèves du collège saint-jean de château-du-loir à la préparation et la réalisation de rencontres sportives entre établissements scolaires.",
-      "cat": "patrimoine",
+      "cat": "sport",
       "creation": "2003",
       "declaration": "2018",
       "site": ""
@@ -1229,7 +1229,7 @@
      {
       "titre": "Avenir Local Vivant",
       "objet": "Veiller d'une manière générale à la protection de l'environnement dans son territoire d'action ; d'oeuvrer pur l'intérêt général des populations, soumises ou non à des pressions diverses, en veillant au respect de leur…",
-      "cat": "culture",
+      "cat": "environnement",
       "creation": "2025",
       "declaration": "2025",
       "site": ""
@@ -1245,7 +1245,7 @@
      {
       "titre": "Bridge Club Montval-Sur-Loir",
       "objet": "Pratique du bridge",
-      "cat": "environnement",
+      "cat": "loisirs",
       "creation": "1986",
       "declaration": "2025",
       "site": ""
@@ -1269,7 +1269,7 @@
      {
       "titre": "Château du Loir Poker Club (CLPC)",
       "objet": "Développer la pratique du poker en loisir ou en compétition, et tous objets similaires, connexes ou complémentaires ou susceptibles d'en favoriser la réalisation ou le développement",
-      "cat": "patrimoine",
+      "cat": "loisirs",
       "creation": "2021",
       "declaration": "2025",
       "site": ""
@@ -1277,7 +1277,7 @@
      {
       "titre": "Château S'Anime",
       "objet": "Animations : soirées dansantes ou à thèmes, thés dansants, brocantes et lotos",
-      "cat": "patrimoine",
+      "cat": "loisirs",
       "creation": "2023",
       "declaration": "2023",
       "site": ""
@@ -1285,7 +1285,7 @@
      {
       "titre": "Club Carpe-Unis",
       "objet": "Initiation de la pratique et organisation de compétitions de pêche à la ligne",
-      "cat": "loisirs",
+      "cat": "environnement",
       "creation": "2016",
       "declaration": "2026",
       "site": ""
@@ -1301,7 +1301,7 @@
      {
       "titre": "Club Omnisports Château-Du-Loir",
       "objet": "Pratique de l'éducation physique et des sports.",
-      "cat": "patrimoine",
+      "cat": "sport",
       "creation": "1971",
       "declaration": "2026",
       "site": ""
@@ -1325,7 +1325,7 @@
      {
       "titre": "Comité de Jumelage et D'Échanges Montval sur Loir / Westbury",
       "objet": "Développement entre les partenaires de Montval sur Loir et Westbury (GB) dans le cadre du jumelage",
-      "cat": "environnement",
+      "cat": "loisirs",
       "creation": "2018",
       "declaration": "2019",
       "site": ""
@@ -1333,7 +1333,7 @@
      {
       "titre": "Comité de Jumelage Montval-Sur-Loir/ganderkesee",
       "objet": "Développer la connaissance mutuelle, la compréhension et la solidarité par l'organisation d'échanges internationaux",
-      "cat": "environnement",
+      "cat": "loisirs",
       "creation": "1996",
       "declaration": "2026",
       "site": ""
@@ -1349,7 +1349,7 @@
      {
       "titre": "Comité Fêtes et Loisirs de Château du Loir",
       "objet": "Représenter la ville de Château-du-Loir et organiser des manifestations dont : restauration ( barbecue,frites,casse-croûte et divers) ainsi que buvette ( vente de boissons diverses)",
-      "cat": "patrimoine",
+      "cat": "loisirs",
       "creation": "1981",
       "declaration": "2025",
       "site": ""
@@ -1365,7 +1365,7 @@
      {
       "titre": "Cyclos Castéloriens",
       "objet": "Faire connaître et encourager la pratique de la bicyclette ; organiser des excursions, randonnées, rallyes et brevets de cyclotourisme.",
-      "cat": "loisirs",
+      "cat": "sport",
       "creation": "1974",
       "declaration": "2025",
       "site": ""
@@ -1373,7 +1373,7 @@
      {
       "titre": "Dauphines du Val de Loir",
       "objet": "Reunir filles etgarcons en vue de les initier au rythme, a la musique et entretenir des loisirs",
-      "cat": "environnement",
+      "cat": "loisirs",
       "creation": "1977",
       "declaration": "2026",
       "site": ""
@@ -1381,7 +1381,7 @@
      {
       "titre": "Défense de L'Hôpital de Montval-Sur-Loir",
       "objet": "Maintenir tous les services et soins de proximité de l'hôpital de Montval-sur-Loir pour tous les habitants du sud Sarthe",
-      "cat": "environnement",
+      "cat": "entraide",
       "creation": "2021",
       "declaration": "2024",
       "site": ""
@@ -1389,7 +1389,7 @@
      {
       "titre": "École Lavernat Montabon",
       "objet": "Organisation de manifestations sportives et culturelles",
-      "cat": "education",
+      "cat": "sport",
       "creation": "2021",
       "declaration": "2021",
       "site": ""
@@ -1405,7 +1405,7 @@
      {
       "titre": "Expo - Audiovisuel et Communication - Collection Joel Heslon",
       "objet": "La sauvegarde, la conservation et la promotion du patrimoine culturel et scientifique et technique de la radio, de la télévision, des télécommunications et de la communication en général sous toutes ses formes ( parlée,…",
-      "cat": "sport",
+      "cat": "patrimoine",
       "creation": "2015",
       "declaration": "2023",
       "site": ""
@@ -1429,7 +1429,7 @@
      {
       "titre": "FT Solidaire",
       "objet": "Location, vente, réparation de vélo et motoculture, achat, vente alimentaire et non alimentaire",
-      "cat": "entraide",
+      "cat": "loisirs",
       "creation": "2021",
       "declaration": "2021",
       "site": ""
@@ -1437,7 +1437,7 @@
      {
       "titre": "Générations Mouvement Club de Château du Loir - Commune Déléguée de Montval/loir",
       "objet": "Créer, animer, développer les rencontres et les liens d'amitié entre les retraités et pré-retraités * organiser des déplacements et des voyages et diverses activités et loisirs adaptés aux voeux et goûts des adhérents *…",
-      "cat": "patrimoine",
+      "cat": "loisirs",
       "creation": "2009",
       "declaration": "2026",
       "site": ""
@@ -1445,7 +1445,7 @@
      {
       "titre": "Générations Mouvement de Vouvray sur Loir",
       "objet": "Créer, animer, développer les rencontres et les liens d'amitié entre les retraités et pré-retraités ; les aider à résoudre leurs difficultés, les informer et les soutenir, par la création de services, dans la recherche…",
-      "cat": "environnement",
+      "cat": "loisirs",
       "creation": "2016",
       "declaration": "2024",
       "site": ""
@@ -1453,7 +1453,7 @@
      {
       "titre": "Groupement de Développement Agricole du Canton de Château du Loir",
       "objet": "Développement agricole",
-      "cat": "patrimoine",
+      "cat": "autres",
       "creation": "1985",
       "declaration": "2021",
       "site": ""
@@ -1477,7 +1477,7 @@
      {
       "titre": "L'Outil en Main de Château du Loir",
       "objet": "Initier des jeunes aux métiers du patrimoine et aux métiers manuels par des gens de métier, dans un cadre d'atelier ou tout autre lieu connexe . Son principe fondateur est de permettre aux jeunes, à partir de 9 ans, de…",
-      "cat": "patrimoine",
+      "cat": "culture",
       "creation": "2011",
       "declaration": "2021",
       "site": ""
@@ -1493,7 +1493,7 @@
      {
       "titre": "La Main Dans la Main du Château du Loir",
       "objet": "D'aider les personnes âgées et démunis pour des formalités administratives, trouver de quoi manger, se vêtir, trouver des logements d'urgence, briser la solitude par des sorties d'animation, assistance dans la gestion…",
-      "cat": "patrimoine",
+      "cat": "loisirs",
       "creation": "2019",
       "declaration": "2019",
       "site": ""
@@ -1517,7 +1517,7 @@
      {
       "titre": "Le Moulin a Images",
       "objet": "Développer, sur les plans culturels et artistiques, tout ce qui se rapporte aux moulins, à l'image sous toutes ses formes et à tout domaine artistique",
-      "cat": "patrimoine",
+      "cat": "culture",
       "creation": "2006",
       "declaration": "2022",
       "site": ""
@@ -1573,7 +1573,7 @@
      {
       "titre": "Les Pêcheurs à la Ligne de Château",
       "objet": "Détenir et gérer des droits de pêche sur les domaines publics et privés de l'etat et des collectivités locales ou de riverains. participer activement à la protection du patrimoine piscicole",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "1903",
       "declaration": "2025",
       "site": ""
@@ -1581,7 +1581,7 @@
      {
       "titre": "Les Pistons du Desert",
       "objet": "Cette association a pour objet : de récolter des fonds dans le but d'apporter des fournitures scolaires ainsi que des vélos en participant au raid aventure au Maroc, Le Nomad Raid ou chaque participant prend part à une…",
-      "cat": "education",
+      "cat": "entraide",
       "creation": "2022",
       "declaration": "2022",
       "site": ""
@@ -1637,7 +1637,7 @@
      {
       "titre": "12 Mois pour Toi",
       "objet": "Collecte de dons de toute nature en vue de distribuer des produits dits de \"survie\" et de première nécessité auprès des populations les plus précaires * fédérer les initiatives citoyennes individuelles ou collectives et…",
-      "cat": "education",
+      "cat": "loisirs",
       "creation": "2021",
       "declaration": "2024",
       "site": ""
@@ -1677,7 +1677,7 @@
      {
       "titre": "Organisme de Gestion D'Enseignement Catholique (O.G.E.C.) de L'Ecole et College Saint-Jean.",
       "objet": "Assumer juridiquement la gestion d'établissements d'enseignement fondés par l'autorité canonique compétente ; se livrer à toute activité se rapportant directement ou indirectement à l'éducation, l'enseignement, la…",
-      "cat": "education",
+      "cat": "loisirs",
       "creation": "1947",
       "declaration": "2019",
       "site": ""
@@ -1693,7 +1693,7 @@
      {
       "titre": "Pêche Loisir",
       "objet": "La pêche, une passion partagée la découverte et le partage de la pêche pour les passionner qui soit débutant ou non ; la convivialité et le respect est la règle n°1 de cette association ; qui dit pêche dit respect de la…",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "2025",
       "declaration": "2025",
       "site": ""
@@ -1709,7 +1709,7 @@
      {
       "titre": "Rotary-Club de Château du Loir et de la Chartre sur le Loir",
       "objet": "Cultiver l'idéal de servir auquel aspire toute profession honorable et plus particulièrement, s'engage à mettre à profit les relations et contacts pour servir l'intérêt général ; observer des règles de haute probité…",
-      "cat": "patrimoine",
+      "cat": "loisirs",
       "creation": "1963",
       "declaration": "2024",
       "site": ""
@@ -1717,7 +1717,7 @@
      {
       "titre": "Rotonde Ferroviaire de la Vallée du Loir ( RFVL)",
       "objet": "Préservation et valorisation du site de la rotonde et de matériels ferroviaires, mobiliers et immobiliers ; présentation au public du site et ses composants ; circulation de matériels à vocation touristique ou…",
-      "cat": "environnement",
+      "cat": "patrimoine",
       "creation": "2010",
       "declaration": "2021",
       "site": ""
@@ -1725,7 +1725,7 @@
      {
       "titre": "Séniors Sportifs Montvalois",
       "objet": "Organiser, promouvoir et développer la pratique des activités physiques et sportives des plus de 50 ans ;",
-      "cat": "entraide",
+      "cat": "sport",
       "creation": "2017",
       "declaration": "2026",
       "site": ""
@@ -1733,7 +1733,7 @@
      {
       "titre": "Shaucha Yoga",
       "objet": "Promouvoir la connaissance du yoga par le biais de séances régulières ou ponctuelles (cours, ateliers, stage et conférences) ;",
-      "cat": "sport",
+      "cat": "loisirs",
       "creation": "2022",
       "declaration": "2022",
       "site": ""
@@ -1741,7 +1741,7 @@
      {
       "titre": "Société de Chasse des Agriculteurs de Montabon",
       "objet": "Exploitation de la chasse sur les terres de ses adhérents, protection et conservation du gibier, repeuplement, répression du braconnage et destruction des animaux nuisibles",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "1958",
       "declaration": "2023",
       "site": ""
@@ -1807,7 +1807,7 @@
      {
       "titre": "Amicale des Sapeurs Pompiers de Courdemanche",
       "objet": "Subvenir aux frais des fêtes et concours ayant pour but le perfectionnement de l'instruction du corps",
-      "cat": "entraide",
+      "cat": "loisirs",
       "creation": "1936",
       "declaration": "2024",
       "site": ""
@@ -1815,7 +1815,7 @@
      {
       "titre": "Amicale du Si.vo.s. de L'Etangsort",
       "objet": "Regrouper les parents et les enseignants des écoles de courdemanche et montreuil le henri ; faire des animations au profit des enfants.",
-      "cat": "loisirs",
+      "cat": "education",
       "creation": "1983",
       "declaration": "2024",
       "site": ""
@@ -1823,7 +1823,7 @@
      {
       "titre": "Asso L'Etang Change",
       "objet": "Participer à la revitalisation des territoires ruraux en permettant à ses habitants, petits artisans, producteurs, commerçants et autres acteurs socio-culturels locaux de se rencontrer et créer du lien en favorisant les…",
-      "cat": "culture",
+      "cat": "sport",
       "creation": "2024",
       "declaration": "2026",
       "site": "https://www.facebook.com/p/LEtang-change-61557991756780/?checkpo"
@@ -1879,7 +1879,7 @@
      {
       "titre": "Générations Mouvement Courdemanche-Saint Georges de la Couée",
       "objet": "Créer, animer, développer les rencontres et les liens d'amitié et de solidarité entre personnes physiques et morales et en particulier les retraités et préretraités ; les aider à résoudre leurs difficultés, les informer…",
-      "cat": "patrimoine",
+      "cat": "loisirs",
       "creation": "2015",
       "declaration": "2026",
       "site": ""
@@ -1887,7 +1887,7 @@
      {
       "titre": "L'Amicale du 22 Juillet Sarthois",
       "objet": "Diffuser les idées de l'amicale via des actions dans les domaines suivants : social, culturel, touristique et sportif",
-      "cat": "loisirs",
+      "cat": "culture",
       "creation": "2021",
       "declaration": "2021",
       "site": ""
@@ -2001,7 +2001,7 @@
      {
       "titre": "Amicale des Sapeurs-Pompiers de Dissay sous Courcillon et Saint Pierre de Chevillé",
       "objet": "Subvenir aux frais des fêtes et concours ayant pour but le perfectionnement de l'instruction du corps, verser des secours en cas de maladie ou accidents, (le cas échéant), encourager la pratique des sports pour…",
-      "cat": "entraide",
+      "cat": "loisirs",
       "creation": "1967",
       "declaration": "2024",
       "site": ""
@@ -2009,7 +2009,7 @@
      {
       "titre": "Association Assistance Famille",
       "objet": "Soutenir financièrement, moralement et dans la gestion les accidents de la vie subis par ses adhérents et leurs enfants mineurs, organiser des cousinades pour favoriser le regroupement familial des adhérents et de leurs…",
-      "cat": "entraide",
+      "cat": "loisirs",
       "creation": "2012",
       "declaration": "2017",
       "site": ""
@@ -2025,7 +2025,7 @@
      {
       "titre": "Association des Riverains Pêcheurs de Dissay sous Courcillon",
       "objet": "Défendre les intérêts des riverains des rivières 'le long' et le 'le graveau', la pêche et la répression du braconnage sur ces rivières",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "1957",
       "declaration": "2022",
       "site": ""
@@ -2089,7 +2089,7 @@
      {
       "titre": "La 4l Sarthoise",
       "objet": "Association ayant pour objet l'amélioration des conditions de vie des enfants marocains les plus démunis par l'achat de fournitures sportives et scolaires ; A également pour objet la facilitation de l'accès à la…",
-      "cat": "sport",
+      "cat": "entraide",
       "creation": "2021",
       "declaration": "2021",
       "site": ""
@@ -2105,7 +2105,7 @@
      {
       "titre": "Le Chahut de Haute Crâne",
       "objet": "Mise en place d'actions en faveur de la vie culturelle et des transitions sociales, écologiques et économiques sur les territoires environnants le lieu-dit Haute Crâne à Dissay-sous-Courcillon",
-      "cat": "culture",
+      "cat": "environnement",
       "creation": "2022",
       "declaration": "2022",
       "site": ""
@@ -2129,7 +2129,7 @@
      {
       "titre": "Société Communale de Chasse de Dissay sous Courcillon",
       "objet": "Favoriser la protection du gibier et son repeuplement, la répression du braconnage, la destruction des animaux nuisibles",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "1939",
       "declaration": "2018",
       "site": ""
@@ -2163,7 +2163,7 @@
      {
       "titre": "Amicale de Chasse du Cormier",
       "objet": "Gérer la protection du gibier et son repeuplement et la destruction des animaux nuisibles",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "2009",
       "declaration": "2022",
       "site": ""
@@ -2171,7 +2171,7 @@
      {
       "titre": "Association Bouge Ta Campagne -BTC",
       "objet": "Animer la commune de Flée et alentours à travers des actions diverses (soirées thématiques, randonnées, lotos, découverte de la production locale )",
-      "cat": "patrimoine",
+      "cat": "loisirs",
       "creation": "2017",
       "declaration": "2025",
       "site": ""
@@ -2243,7 +2243,7 @@
      {
       "titre": "Po Flée 72",
       "objet": "L'association porte les valeurs de MAUDUIT FONDATION Ltd ; accompagne la revitalisation de la vie locale au plan économique, social, culturel ; promeut une alternative à la \"finance loto\" au profit de la valeur ajoutée…",
-      "cat": "education",
+      "cat": "loisirs",
       "creation": "2018",
       "declaration": "2018",
       "site": ""
@@ -2251,7 +2251,7 @@
      {
       "titre": "Prieuré des Bénédictines la Paix Notre Dame",
       "objet": "Se consacrer à une vie de prière et de travail selon les préceptes de l'église catholique et romaine et particulièrement selon la règle de Saint Benoit ; s'adonner aux disciplines théologiques et spirituelles ;…",
-      "cat": "patrimoine",
+      "cat": "autres",
       "creation": "2014",
       "declaration": "2023",
       "site": ""
@@ -2293,7 +2293,7 @@
      {
       "titre": "Amicale des Sapeurs-Pompiers du Grand-Lucé",
       "objet": "Subvenir aux frais des fêtes et concours ayant pour but le perfectionnement de l'instruction du corps. verser des secours en cas de maladie ou accidents. encourager la pratique des sports pour l'entraînement des sapeurs…",
-      "cat": "entraide",
+      "cat": "loisirs",
       "creation": "1930",
       "declaration": "2026",
       "site": ""
@@ -2317,7 +2317,7 @@
      {
       "titre": "Association de Chasse des Amis de la Forêt",
       "objet": "Tout ce qui est lié à l'activité de la chasse, manifestations exceptionnelles.",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "2004",
       "declaration": "2017",
       "site": ""
@@ -2365,7 +2365,7 @@
      {
       "titre": "Association Sportive du Collège Paul Chevallier",
       "objet": "Organiser et développer, en prolongement des enseignements scolaires d'éducation physique et sportive, l'initiation et la pratique sportive des élèves qui y adhèrent. représenter l'établissement dans les épreuves…",
-      "cat": "education",
+      "cat": "sport",
       "creation": "2003",
       "declaration": "2017",
       "site": ""
@@ -2413,7 +2413,7 @@
      {
       "titre": "Générations Mouvement des Aînés Ruraux du Grand Lucé",
       "objet": "Créer, animer, développer les rencontres et les liens d'amitié entre les retraités et pré-retraités, les aider à résoudre leurs difficultés, les informer et les soutenir par la création de services, ...",
-      "cat": "entraide",
+      "cat": "loisirs",
       "creation": "2006",
       "declaration": "2026",
       "site": ""
@@ -2421,7 +2421,7 @@
      {
       "titre": "Générations Mouvement Pays de Lucé",
       "objet": "Renforcer les liens de solidarité existant entre les retraités et pré-retraités, vivant en milieu rural, et assimilés, et de développer en leur faveur, notamment par des Clubs communaux ouverts indistinctement à tous…",
-      "cat": "patrimoine",
+      "cat": "loisirs",
       "creation": "1972",
       "declaration": "2026",
       "site": ""
@@ -2437,7 +2437,7 @@
      {
       "titre": "Groupement de Développement Agricole du Canton du Grand-Lucé",
       "objet": "Développement agricole",
-      "cat": "entraide",
+      "cat": "autres",
       "creation": "1985",
       "declaration": "2022",
       "site": ""
@@ -2461,7 +2461,7 @@
      {
       "titre": "La CLÉ du Cur",
       "objet": "Créer, gérer et animer toutes activités et tous services dans un but caritatif en faveur des populations les plus fragiles, démunies et empêchées ;",
-      "cat": "autres",
+      "cat": "entraide",
       "creation": "2022",
       "declaration": "2022",
       "site": ""
@@ -2509,7 +2509,7 @@
      {
       "titre": "Loir-Lucé-Bercé - Comice du Pays de Lucé",
       "objet": "Présenter l'agriculture, l'élevage, les innovations techniques agricoles rurales",
-      "cat": "environnement",
+      "cat": "loisirs",
       "creation": "2008",
       "declaration": "2025",
       "site": ""
@@ -2573,7 +2573,7 @@
      {
       "titre": "Union Sportive Luceenne Danse",
       "objet": "Enseignement et pratique d'une activité danse",
-      "cat": "culture",
+      "cat": "sport",
       "creation": "2008",
       "declaration": "2023",
       "site": ""
@@ -2615,7 +2615,7 @@
      {
       "titre": "Aide aux Jeunes Adultes de Jupilles - Ajaj",
       "objet": "Aider les jeunes de jupilles à réaliser des projets de formation personnels.",
-      "cat": "education",
+      "cat": "entraide",
       "creation": "1999",
       "declaration": "2017",
       "site": ""
@@ -2655,7 +2655,7 @@
      {
       "titre": "Association des Onze Communes de Bercé",
       "objet": "Promouvoir et valoriser la Forêt d'Exception de Bercé ; Mener toutes les actions, en coopération avec les parties prenantes concernées par la Forêt de Bercé, pour assurer le développement touristique, culturel, sportif,…",
-      "cat": "culture",
+      "cat": "sport",
       "creation": "2023",
       "declaration": "2023",
       "site": ""
@@ -2671,7 +2671,7 @@
      {
       "titre": "Association 'La Dinantaise de Jupilles' pour la Pêche et la Protection du Milieu Aquatique - A.p.p.m.a.",
       "objet": "Détenir et gérer droits de pêche sur les domaines publics et privés de l'Etat et des collectivités locales ou riverains",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "1938",
       "declaration": "2024",
       "site": ""
@@ -2759,7 +2759,7 @@
      {
       "titre": "La Forêt des Arts",
       "objet": "Contribuer au bien-être des participants en proposant des ateliers d'activités créatives ainsi que des activités en lien avec la nature",
-      "cat": "culture",
+      "cat": "entraide",
       "creation": "2019",
       "declaration": "2019",
       "site": ""
@@ -2767,7 +2767,7 @@
      {
       "titre": "Le Petit Théatre des Mains Vertes",
       "objet": "Cette association a pour but de créer, de développer et promouvoir le spectacle de marionnettes en bois sous forme de conte musical, pour les écoles, les centres culturels etc. Elle proposera également des expositions,…",
-      "cat": "culture",
+      "cat": "loisirs",
       "creation": "2002",
       "declaration": "2026",
       "site": ""
@@ -2783,7 +2783,7 @@
      {
       "titre": "Les Trolls en Folie",
       "objet": "Organisation de spectacles ,de concerts,de bric à brac, camelots, et organisation de festivité",
-      "cat": "patrimoine",
+      "cat": "loisirs",
       "creation": "2014",
       "declaration": "2024",
       "site": ""
@@ -2791,7 +2791,7 @@
      {
       "titre": "Société de Chasse la Vallée du Dinan",
       "objet": "Répression du braconnage, repeuplement en gibier, destruction des nuisibles",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "1964",
       "declaration": "2025",
       "site": ""
@@ -2817,7 +2817,7 @@
      {
       "titre": "Amicale de Chasse de Lavernat",
       "objet": "Faciliter la pratique de la chasse, établir et entretenir des relations amicales entre les chasseurs et les propriétaires, concourir au repeuplement du territoire en gibier et réprimer le braconnage",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "1981",
       "declaration": "2023",
       "site": ""
@@ -2833,7 +2833,7 @@
      {
       "titre": "Association 'La Perdrix Rouge'",
       "objet": "Entretenir les relations amicales entre les chasseurs et les proprietaires, de concourir au repeuplement de territoire en gibier et de reprimer le braconnage.",
-      "cat": "education",
+      "cat": "environnement",
       "creation": "1992",
       "declaration": "2025",
       "site": ""
@@ -2841,7 +2841,7 @@
      {
       "titre": "Association Rencontre",
       "objet": "Ouvrir un espace de prière. - permettre un rassemblement de personnes pour une recherche et une confrontation de la foi avec les cultures et les mentalités nouvelles dans l'évolution constante de la société,…",
-      "cat": "autres",
+      "cat": "culture",
       "creation": "1974",
       "declaration": "2025",
       "site": ""
@@ -2881,7 +2881,7 @@
      {
       "titre": "Événements Jeunes Lavernat",
       "objet": "Organisation d'événements culturelles, festifs et à caractère sportifs ;",
-      "cat": "education",
+      "cat": "loisirs",
       "creation": "2018",
       "declaration": "2025",
       "site": ""
@@ -2987,7 +2987,7 @@
      {
       "titre": "Générations Mouvement - Club des Aînés Ruraux de Lhomme",
       "objet": "Créer, animer, développer les rencontres et les liens d'amitié entre les retraités et pré-retraités (voir statuts)",
-      "cat": "entraide",
+      "cat": "loisirs",
       "creation": "1980",
       "declaration": "2026",
       "site": ""
@@ -3019,7 +3019,7 @@
      {
       "titre": "Ooose Parler",
       "objet": "Lutte contre toutes formes de discriminations, promotion de l'inclusion et de la diversité, soutien aux personnes vulnérables, développement de la confiance en soi, prévention de le domaine de la santé et de la santé…",
-      "cat": "education",
+      "cat": "loisirs",
       "creation": "2025",
       "declaration": "2025",
       "site": ""
@@ -3027,7 +3027,7 @@
      {
       "titre": "Syndicat Communal de Chasse de Lhomme",
       "objet": "Mise en commun entre les sociétaires du droit de chasse leur appartenant sur leurs propriétés, répression du braconnage et repeuplement du gibier",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "1947",
       "declaration": "2019",
       "site": ""
@@ -3069,7 +3069,7 @@
      {
       "titre": "Amicale des Sapeurs Pompiers de Montval sur Loir",
       "objet": "Resserrer les liens d'amitié et de solidarité entre les sapeurs-pompiers ; encourager la pratique des sports pour leur entraînement.",
-      "cat": "entraide",
+      "cat": "sport",
       "creation": "1956",
       "declaration": "2026",
       "site": ""
@@ -3077,7 +3077,7 @@
      {
       "titre": "Association Sporting Club de Luceau",
       "objet": "Développer la pratique de l'éducation physique et des sports et entre autres du football",
-      "cat": "loisirs",
+      "cat": "sport",
       "creation": "1982",
       "declaration": "2025",
       "site": ""
@@ -3141,7 +3141,7 @@
      {
       "titre": "Les Amis de Macéa",
       "objet": "L'association Les Amis de Macéa a pour but de favoriser l'établissement de relations entre les adhérents de l'association et la commune de Macéa (Roumanie) dans les domaines : scolaire, culturel, social, économique,…",
-      "cat": "patrimoine",
+      "cat": "loisirs",
       "creation": "2011",
       "declaration": "2024",
       "site": ""
@@ -3149,7 +3149,7 @@
      {
       "titre": "Luceau Cafe",
       "objet": "Créer, gérer et animer un café associatif et lieu de vie favorisant la convivialité, les rencontres, le lien social, la solidarité, la participation citoyenne et l'animation du territoire",
-      "cat": "patrimoine",
+      "cat": "loisirs",
       "creation": "2026",
       "declaration": "2026",
       "site": ""
@@ -3165,7 +3165,7 @@
      {
       "titre": "Société de Chasse le Faisan Doré",
       "objet": "Cette association a pour but la répression du braconnage, le repeuplement du gibier, la destruction des nuisibles et la pratique de la chasse",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "1948",
       "declaration": "2020",
       "site": ""
@@ -3199,7 +3199,7 @@
      {
       "titre": "Amicale des Chasseurs de Marçon",
       "objet": "Gestion et repeuplement du gibier, la destruction des nuisibles, respect des propriétés et répression du braconnage",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "1938",
       "declaration": "2025",
       "site": ""
@@ -3207,7 +3207,7 @@
      {
       "titre": "Amicale des Sapeurs-Pompiers de Marçon-Aspm",
       "objet": "Resserrer les liens d amitié et de confraternité qui unissent les sapeurs-pompiers afin d'organiser des concours, banquets, voyages collectifs, manifestations sportives et d' assurer la transmission des voeux",
-      "cat": "entraide",
+      "cat": "loisirs",
       "creation": "2017",
       "declaration": "2025",
       "site": ""
@@ -3215,7 +3215,7 @@
      {
       "titre": "Ani'Marcon",
       "objet": "Organisation et réalisation des différentes manifestations de la commune",
-      "cat": "patrimoine",
+      "cat": "loisirs",
       "creation": "2002",
       "declaration": "2025",
       "site": ""
@@ -3231,7 +3231,7 @@
      {
       "titre": "Association des Amis de JMLB",
       "objet": "L'association a pour objet de permettre à ses membres de chasser sur les territoires communaux, domaniaux ou privés loués par elle et ce dans un esprit sportif et amical selon les concepts cynégétiques, biologiques et…",
-      "cat": "education",
+      "cat": "environnement",
       "creation": "2021",
       "declaration": "2021",
       "site": ""
@@ -3239,7 +3239,7 @@
      {
       "titre": "Association des Riverains de Marçon",
       "objet": "La défense des intérêts des riverains des rivières 'la dême' et 'la rivière des bois', l'organisation et la gestion de la pêche, et la répression du braconnage sur ces rivières ;",
-      "cat": "sport",
+      "cat": "autres",
       "creation": "1967",
       "declaration": "2022",
       "site": ""
@@ -3271,7 +3271,7 @@
      {
       "titre": "Club de Voile de Marçon",
       "objet": "Pratique et enseignement de la navigation à voile, ainsi que la pratique de loisirs et sportive de toutes activités nautiques. développer le goût de la navigation à voile et de toutes les activités annexes et connexes…",
-      "cat": "loisirs",
+      "cat": "sport",
       "creation": "1972",
       "declaration": "2026",
       "site": ""
@@ -3287,7 +3287,7 @@
      {
       "titre": "Coeurs de Chats 72/37",
       "objet": "L'association, sans but lucratif, a pour objet : -intervenir dans le sauvetage et la prise en charge d'animaux abandonnées (décès, divorce, maltraitance, soucis de santé) ou en détresse ; ces animaux sont le plus…",
-      "cat": "environnement",
+      "cat": "loisirs",
       "creation": "2023",
       "declaration": "2026",
       "site": ""
@@ -3295,7 +3295,7 @@
      {
       "titre": "Comité de la Foire aux Vins de Marçon et de Défense des Produits Vitico les",
       "objet": "Organisation de foires aux vins qui auront lieu sur la commune de marçon au moins tous les trois ans et la défense de la viticulture.",
-      "cat": "environnement",
+      "cat": "autres",
       "creation": "1965",
       "declaration": "2024",
       "site": ""
@@ -3351,7 +3351,7 @@
      {
       "titre": "Les Amis de Cézin",
       "objet": "Fédérer celles et ceux qui ont envie de mettre en avant le Domaine de Cézin mais aussi de découvrir l'histoire, le patrimoine l'environnement et la culture de la vigne et du vin",
-      "cat": "sport",
+      "cat": "patrimoine",
       "creation": "2025",
       "declaration": "2025",
       "site": ""
@@ -3359,7 +3359,7 @@
      {
       "titre": "Les Canotiers du Loir",
       "objet": "Cette association a pour objet de faire connaître et partager les produits locaux et la gastronomie de la Vallée du Loir par le moyen de reportages via les réseaux sociaux ainsi que sur les manifestations locales",
-      "cat": "environnement",
+      "cat": "loisirs",
       "creation": "2021",
       "declaration": "2021",
       "site": ""
@@ -3367,7 +3367,7 @@
      {
       "titre": "Les Écoliers de la Dême",
       "objet": "Représenter l'ensemble des parents d'élèves des deux écoles ; organiser des actions éducatives ; récolter des fonds pour mener ces actions ; améliorer la vie scolaire",
-      "cat": "entraide",
+      "cat": "education",
       "creation": "2016",
       "declaration": "2025",
       "site": ""
@@ -3375,7 +3375,7 @@
      {
       "titre": "Les Pêcheurs du Lac des Varennes",
       "objet": "Gérance pêche lac des varennes, vente cartes de pêche, alevinage, manifestations liées à la pêche, surveillance respect du règlement intérieur",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "2021",
       "declaration": "2025",
       "site": ""
@@ -3383,7 +3383,7 @@
      {
       "titre": "Marçon Hier et Aujourd'Hui",
       "objet": "Créer un inventaire du patrimoine communal ; participer à la restauration conservation et mise en valeur du patrimoine en concertation avec les différents acteurs institutionnels ; promouvoir les recherches et conserver…",
-      "cat": "sport",
+      "cat": "patrimoine",
       "creation": "2016",
       "declaration": "2023",
       "site": ""
@@ -3407,7 +3407,7 @@
      {
       "titre": "Saga-Cité",
       "objet": "Mobiliser l'intelligence et la sensibilité collectives citoyennes pour co-construire des territoires durables, solidaires et inclusifs, en valorisant les savoirs et initiatives locales ; favoriser le vivre-ensemble et…",
-      "cat": "education",
+      "cat": "loisirs",
       "creation": "2025",
       "declaration": "2025",
       "site": ""
@@ -3441,7 +3441,7 @@
      {
       "titre": "Association des Retraités de Montreuil le Henri",
       "objet": "Créer, animer, développer les rencontres et les liens d'amitié entre les retraités et pré-retraités ; les aider à résoudre leurs difficultés, les informer et les soutenir par la création de services, dans la recherche…",
-      "cat": "entraide",
+      "cat": "loisirs",
       "creation": "2009",
       "declaration": "2023",
       "site": ""
@@ -3499,7 +3499,7 @@
      {
       "titre": "Association Générations Mouvement Aînés Ruraux de Nogent sur Loir",
       "objet": "Créer, animer, développer les rencontres et les liens d'amitié entre les retraités et pré-retraités. les aider à résoudre leurs difficultés, les informer et les soutenir par la création de services, dans la recherche de…",
-      "cat": "entraide",
+      "cat": "loisirs",
       "creation": "2006",
       "declaration": "2017",
       "site": ""
@@ -3541,7 +3541,7 @@
      {
       "titre": "Abc \"association Bercé & Culture\"",
       "objet": "Créer un lieu de rencontres intergénérationnelles, d'échanges, de solidarités, mais aussi un lieu culturel et convivial en réhabilitant un café épicerie ; Son principal objectif est de renforcer les liens sociaux et…",
-      "cat": "culture",
+      "cat": "loisirs",
       "creation": "2021",
       "declaration": "2021",
       "site": ""
@@ -3549,7 +3549,7 @@
      {
       "titre": "Amicale des Chasseurs de Pruillé L'Eguille",
       "objet": "Développement du gibier, protection et repeuplement, destruction des nuisibles, répression du braconnage et exploitation rationnelle de la chasse",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "1994",
       "declaration": "2024",
       "site": ""
@@ -3557,7 +3557,7 @@
      {
       "titre": "Amicale des Sapeurs-Pompiers de Pruillé L'Eguille",
       "objet": "Entraide entre les membres du corps des sapeurs-pompiers et organisation de manifestations sportives et festivités diverses",
-      "cat": "entraide",
+      "cat": "loisirs",
       "creation": "1976",
       "declaration": "2026",
       "site": ""
@@ -3565,7 +3565,7 @@
      {
       "titre": "Association de la Fosse Rouge Sarthoise",
       "objet": "Cette association a pour but l'exploitation de la chasse sur les territoires où celle-ci détient de droit de chasse, dans le souci de la préservation de la faune sauvage, du développement du capital cynégétique, du…",
-      "cat": "education",
+      "cat": "environnement",
       "creation": "2023",
       "declaration": "2023",
       "site": ""
@@ -3573,7 +3573,7 @@
      {
       "titre": "Association Sportive et Culturelle de Pruillé-L'Eguille",
       "objet": "Pratiquer des sports et de la culture",
-      "cat": "culture",
+      "cat": "sport",
       "creation": "1987",
       "declaration": "2026",
       "site": ""
@@ -3581,7 +3581,7 @@
      {
       "titre": "Association U.s.e.p. de L'Ecole de Pruillé L'Eguille",
       "objet": "A pour but de contribuer à la formation du jeune citoyen par le développement de la responsabilité, du civisme, de l'autonomie au travers de la pratique d'activités physiques, sportives, d'activités socioculturelles ;…",
-      "cat": "education",
+      "cat": "sport",
       "creation": "1987",
       "declaration": "2025",
       "site": ""
@@ -3613,7 +3613,7 @@
      {
       "titre": "Entraid'Évous",
       "objet": "L'Association a pour Objet de réunir des particuliers ayant comme objectif de faciliter entre eux des échanges bénévoles de services et compétences ;",
-      "cat": "education",
+      "cat": "loisirs",
       "creation": "2020",
       "declaration": "2020",
       "site": ""
@@ -3695,7 +3695,7 @@
      {
       "titre": "Amicale des Chasseurs de la Chapelle Gaugain",
       "objet": "Mise en commun du droit de chasse, sauvegarde des intérêts des chasseurs. protection et repeuplement du gibier.",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "1950",
       "declaration": "2024",
       "site": ""
@@ -3703,7 +3703,7 @@
      {
       "titre": "Amicale du Sivos de la Vallée du Tusson",
       "objet": "Organisation de fêtes et manifestations au profit des enfants des écoles du sivos de vancé, la chapelle-gaugain, lavenay",
-      "cat": "loisirs",
+      "cat": "education",
       "creation": "1991",
       "declaration": "2025",
       "site": ""
@@ -3719,7 +3719,7 @@
      {
       "titre": "Association Avicole le Mans 72",
       "objet": "Encourager l'élevage amateur des animaux de basse-cour et d'agrément ; la sélection des animaux de race pure ainsi qu'encourager la production avicole pour aider à la reconnaissance et au développement de cette activité…",
-      "cat": "patrimoine",
+      "cat": "environnement",
       "creation": "2016",
       "declaration": "2024",
       "site": ""
@@ -3727,7 +3727,7 @@
      {
       "titre": "Association 'Bienvenue pour Mieux Vivre'",
       "objet": "Amélioration des conditions et du cadre de vie des résidents et du personnel de la maison de retraite de ruillé sur loir au travers d'activités d'animation.",
-      "cat": "education",
+      "cat": "loisirs",
       "creation": "1992",
       "declaration": "2026",
       "site": ""
@@ -3735,7 +3735,7 @@
      {
       "titre": "Association de Chasse de la Croix Peinte",
       "objet": "Pratique de la chasse sur les territoires où celle-ci détient le droit, soit par apports d'adhérents, soit par la cession ou la location dans un grand esprit de convivialité et de respect ; la gestion cynégétique des…",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "2025",
       "declaration": "2025",
       "site": ""
@@ -3759,7 +3759,7 @@
      {
       "titre": "'Association Festive en Val de Loir'",
       "objet": "Organiser des activités festives de tous genres (culturelles, artistiques, éducatives, ludiques, sportives etc) et/ou d'apporter son concours matériel et moral à toutes manifestations pouvant intéresser ses adhérents.",
-      "cat": "environnement",
+      "cat": "loisirs",
       "creation": "1961",
       "declaration": "2019",
       "site": ""
@@ -3767,7 +3767,7 @@
      {
       "titre": "Association \"les P'Tits Loirs\"",
       "objet": "Gestion de la micro crèche dont l'objet est d'accueillir des enfants",
-      "cat": "education",
+      "cat": "entraide",
       "creation": "2016",
       "declaration": "2026",
       "site": ""
@@ -3807,7 +3807,7 @@
      {
       "titre": "Club Aînés Ruraux - Générations Mouvement de Lavenay-Pont de Braye",
       "objet": "Solidarité pour tous loisirs et culture informations",
-      "cat": "entraide",
+      "cat": "loisirs",
       "creation": "1986",
       "declaration": "2026",
       "site": ""
@@ -3815,7 +3815,7 @@
      {
       "titre": "Club Générations Mouvement de Ruille sur Loir",
       "objet": "Renforcer les liens de solidarité et d'amitié entre les retraités de la commune.",
-      "cat": "environnement",
+      "cat": "loisirs",
       "creation": "1981",
       "declaration": "2025",
       "site": ""
@@ -3839,7 +3839,7 @@
      {
       "titre": "Communale de Chasse de Lavenay",
       "objet": "Grouper les propriétaires et habitants de la commune ainsi que les étrangers qui seraient admis en vue du développement du gibier, par la protection, le repeuplement, l'élevage, la destruction des nuisibles, répression…",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "1954",
       "declaration": "2023",
       "site": ""
@@ -3879,7 +3879,7 @@
      {
       "titre": "Foyer Rural de la Chapelle Gaugain",
       "objet": "Achat d'immeubles, terrains, materiel pouvant permettre l'educa- tion, l'information technique et l'emancipation intellectuelle et sociale de ses membres",
-      "cat": "patrimoine",
+      "cat": "loisirs",
       "creation": "1950",
       "declaration": "2026",
       "site": ""
@@ -3895,7 +3895,7 @@
      {
       "titre": "Générations Mouvement de la Chapelle-Gaugain - Poncé-Sur-Le-Loir",
       "objet": "Renforcer les liens de solidarité entre les retraités de l'agriculture et autres membres adhérents de la commune",
-      "cat": "patrimoine",
+      "cat": "loisirs",
       "creation": "1986",
       "declaration": "2025",
       "site": ""
@@ -3903,7 +3903,7 @@
      {
       "titre": "Hardware France",
       "objet": "Promouvoir les métiers du hardware électronique et numérique et, pour cela, mener toute opération ou manifestation, qui serait utile à l'intérêt commun de ces métiers ; défendre les intérêts et droits des membres ainsi…",
-      "cat": "entraide",
+      "cat": "autres",
       "creation": "2021",
       "declaration": "2021",
       "site": "https://www.hardware-france.fr/"
@@ -3927,7 +3927,7 @@
      {
       "titre": "La Grande Turbine du Loir",
       "objet": "Valoriser les savoir-faire de chacun et les initiatives collectives, rassembler et soutenir les forces actives et créatives des territoires, encourager le lien social et la transmission autour d'enjeux artisanaux,…",
-      "cat": "environnement",
+      "cat": "culture",
       "creation": "2022",
       "declaration": "2022",
       "site": ""
@@ -3935,7 +3935,7 @@
      {
       "titre": "Les Bios du Loir",
       "objet": "Rendre accessible des produits locaux issus de l'agriculture biologique et mieux disant ; favoriser le développement local équitable de manière durable par la création d'un magasin de producteurs ;",
-      "cat": "environnement",
+      "cat": "autres",
       "creation": "2021",
       "declaration": "2021",
       "site": ""
@@ -3943,7 +3943,7 @@
      {
       "titre": "Les Guernazelles Cafe Associatif au Bord du Loir",
       "objet": "Proposer des contextes de vie pour ces membres, notamment dans la Vallée du Loir ; proposer un lieu accueillant pour tout membre adhérant à l'association ; promouvoir l'échange de savoirs et savoir-faire dans le respect…",
-      "cat": "environnement",
+      "cat": "loisirs",
       "creation": "2019",
       "declaration": "2019",
       "site": ""
@@ -3999,7 +3999,7 @@
      {
       "titre": "Ponce en Fête",
       "objet": "Organiser et animer des manifestations festives et culturelles",
-      "cat": "loisirs",
+      "cat": "culture",
       "creation": "2009",
       "declaration": "2017",
       "site": ""
@@ -4007,7 +4007,7 @@
      {
       "titre": "Société de Chasse Intercommunale de Ruille sur Loir et Ponce sur le Loir",
       "objet": "Mise en commun entre les sociétaires du droit de chasse leur appartenant sur leurs propriétés, répression du braconnage.",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "1946",
       "declaration": "2019",
       "site": ""
@@ -4015,7 +4015,7 @@
      {
       "titre": "Sports Loisirs Loir et Bercé ( S 2 l B)",
       "objet": "Favoriser le développement de la pratique des activités physiques et sportives et culturelles adaptées au temps libre, sans idée de compétition, dans le respect des règlements techniques pour les disciplines sportives,…",
-      "cat": "environnement",
+      "cat": "sport",
       "creation": "2015",
       "declaration": "2022",
       "site": ""
@@ -4057,7 +4057,7 @@
      {
       "titre": "Les Bonnes Oeuvres de Siviard",
       "objet": "Organiser des activités et manifestations festives, culturelles et patrimoniales ; favoriser l'épanouissement personnel de chacun à travers une fenêtre artistique ; favoriser les échanges intergénérationnels autour du…",
-      "cat": "education",
+      "cat": "loisirs",
       "creation": "2025",
       "declaration": "2025",
       "site": ""
@@ -4107,7 +4107,7 @@
      {
       "titre": "Association Sportive de L'École de ST Pierre de Chevillé",
       "objet": "A pour but de contribuer à la formation du jeune citoyen par le développement de la responsabilité, du civisme, de l'autonomie au travers de la pratique d'activités physiques, sportives, d'activités socioculturelles ;…",
-      "cat": "education",
+      "cat": "sport",
       "creation": "2021",
       "declaration": "2021",
       "site": ""
@@ -4131,7 +4131,7 @@
      {
       "titre": "Garage pour Tous 72",
       "objet": "Favoriser l'autonomie et la mobilité des personnes ; lutter pour l'accès à tous à l'emploi, aux services et aux loisirs ; former, qualifier et créer des emplois, dans un secteur qui recrute ; acquisition sous forme de…",
-      "cat": "entraide",
+      "cat": "patrimoine",
       "creation": "2017",
       "declaration": "2017",
       "site": ""
@@ -4171,7 +4171,7 @@
      {
       "titre": "Syndicat de Chasse de Saint Pierre de Chevillé",
       "objet": "Sauvegarde du gibier, répression du braconnage, destruction des animaux nuisibles, repeuplement du gibier",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "1957",
       "declaration": "2022",
       "site": ""
@@ -4179,7 +4179,7 @@
      {
       "titre": "Vétérans Dissay",
       "objet": "Regrouper des joueurs vétérans pour des matchs de football, proposer une activité physique et de loisir et organiser des manifestations",
-      "cat": "patrimoine",
+      "cat": "sport",
       "creation": "2024",
       "declaration": "2024",
       "site": ""
@@ -4205,7 +4205,7 @@
      {
       "titre": "Amicale des Cavaliers de la Forêt de Bercé",
       "objet": "Développer les randonnées et le tourisme équestre dans le respect de l'environnement et promouvoir les connaissances du cavalier",
-      "cat": "environnement",
+      "cat": "sport",
       "creation": "1991",
       "declaration": "2022",
       "site": ""
@@ -4221,7 +4221,7 @@
      {
       "titre": "Comité Chahaignot pour L'Accueil des Migrants",
       "objet": "Prendre toute initiative permettant de favoriser localement l'accueil des migrants et répondre à leurs premiers besoins, notamment l'accès à un logement",
-      "cat": "education",
+      "cat": "loisirs",
       "creation": "2015",
       "declaration": "2023",
       "site": ""
@@ -4237,7 +4237,7 @@
      {
       "titre": "Générations Mouvement des Aînés Ruraux de Saint-Pierre du Lorouër",
       "objet": "Créer, animer, développer les rencontres et les liens d'amitié et de solidarité entre personnes physiques et morales et en particulier les retraités et préretraités ; les aider à résoudre leurs difficultés, les informer…",
-      "cat": "entraide",
+      "cat": "loisirs",
       "creation": "2014",
       "declaration": "2026",
       "site": ""
@@ -4245,7 +4245,7 @@
      {
       "titre": "Groupe des Directeurs du Secteur Sanitaire et Social de la Sarthe(Gd4s)",
       "objet": "Regrouper les personnes en fonction de direction des établissements et services du secteur sanitaire et social de la Sarthe susceptibles d'apporter leur concours technique à l'association.",
-      "cat": "entraide",
+      "cat": "loisirs",
       "creation": "1987",
       "declaration": "2023",
       "site": ""
@@ -4293,7 +4293,7 @@
      {
       "titre": "Pour la Protection du Cadre de Vie et de la Biodiversité Autour de Bercé",
       "objet": "Protéger les espaces naturels, le patrimoine bâti, les sites et le paysage de la communauté de communes LOIR-LUCE-BERCE, dépt de la Sarthe, plus particulièrement de la commune de ST PIERRE DU LOROUER et des communes…",
-      "cat": "culture",
+      "cat": "environnement",
       "creation": "2020",
       "declaration": "2020",
       "site": ""
@@ -4343,7 +4343,7 @@
      {
       "titre": "Association 'La Truite Capricieuse' du Grand Lucé pour la Pêche et la Protection du Milieu Aquatique - A.p.p.m.a.",
       "objet": "Détenir et gérer droits de pêche sur les domaines publics et privés de l'Etat ; organiser la surveillance, la gestion et l'exploitation équilibrée de ses droits de pêche dans le cadre des orientations",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "1925",
       "declaration": "2024",
       "site": ""
@@ -4359,7 +4359,7 @@
      {
       "titre": "Comité de Défense des Habitants du Hameau des Besneries - Pince a Linge-",
       "objet": "Mener toutes les actions légales tendant à préserver les intérêts des riverains contre toutes les nuisances engendrées par l'élevage des canards et la station de compostage de l'EARL de la plaine située à Le Boulay…",
-      "cat": "autres",
+      "cat": "environnement",
       "creation": "2013",
       "declaration": "2020",
       "site": ""
@@ -4375,7 +4375,7 @@
      {
       "titre": "Fendeuse de Bois",
       "objet": "Mise à disposition de ses membres d'une fendeuse de bois transportable par des tracteurs propriétés des membres",
-      "cat": "loisirs",
+      "cat": "autres",
       "creation": "2024",
       "declaration": "2024",
       "site": ""
@@ -4383,7 +4383,7 @@
      {
       "titre": "Générations Mouvement des Aînés Ruraux de Saint Vincent du Lorouër",
       "objet": "Créer, animer, développer les rencontres et les liens d'amitié entre les retraités et pré-retraités ;les aider à résoudre leurs difficultés, les informer et les soutenir par la création de services, dans la recherche de…",
-      "cat": "entraide",
+      "cat": "loisirs",
       "creation": "2012",
       "declaration": "2026",
       "site": ""
@@ -4433,7 +4433,7 @@
      {
       "titre": "Amicale des Pêcheurs de la Truite Dinantaise",
       "objet": "Détenir et gérer des droits de pêche sur les domaines privés de propriétaires riverains du DINAN (communes de FLEE et THOIRE) * participer à la protection des milieux aquatiques et du patrimoine piscicole * mettre en…",
-      "cat": "sport",
+      "cat": "environnement",
       "creation": "2021",
       "declaration": "2021",
       "site": ""
@@ -4441,7 +4441,7 @@
      {
       "titre": "Amicale des Sapeurs Pompiers de Thoiré-Flée",
       "objet": "Récolter des fonds afin d'apporter une aide sociale et de récompenser les pompiers actifs et retraités du centre de secours de thoiré-flée, les membres de la batterie fanfare sapeur pompier de la commune de thoiré sur…",
-      "cat": "entraide",
+      "cat": "loisirs",
       "creation": "2008",
       "declaration": "2025",
       "site": ""
@@ -4449,7 +4449,7 @@
      {
       "titre": "Amicale du Grand Cerf",
       "objet": "Chasser en toute tranquillité, en respectant la nature et la faune",
-      "cat": "loisirs",
+      "cat": "environnement",
       "creation": "1999",
       "declaration": "2021",
       "site": ""
@@ -4473,7 +4473,7 @@
      {
       "titre": "Bourse aux Vêtements et Jouets de Montval sur Loir",
       "objet": "Cette association a pour objet de vendre des vêtements, chaussures, jouets, livres, petit matériel de puériculture et bibelots",
-      "cat": "environnement",
+      "cat": "loisirs",
       "creation": "2018",
       "declaration": "2018",
       "site": ""
@@ -4497,7 +4497,7 @@
      {
       "titre": "Les Amis D'Hacheron",
       "objet": "Favoriser la pratique de la chasse entre ses membres dans un esprit de convivialité, d'amitié et de partage, de promouvoir le respect des traditions cynégétiques, d'organiser des activités cynégétiques et de rencontres…",
-      "cat": "education",
+      "cat": "environnement",
       "creation": "2026",
       "declaration": "2026",
       "site": ""
@@ -4547,7 +4547,7 @@
      {
       "titre": "Association Scolaire de la Craie des Champs",
       "objet": "Former à la responsabilité, au civisme, à l'autonomie par la pratique d'activités physiques, sportives et de pleine nature, d'activités socioculturelles, dans le cadre d'un fonctionnement démocratique; contribuer à…",
-      "cat": "education",
+      "cat": "sport",
       "creation": "2012",
       "declaration": "2023",
       "site": ""
@@ -4579,7 +4579,7 @@
      {
       "titre": "Générations Mouvement des Aînés Ruraux de Villaines sous Lucé",
       "objet": "Créer, animer, développer les rencontres et les liens d'amitié entre les retraités et pré-retraités ; les aider à résoudre leurs difficultés, les informer et les soutenir, par la création de services, dans la recherche…",
-      "cat": "entraide",
+      "cat": "loisirs",
       "creation": "2009",
       "declaration": "2023",
       "site": ""
