@@ -244,8 +244,16 @@ def main():
             "creation": (r.get("date_creat") or "")[:4],
             "declaration": derniere[:4],
             "site": site if re.match(r"https?://[\w.-]+\.\w{2,}", site) else "",
+            "_theme": (r.get("objet_social1") or "").strip(),
         })
     print(f"{lues} lignes lues dans le RNA")
+    # Aide au réglage du classement : thèmes déclarés et exemples de noms.
+    themes = {}
+    for assos in par_commune.values():
+        for a in assos:
+            themes.setdefault(a.pop("_theme", "") or "-", []).append(a["titre"])
+    for code, noms in sorted(themes.items(), key=lambda x: -len(x[1])):
+        print(f"  thème {code} ({len(noms)}) : " + " / ".join(noms[:4]))
 
     pos = centres()
     features = []
