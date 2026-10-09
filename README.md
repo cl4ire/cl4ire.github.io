@@ -3596,3 +3596,35 @@ catégories déjà en place.
 
 Le site est 100% statique : il suffit de pousser tout le dossier sur la
 branche GitHub Pages, comme pour la version précédente.
+
+## Artisans et associations (registres publics, mise à jour mensuelle)
+
+Deux couches alimentées automatiquement chaque mois par le workflow
+`.github/workflows/donnees-mensuelles.yml` (le 6 du mois, ou à la main
+depuis l'onglet Actions) :
+
+- **Artisans** (`couches/commerces/artisans.geojson`, groupe Commerces) :
+  `outils/build_artisans.py` interroge l'API Recherche d'entreprises
+  (registre SIRENE de l'Insee) commune par commune, pour les
+  établissements actifs dont le code APE est un métier du bâtiment ou du
+  jardin. Classés en 8 métiers (`TYPES_ARTISANS` dans `js/config.js`).
+  Les entreprises « non diffusibles » sont écartées, et un SIRET déjà
+  présent dans `commerces.geojson` n'est pas repris. Le registre ne donne
+  ni téléphone ni horaires : la fiche renvoie vers l'Annuaire des
+  entreprises.
+- **Associations** (`couches/associations/associations.geojson`, nouveau
+  groupe Associations) : `outils/build_associations.py` lit l'export
+  « waldec » du Répertoire national des associations (data.gouv.fr). On
+  garde les associations actives, déclarées sur le territoire (y compris
+  sous le nom d'une ancienne commune de Montval-sur-Loir ou de Loir en
+  Vallée), avec une déclaration ces 10 dernières années (`ANS_MAX`).
+  **Un seul point par commune**, jamais l'adresse du siège (souvent le
+  domicile d'un ou d'une bénévole) ; la fiche liste les associations
+  avec des filtres par activité.
+
+Si un script ne trouve rien (API changée, export absent), il s'arrête en
+erreur sans toucher au fichier existant, et le workflow passe au rouge.
+Les noms d'associations et d'artisans sont aussi trouvables par la
+recherche, comme les métiers (« plombier », « électricien »…) grâce à
+`motsClesPourFeature`. Les fiches ont un bouton « Signaler une erreur »
+qui ouvre le formulaire de contact prérempli.
