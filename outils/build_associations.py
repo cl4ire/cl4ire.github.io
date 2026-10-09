@@ -24,6 +24,7 @@ import re
 import sys
 import time
 import unicodedata
+import urllib.error
 import urllib.request
 import zipfile
 
@@ -146,8 +147,23 @@ def telecharger():
     url = zips[0]["url"]
     print("Téléchargement de", url)
     chemin = "/tmp/rna_waldec.zip"
-    urllib.request.urlretrieve(url, chemin)
-    return chemin
+    # Le serveur du ministère refuse l'identité par défaut de urllib (403) :
+    # on se présente comme un navigateur ordinaire, avec quelques essais.
+    entetes = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+               "Accept": "application/zip,application/octet-stream,*/*", "Referer": "https://www.data.gouv.fr/"}
+    for essai in range(4):
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers=entetes), timeout=300) as r, open(chemin, "wb") as f:
+                while True:
+                    bloc = r.read(1 << 20)
+                    if not bloc:
+                        break
+                    f.write(bloc)
+            return chemin
+        except urllib.error.URLError as e:
+            print("Essai", essai + 1, ":", e)
+            time.sleep(5 * (essai + 1))
+    sys.exit("Téléchargement du RNA impossible : " + url)
 
 
 def lignes(chemin):
