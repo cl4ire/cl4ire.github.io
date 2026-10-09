@@ -1,0 +1,50 @@
+name: Données mensuelles (artisans, associations)
+
+# Reconstruit chaque mois, depuis les registres publics :
+# - couches/commerces/artisans.geojson (registre SIRENE, outils/build_artisans.py)
+# - couches/associations/associations.geojson (RNA, outils/build_associations.py)
+# Chaque script s'arrête en erreur s'il ne trouve rien : le fichier existant
+# est alors gardé tel quel, et l'autre couche est quand même mise à jour.
+on:
+  schedule:
+    - cron: '17 5 6 * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  donnees:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Artisans (SIRENE)
+        id: artisans
+        continue-on-error: true
+        run: python3 outils/build_artisans.py
+
+      - name: Associations (RNA)
+        id: associations
+        continue-on-error: true
+        run: python3 outils/build_associations.py
+
+      - name: Commit si les données ont changé
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add couches/commerces/artisans.geojson couches/associations/associations.geojson
+          # Seule la date de mise à jour a changé ? Rien à publier.
+          if git diff --cached --quiet || [ -z "$(git diff --cached -U0 | grep '^[+-] ' | grep -v '"mise_a_jour"' || true)" ]; then
+            echo "Pas de changement dans les données."
+            exit 0
+          fi
+          git commit -m "Mise à jour mensuelle des artisans et des associations"
+          git push
+
+      - name: Signaler un échec
+        if: steps.artisans.outcome == 'failure' || steps.associations.outcome == 'failure'
+        run: |
+          echo "::error::Artisans : ${{ steps.artisans.outcome }} · Associations : ${{ steps.associations.outcome }}"
+          exit 1
