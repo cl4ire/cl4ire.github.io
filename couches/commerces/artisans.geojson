@@ -161,7 +161,7 @@
    },
    "properties": {
     "siret": "35023882000061",
-    "nom": "Alta Industrie (mptp)",
+    "nom": "Alta Industrie (MPTP)",
     "categorie": "autre",
     "ape": "25.62B",
     "activite": "Mécanique industrielle",
@@ -253,27 +253,6 @@
     "com_insee": "72103",
     "com_nom": "Courdemanche",
     "creation": "2016"
-   }
-  },
-  {
-   "type": "Feature",
-   "geometry": {
-    "type": "Point",
-    "coordinates": [
-     0.562371,
-     47.817738
-    ]
-   },
-   "properties": {
-    "siret": "99156340400011",
-    "nom": "Les Jardins de Monsieur Clement",
-    "categorie": "jardin",
-    "ape": "81.30Z",
-    "activite": "Aménagement paysager",
-    "adresse": "10 Rue des Bouleaux",
-    "com_insee": "72103",
-    "com_nom": "Courdemanche",
-    "creation": "2025"
    }
   },
   {
@@ -1421,7 +1400,7 @@
    },
    "properties": {
     "siret": "49033992600027",
-    "nom": "L.m.c.",
+    "nom": "L.M.C.",
     "categorie": "maconnerie",
     "ape": "43.99C",
     "activite": "Maçonnerie générale et gros œuvre",
@@ -2912,7 +2891,7 @@
    },
    "properties": {
     "siret": "44410935900059",
-    "nom": "FTS (f.t.s.)",
+    "nom": "FTS (F.T.S.)",
     "categorie": "autre",
     "ape": "25.62B",
     "activite": "Mécanique industrielle",
@@ -3689,7 +3668,7 @@
    },
    "properties": {
     "siret": "44185404900026",
-    "nom": "Saint Pierre Peinture et Sol (spps)",
+    "nom": "Saint Pierre Peinture et Sol (SPPS)",
     "categorie": "peinture",
     "ape": "43.34Z",
     "activite": "Peinture et vitrerie",
@@ -3836,7 +3815,7 @@
    },
    "properties": {
     "siret": "32774551900022",
-    "nom": "Precision Mecanique du Lorouer (pml)",
+    "nom": "Precision Mecanique du Lorouer (PML)",
     "categorie": "autre",
     "ape": "25.62B",
     "activite": "Mécanique industrielle",

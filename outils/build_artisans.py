@@ -75,7 +75,7 @@ def joli(nom):
         bas = mot.lower()
         if i and bas in PETITS_MOTS and not mots[-1][:1].isdigit():
             mots.append(bas)
-        elif mot.strip("().,") in SIGLES or (len(mot) <= 4 and mot.isupper() and not any(v in bas for v in "aeiouyéè")):
+        elif mot.strip("().,") in SIGLES or (len(mot.strip("().,")) <= 5 and mot.isupper() and not any(v in bas for v in "aeiouyéè")):
             mots.append(mot)  # sigle : SARL, EURL, SCI…
         else:
             mots.append("-".join(p[:1].upper() + p[1:] for p in bas.split("-")))
@@ -163,6 +163,14 @@ def main():
             page += 1
             time.sleep(0.25)  # l'API accepte 7 appels par seconde
         print(f"{nom_commune} : {sum(1 for f in features if f['properties']['com_insee'] == insee)} artisans")
+
+    # Une même entreprise peut avoir deux établissements à la même adresse
+    # (ancien et nouveau SIRET) : un seul point sur la carte.
+    uniques = {}
+    for f in features:
+        p = f["properties"]
+        uniques.setdefault((p["nom"].lower(), p["adresse"].lower(), p["com_insee"]), f)
+    features = list(uniques.values())
 
     if not features:
         sys.exit("Aucun artisan trouvé : l'API a peut-être changé, fichier laissé tel quel.")

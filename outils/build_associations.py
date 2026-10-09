@@ -24,6 +24,7 @@ import re
 import sys
 import time
 import unicodedata
+import urllib.error
 import urllib.request
 import zipfile
 
@@ -57,23 +58,36 @@ PAR_NOM.update({
     cle("Poncé-sur-le-Loir"): "72262",
 })
 
-# Catégories affichées (id utilisé par js/config.js) : mots du nom ou de l'objet
-# d'abord, puis le thème déclaré (3 premiers chiffres du code « objet social »).
-CATEGORIES = [
-    ("sport", r"\b(SPORT|FOOT|FOOTBALL|TENNIS|BASKET|HAND|HANDBALL|VOLLEY|RUGBY|JUDO|KARATE|GYM|GYMNASTIQUE|PETANQUE|BOULE|BOULES|CYCLO|VELO|CYCLISME|VTT|RANDO|RANDONNEE|MARCHE|COURSE|ATHLETISME|NATATION|ESCRIME|TIR|EQUITATION|EQUESTRE|HIPPIQUE|BADMINTON|PING|YOGA|DANSE SPORTIVE|CHASSE|CHASSEURS|PECHE|PECHEURS|GAULE|ARCHERS|BILLARD|MOTO|AUTO CLUB)\b"),
-    ("culture", r"\b(THEATRE|MUSIQUE|MUSICAL|HARMONIE|FANFARE|CHORALE|CHOEUR|CHANT|DANSE|CINEMA|LECTURE|BIBLIOTHEQUE|LIVRE|LIVRES|PEINTURE|ARTS|ARTISTES|PHOTO|PHOTOGRAPHIE|CULTURE|CULTUREL|CULTURELLE|FESTIVAL|CONCERT|CONCERTS|ECRITURE)\b"),
-    ("patrimoine", r"\b(PATRIMOINE|HISTOIRE|HISTORIQUE|SAUVEGARDE|EGLISE|CHAPELLE|CHATEAU|MOULIN|LAVOIR|MEMOIRE|ARCHEOLOGIE|GENEALOGIE|ANCIENS COMBATTANTS|COMBATTANTS|UNC|FNACA|VETERANS)\b"),
-    ("education", r"\b(PARENTS|ELEVES|APE|APEL|ECOLE|ECOLES|COLLEGE|LYCEE|SCOLAIRE|PERISCOLAIRE|CANTINE|JEUNESSE|JEUNES|ENFANCE|ENFANTS|FORMATION)\b"),
-    ("entraide", r"\b(ENTRAIDE|SOLIDARITE|SOLIDAIRE|AIDE|SOCIAL|SOCIALE|SANTE|DON DU SANG|DONNEURS|HANDICAP|HANDICAPES|AINES|ANCIENS|RETRAITES|SENIORS|AGE|AMITIE|CLUB DE L AMITIE|ADMR|RESTOS|SECOURS|CROIX ROUGE|EMPLOI|INSERTION|ALIMENTAIRE|EPICERIE SOLIDAIRE|FAMILLES|FAMILLE|POMPIERS)\b"),
-    ("environnement", r"\b(ENVIRONNEMENT|NATURE|JARDIN|JARDINS|JARDINIERS|ECOLOGIE|ECOLOGIQUE|RIVIERE|LOIR|FORET|ARBRES|ABEILLES|APICULTURE|APICULTEURS|PROTECTION DES ANIMAUX|ANIMAUX|CHATS|CHIENS|ENERGIE)\b"),
-    ("loisirs", r"\b(FETES|FETE|COMITE DES FETES|ANIMATION|ANIMATIONS|LOISIRS|LOISIR|CLUB|AMICALE|FOYER|RURAL|JUMELAGE|JEUX|CARTES|BELOTE|TAROT|SCRABBLE|COUTURE|TRICOT|CUISINE|VOYAGES|TOURISME|DETENTE|BROCANTE|VIDE GRENIER)\b"),
+# Catégories affichées (id utilisé par js/config.js), dans cet ordre :
+# 1. quelques mots sans ambiguïté dans le nom (« comité des fêtes »…) ;
+# 2. le thème déclaré au RNA (3 premiers chiffres de « objet_social1 »),
+#    étalonné sur les associations du territoire en octobre 2026 ;
+# 3. à défaut, des mots plus larges dans le nom et l'objet.
+NOM_SUR = [
+    ("loisirs", r"\bCOMITE (DES|DE) FETES?\b|\bFOYER RURAL\b|\bJUMELAGE\b|\bGENERATIONS MOUVEMENT\b|\bAINES RURAUX\b"),
+    ("education", r"\bPARENTS D ?ELEVES\b|\bAPEL?\b|\bOGEC\b|\bUSEP\b|\bFOYER SOCIO|\bMAISON DES LYCEENS\b|\bMAM\b|\bNOUNOUS?\b|\bASSISTANTES? MATERNELLES?\b|\bAMICALE DES ECOLES\b"),
+    ("environnement", r"\bCHASSE\b|\bCHASSEURS\b|\bPECHE\b|\bPECHEURS\b|\bAAPPMA\b|\bCYNEGETIQUE"),
+    ("patrimoine", r"\bCOMBATTANTS\b|\bCOMMBATTANTS\b|\bUNC\b|\bFNACA\b|\bPATRIMOINE\b|\bHISTOIRE\b"),
+    ("entraide", r"\bDON (DU|DE) SANG\b|\bADMR\b|\bAIDE A DOMICILE\b|\bFAMILLES RURALES\b"),
+    ("sport", r"\bSPORT\w*|\bFOOT\w*|\bTENNIS\b|\bBASKET\w*|\bHAND\w*BALL\b|\bRUGBY\b|\bJUDO\b|\bKARATE\b|\bGYM\w*|\bPETANQUE\b|\bCYCLO\w*|\bRANDO\w*|\bMARCHEURS\b|\bATHLETISME\b|\bPING\b|\bPONGISTE\b|\bHIPPIQUE\b|\bEQUESTRE\b|\bMOTO\w*|\bBILLARD\b"),
 ]
 THEMES = {
-    "010": "sport", "011": "sport", "006": "culture", "005": "culture", "009": "patrimoine",
-    "013": "education", "014": "education", "015": "entraide", "016": "entraide", "017": "entraide",
-    "018": "entraide", "019": "entraide", "023": "entraide", "022": "environnement",
-    "007": "loisirs", "008": "loisirs", "012": "loisirs", "050": "loisirs", "002": "loisirs",
+    "011": "sport", "013": "environnement", "024": "environnement",
+    "006": "culture", "005": "culture",
+    "007": "loisirs", "009": "loisirs", "014": "loisirs", "034": "loisirs", "036": "loisirs",
+    "015": "education", "003": "education",
+    "016": "entraide", "017": "entraide", "018": "entraide", "019": "entraide", "020": "entraide", "021": "entraide",
+    "010": "patrimoine", "038": "patrimoine",
 }
+MOTS_LARGES = [
+    ("sport", r"\b(SPORT\w*|DANSE SPORTIVE|YOGA|PILATES|VTT|VELO|COURSE)\b"),
+    ("culture", r"\b(THEATRE|MUSIQUE|MUSICAL|HARMONIE|FANFARE|CHORALE|CHANT|DANSE|CINEMA|LECTURE|BIBLIOTHEQUE|LIVRES?|PEINTURE|ARTS?|ARTISTES|PHOTO\w*|CULTUR\w*|FESTIVAL|CONCERTS?|ECRITURE|SPECTACLES?)\b"),
+    ("patrimoine", r"\b(SAUVEGARDE|RESTAURATION|MEMOIRE|ARCHEOLOGIE|GENEALOGIE|LAVOIRS?)\b"),
+    ("education", r"\b(ECOLES?|COLLEGE|LYCEE|SCOLAIRE|PERISCOLAIRE|JEUNESSE|ENFANCE|ENFANTS)\b"),
+    ("entraide", r"\b(ENTRAIDE|SOLIDARITE|SOLIDAIRE|SOCIAL\w*|SANTE|HANDICAP\w*|SENIORS|HUMANITAIRE|INSERTION|EMPLOI)\b"),
+    ("environnement", r"\b(ENVIRONNEMENT|NATURE|JARDINS?|ECOLOGI\w*|BIODIVERSITE|ABEILLES|APICULT\w*|ANIMAUX)\b"),
+    ("loisirs", r"\b(FETES?|ANIMATIONS?|LOISIRS?|AMICALE|CLUB|JEUX|CARTES|BELOTE|TAROT|COUTURE|TRICOT|CUISINE|VOYAGES|COMICE)\b"),
+]
 
 SIGLES = {"APE", "APEL", "UNC", "FNACA", "ADMR", "AFN", "ACPG", "CATM", "ASL", "US", "AS", "ESL", "CSL", "ACL", "AAPPMA",
           "MJC", "CCAS", "BTP", "EPGV", "OGEC", "AEP", "ASLC", "ASCL", "UFOLEP", "FFR", "AMAP", "ACCA", "GDON", "ADAPEI",
@@ -123,15 +137,17 @@ def phrase(texte, longueur=220):
 
 
 def categorie(titre, objet, code):
-    texte = " " + cle(titre) + " " + cle(objet) + " "
-    for nom, motif in CATEGORIES:
-        if re.search(motif, cle(titre)):
-            return nom
-    if code and str(code)[:3] in THEMES:
-        return THEMES[str(code)[:3]]
-    for nom, motif in CATEGORIES:
+    nom = cle(titre)
+    for cat, motif in NOM_SUR:
+        if re.search(motif, nom):
+            return cat
+    theme = str(code or "")[:3]
+    if theme in THEMES:
+        return THEMES[theme]
+    texte = nom + " " + cle(objet)
+    for cat, motif in MOTS_LARGES:
         if re.search(motif, texte):
-            return nom
+            return cat
     return "autres"
 
 
@@ -146,8 +162,23 @@ def telecharger():
     url = zips[0]["url"]
     print("Téléchargement de", url)
     chemin = "/tmp/rna_waldec.zip"
-    urllib.request.urlretrieve(url, chemin)
-    return chemin
+    # Le serveur du ministère refuse l'identité par défaut de urllib (403) :
+    # on se présente comme un navigateur ordinaire, avec quelques essais.
+    entetes = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+               "Accept": "application/zip,application/octet-stream,*/*", "Referer": "https://www.data.gouv.fr/"}
+    for essai in range(4):
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers=entetes), timeout=300) as r, open(chemin, "wb") as f:
+                while True:
+                    bloc = r.read(1 << 20)
+                    if not bloc:
+                        break
+                    f.write(bloc)
+            return chemin
+        except urllib.error.URLError as e:
+            print("Essai", essai + 1, ":", e)
+            time.sleep(5 * (essai + 1))
+    sys.exit("Téléchargement du RNA impossible : " + url)
 
 
 def lignes(chemin):
@@ -228,8 +259,16 @@ def main():
             "creation": (r.get("date_creat") or "")[:4],
             "declaration": derniere[:4],
             "site": site if re.match(r"https?://[\w.-]+\.\w{2,}", site) else "",
+            "_theme": (r.get("objet_social1") or "").strip(),
         })
     print(f"{lues} lignes lues dans le RNA")
+    # Aide au réglage du classement : thèmes déclarés et exemples de noms.
+    themes = {}
+    for assos in par_commune.values():
+        for a in assos:
+            themes.setdefault(a.pop("_theme", "") or "-", []).append(a["titre"])
+    for code, noms in sorted(themes.items(), key=lambda x: -len(x[1])):
+        print(f"  thème {code} ({len(noms)}) : " + " / ".join(noms[:4]))
 
     pos = centres()
     features = []
