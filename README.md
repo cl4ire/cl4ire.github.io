@@ -3612,6 +3612,21 @@ depuis l'onglet Actions) :
   présent dans `commerces.geojson` n'est pas repris. Le registre ne donne
   ni téléphone ni horaires : la fiche renvoie vers l'Annuaire des
   entreprises.
+
+  **Compléter un artisan à la main** (dans QGIS ou un éditeur de texte,
+  directement dans `couches/commerces/artisans.geojson`) : chaque fiche a
+  des champs `phone`, `email`, `website`, `opening_hours` (format OSM,
+  ex. `Mo-Th 08:00-12:00,13:30-17:00; Fr 08:00-12:00`) et `note`, que la
+  mise à jour mensuelle recopie d'un mois sur l'autre (même SIRET). Mettre
+  `verifie` à `true` garde aussi le nom, l'adresse, la catégorie et la
+  position tels que corrigés (et garde la fiche si l'entreprise disparaît
+  du registre). `masquer` à `true` retire un artisan de la carte sans le
+  supprimer. Pour un artisan absent du registre : ajouter un point avec
+  `source` = `manuel`, `nom`, `categorie` (plomberie, electricite,
+  maconnerie, couverture, menuiserie, peinture, jardin ou autre),
+  `com_insee`, `com_nom` - il est toujours gardé. Les 7 artisans d'abord
+  saisis dans `commerces.geojson` ont été déplacés ici (6 fusionnés avec
+  leur fiche du registre, Rivière Mathias ajouté en `manuel`).
 - **Associations** (`couches/associations/associations.geojson`, nouveau
   groupe Associations) : `outils/build_associations.py` lit l'export
   « waldec » du Répertoire national des associations (data.gouv.fr). On
