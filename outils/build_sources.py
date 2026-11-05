@@ -7,7 +7,8 @@ de fichier que celui de GéoBercé (couches/...). Chaque source est indépendant
 échoue est signalée, les autres sont quand même écrites.
 
 Sources (--sources a,b,c pour n'en lancer que certaines ; toutes par défaut) :
-  mairies         Annuaire de l'administration (service-public.fr) : coordonnées et horaires
+  mairies         Annuaire de l'administration (service-public.fr) : coordonnées et horaires,
+                  puis élus (répertoire national des élus, data.gouv.fr)
   bal             La Poste : boîtes aux lettres de rue (et heure de levée)
   irve            Bornes de recharge de véhicules électriques (fichier consolidé, data.gouv.fr)
   covoiturage     Base nationale des lieux de covoiturage (BNLC)
@@ -19,8 +20,8 @@ Sources (--sources a,b,c pour n'en lancer que certaines ; toutes par défaut) :
   dpe             Diagnostics de performance énergétique (ADEME)
   dae             Défibrillateurs : Géo'DAE, base nationale (Atlasanté)
 
-Pas encore couvertes : petite enfance,
-prix de l'immobilier, démographie, parcelles DVF.
+Prix de l'immobilier et parcelles DVF : outils/build_dvf.py.
+Pas encore couvertes : petite enfance (saisie à la main), démographie.
 
 Usage : python3 outils/build_sources.py [--territoire <id>] [--sources mairies,bal] [--sortie <dossier>]
 """
@@ -201,9 +202,74 @@ def mairies_de(code):
     raise derniere
 
 
+URL_ELUS = "https://www.data.gouv.fr/api/1/datasets/r/d5f400de-ae3f-4966-8cb6-a85c70c6c24a"  # Répertoire national des élus : conseillers municipaux
+
+
+def sans_accent(t):
+    import unicodedata
+    return "".join(c for c in unicodedata.normalize("NFD", t or "") if unicodedata.category(c) != "Mn").lower().replace("’", "'")
+
+
+def rang_fonction(role):
+    r = sans_accent(role)
+    if r.startswith("maire") and "delegue" not in r:
+        return (0, 0)
+    m = re.match(r"(\d+)", r)
+    if "adjoint" in r:
+        return (1, int(m.group(1)) if m else 99)
+    if "delegue" in r:
+        return (2, 0)
+    return (3, 0)
+
+
+def elus_par_commune():
+    """{code INSEE: « NOM Prénom (Fonction) » une ligne par élu} depuis le répertoire national des élus."""
+    chemin = fichier_url(URL_ELUS, ".csv")
+    with open(chemin, encoding="utf-8-sig", newline="") as fh:
+        echantillon = fh.read(4096)
+    delim = ";" if echantillon.count(";") >= echantillon.count(",") else ","
+    with open(chemin, encoding="utf-8-sig", newline="") as fh:
+        lecteur = csv.reader(fh, delimiter=delim)
+        entete = next(lecteur)
+        norm = [sans_accent(h) for h in entete]
+
+        def col(*mots, sans=()):
+            for i, h in enumerate(norm):
+                if all(m in h for m in mots) and not any(x in h for x in sans):
+                    return i
+            return None
+        i_code = col("code", "commune", sans=("libelle", "naissance"))
+        i_nom, i_prenom = col("nom", "elu"), col("prenom", "elu")
+        i_fonction = col("libelle", "fonction")
+        if None in (i_code, i_nom, i_prenom):
+            raise RuntimeError("colonnes du répertoire des élus non reconnues : " + " | ".join(entete))
+        print(f"  répertoire des élus : colonnes code={entete[i_code]!r} nom={entete[i_nom]!r} prénom={entete[i_prenom]!r} fonction={entete[i_fonction] if i_fonction is not None else None!r}")
+        par_commune = {}
+        for ligne in lecteur:
+            if len(ligne) <= max(i_code, i_nom, i_prenom):
+                continue
+            code = ligne[i_code].strip().zfill(5)
+            if code not in T.communes:
+                continue
+            fonction = (ligne[i_fonction].strip() if i_fonction is not None and i_fonction < len(ligne) else "") or "Conseiller municipal"
+            par_commune.setdefault(code, []).append((rang_fonction(fonction), ligne[i_nom].strip().upper(), ligne[i_prenom].strip().title(), fonction))
+    resultat = {}
+    for code, liste in par_commune.items():
+        liste.sort()
+        resultat[code] = "\n".join(f"{nom} {prenom} ({fonction})" for _, nom, prenom, fonction in liste)
+    print(f"  élus trouvés pour {len(resultat)} commune(s) sur {len(T.communes)}")
+    return resultat
+
+
 def src_mairies():
     features = []
     centres = {}
+    try:
+        elus = elus_par_commune()
+    except Exception as e:  # noqa: BLE001 - les mairies restent écrites sans la liste des élus
+        print(f"  ÉLUS NON RÉCUPÉRÉS : {e}")
+        elus = {}
+    principales = {}
     for code, nom, zone in COMMUNES_ZONES:
         b = zone.boite
         centres[code] = ((b[0] + b[2]) / 2, (b[1] + b[3]) / 2)
@@ -221,11 +287,18 @@ def src_mairies():
             lieu = (m.group(1) if m else T.communes[code]).strip()
             tel = liste_json(x.get("telephone")) or [{}]
             web = liste_json(x.get("site_internet")) or [{}]
-            features.append(point(lon, lat, {
+            f = point(lon, lat, {
                 "amenity": genre, "name": f"{genre} {de_commune(lieu)}", "commune": T.communes[code],
                 "contact_phone": (tel[0] or {}).get("valeur"), "contact_email": x.get("adresse_courriel") or None,
                 "contact_website": (web[0] or {}).get("valeur") or None,
-                "opening_hours": horaires_mairie(liste_json(x.get("plage_ouverture")))}))
+                "opening_hours": horaires_mairie(liste_json(x.get("plage_ouverture")))})
+            features.append(f)
+            if code not in principales or (genre == "Mairie" and principales[code]["properties"]["amenity"] != "Mairie"):
+                principales[code] = f
+    # la liste des élus va sur la mairie principale de chaque commune
+    for code, f in principales.items():
+        if elus.get(code):
+            f["properties"]["elus"] = elus[code]
     return [("services/mairies.geojson", "mairies", features)]
 
 
