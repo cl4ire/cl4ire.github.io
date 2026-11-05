@@ -35,7 +35,9 @@ const TERRITOIRE = {
        (couches/communes.geojson et epci.geojson sont toujours présents).
        Une couche de js/config.js dont un fichier local n'est pas dans cette
        liste n'est pas affichée. À compléter au fil des scripts de données. */
-    fichiersDisponibles: [],
+    fichiersDisponibles: [
+        "couches/commerces/artisans.geojson"
+    ],
 
     communes: {
         "72124": "Écommoy",

@@ -20,7 +20,7 @@ Saisie à la main (QGIS ou éditeur de texte), jamais écrasée par la mise à j
 - masquer = true : gardée dans le fichier mais pas affichée sur la carte ;
 - source = "manuel" (sans SIRET) : artisan ajouté à la main, toujours gardé.
 
-Usage : python3 outils/build_artisans.py [sortie.geojson]
+Usage : python3 outils/build_artisans.py [--territoire <id>] [sortie.geojson]
 Lancé chaque mois par .github/workflows/donnees-mensuelles.yml.
 """
 import json
@@ -34,16 +34,11 @@ import urllib.request
 RACINE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 API = "https://recherche-entreprises.api.gouv.fr/search"
 
-COMMUNES = {
-    "72027": "Beaumont-sur-Dême", "72028": "Beaumont-Pied-de-Bœuf", "72052": "Chahaignes",
-    "72068": "La Chartre-sur-le-Loir", "72071": "Montval-sur-Loir", "72103": "Courdemanche",
-    "72115": "Dissay-sous-Courcillon", "72134": "Flée", "72143": "Le Grand-Lucé",
-    "72153": "Jupilles", "72160": "Lavernat", "72161": "Lhomme", "72173": "Luceau",
-    "72183": "Marçon", "72210": "Montreuil-le-Henri", "72221": "Nogent-sur-Loir",
-    "72248": "Pruillé-l'Éguillé", "72262": "Loir en Vallée", "72279": "Saint-Georges-de-la-Couée",
-    "72311": "Saint-Pierre-de-Chevillé", "72314": "Saint-Pierre-du-Lorouër",
-    "72325": "Saint-Vincent-du-Lorouër", "72356": "Thoiré-sur-Dinan", "72376": "Villaines-sous-Lucé",
-}
+# Territoire (--territoire <id>, geoberce par défaut) : communes lues dans son fichier territoire.js.
+import territoires_commun
+TERRITOIRE_ID, ARGS = territoires_commun.separer_argument(sys.argv)
+T = territoires_commun.charger(TERRITOIRE_ID)
+COMMUNES = T.communes
 
 # Métier (id utilisé par TYPES_ARTISANS dans js/config.js) -> codes APE (NAF rév. 2).
 METIERS = {
@@ -91,7 +86,7 @@ def joli(nom):
     return " ".join(mots)
 
 
-def appel(params, essais=4):
+def appel(params, essais=8):
     url = API + "?" + urllib.parse.urlencode(params)
     for n in range(essais):
         try:
@@ -110,7 +105,7 @@ def appel(params, essais=4):
 
 def sirets_commerces():
     try:
-        with open(os.path.join(RACINE, "couches", "commerces", "commerces.geojson"), encoding="utf-8") as f:
+        with open(os.path.join(T.couches, "commerces", "commerces.geojson"), encoding="utf-8") as f:
             data = json.load(f)
     except FileNotFoundError:
         return set()
@@ -166,7 +161,7 @@ def reprendre_saisies(features, anciennes):
 
 
 def main():
-    sortie = sys.argv[1] if len(sys.argv) > 1 else os.path.join(RACINE, "couches", "commerces", "artisans.geojson")
+    sortie = ARGS[0] if ARGS else os.path.join(T.couches, "commerces", "artisans.geojson")
     anciennes = precedent(sortie)
     deja = sirets_commerces()
     codes = sorted(METIER_DE)
@@ -230,6 +225,7 @@ def main():
         sys.exit("Aucun artisan trouvé : l'API a peut-être changé, fichier laissé tel quel.")
     features = reprendre_saisies(features, anciennes)
     features.sort(key=lambda f: (f["properties"]["com_nom"], f["properties"]["nom"]))
+    os.makedirs(os.path.dirname(os.path.abspath(sortie)), exist_ok=True)
     with open(sortie, "w", encoding="utf-8") as f:
         json.dump({"type": "FeatureCollection", "source": "Registre SIRENE (Insee), API Recherche d'entreprises",
                    "mise_a_jour": time.strftime("%Y-%m-%d"), "features": features}, f, ensure_ascii=False, indent=1)
