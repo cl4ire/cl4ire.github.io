@@ -1,0 +1,381 @@
+Données des territoires, 2026-11-05T16:32Z
+### osm (geosudsarthe)
+Overpass : points d'intérêt
+  overpass-api.de essai 1 : HTTP Error 502: Bad Gateway
+  overpass-api.de essai 2 : HTTP Error 502: Bad Gateway
+  overpass-api.de essai 3 : HTTP Error 502: Bad Gateway
+  overpass.kumi.systems : 1486 éléments
+Overpass : cours d'eau et itinéraires
+  overpass-api.de : 1009 éléments
+  commerces : 141
+  banques : 16
+  education : 33
+  parkings : 155
+  toilettes : 32
+  fontaines : 5
+  bibliotheques : 10
+  marches : 1
+  airesJeu : 21
+  equipementSportif : 121
+  antennes : 22
+  lockers_osm : aucun résultat (fichier non écrit)
+  dechets : 6
+  pompiers : 7
+  gendarmerie : 4
+  ehpad : 3
+  officesTourisme : 1
+  campingcar : 4
+  patrimoineRural : 17
+  cours_eau : 583
+  velo : aucun résultat (fichier non écrit)
+  randonnees_osm : aucun résultat (fichier non écrit)
+1182 objets écrits pour geosudsarthe
+### sources (geosudsarthe)
+== mairies
+  mairies : 19 -> services/mairies.geojson
+== bal
+  bal : 28 -> services/bal.geojson
+== irve
+  irve : 17 -> services/irve.geojson
+== covoiturage
+  airecovoiturage : 1 -> mobilite/airecovoiturage.geojson
+== franceServices
+  franceServices : 1 -> services/franceServices.geojson
+== monuments
+  immeublesProteges : 30 -> patrimoine/immeublesProteges.geojson
+== aleop
+  arretsALEOP : 54 -> mobilite/arretsALEOP.geojson
+  reseauALEOP : 2 -> mobilite/reseauALEOP.geojson
+== rga
+  rga : 134 -> urbanisme/rga_2025_loir_luce_berce.geojson
+== plui
+  zonage_plui : 576 -> urbanisme/zonage_plui_loir_luce_berce_filtre.geojson
+== dpe
+  dpe : 3326 -> urbanisme/dpe_loir_luce_berce.geojson
+### artisans (geosudsarthe)
+Aubigné-Racan : 15 artisans
+La Bruère-sur-Loir : 2 artisans
+La Chapelle-aux-Choux : 2 artisans
+Château-l'Hermitage : 2 artisans
+Chenu : 8 artisans
+Coulongé : 4 artisans
+Luché-Pringé : 7 artisans
+Le Lude : 38 artisans
+Mansigné : 17 artisans
+Mayet : 29 artisans
+Pontvallain : 17 artisans
+Requeil : 17 artisans
+Saint-Germain-d'Arcé : 1 artisans
+Saint-Jean-de-la-Motte : 17 artisans
+Sarcé : 3 artisans
+Savigné-sous-le-Lude : 6 artisans
+Vaas : 16 artisans
+Verneil-le-Chétif : 6 artisans
+Yvré-le-Pôlin : 19 artisans
+226 artisans écrits dans /home/runner/work/cl4ire.github.io/cl4ire.github.io/territoires/geosudsarthe/couches/commerces/artisans.geojson
+### associations (geosudsarthe)
+Téléchargement de https://media.interieur.gouv.fr/rna/rna_waldec_20261001.zip
+38630 lignes lues dans le RNA
+  thème 007000 (36) : Générations Mouvement - Club D' Aubigne Racan / Loir Attelages / Aubigné Détente Sport et Loisirs / Club des Aînés Ruraux de la Bruere sur Loir
+  thème 011160 (26) : Association Moto Club de la Vallée du Loir / FL510 / Hugorider DB13 / Team KMJ
+  thème 013005 (20) : Amicale des Chasseurs de la Chouaniere / Equipage Hardi Bleu / Amicale des Herses / Amicale des Chasseurs de la Grifferie
+  thème 006000 (15) : 3 a Association Artistique D' Aubigne Racan / Les Fils Casteliens / Maison des Jeunes et de la Culture de Coulonge / Les Amis de Venevelles
+  thème 011000 (15) : Aubigné-Racan Billard Club / Pit Ryder Fusion / G & G Ball-Trap / La Pétanque de Mansigne
+  thème 015005 (14) : Association 'Association D'Education Populaire de L'Ecole Saint-Joseph D'Aubigne Racan / Association des Parents D'Eleves de L'Ecole Privee Saint-Joseph D'Aubigne Racan / Les P'Tites Mains / Les Amis du Sivos de la Fare
+  thème 009030 (12) : Comité des Fêtes de la Chapelle aux Choux. / Comité des Fêtes de Coulonge / Association Association du Comité des Fêtes de Luche-Pringe / Associaton du Comice 2010
+  thème 011035 (11) : Association 'La Pétanque Aubignanaise' / Association Club Pétanque Chenu / Société Boules de Fort 'L'Esperance' de Luche Pringe / Société la Saint Vincent
+  thème 022535 (9) : Association du Comice Agricole D'Aubigne Racan / Association Organisatrice du Comice Disse sous le Lude / Association Locale Comice Mansigne / Association Locale Comice Requeil-Château L'Hermitage
+  thème 007075 (9) : Ma Vie D'Chateau / Association Up' Magazine / Comice Luché Pringé 2022 / D.K.L Administratif
+  thème 007040 (8) : Comité des Fêtes / Kreol Aubigné Show / Comité des Fêtes Bruèrois / Écran Large du Sud Sarthe
+  thème 007005 (8) : Piquer sur le Carreau le Coeur du Trefle / Potes aux Jeux / La Guilde du Loir / Association la Tour de Mayet
+  thème 006070 (8) : Ago Ile / Le Rideau Ecarlate / Interlude / Jazz Mo Asso
+  thème 021005 (7) : Aub'Outchou Association D'Assistante Maternelle / Mam'Explorateurs / Les P'Tits Pas de Mansigne / Mam les Calin'Ours
+  thème 009040 (7) : Générations Mouvement Aînés Ruraux du Pays Ludois / Les Séniors du Lac / Générations Mouvement -Club de Mayet / Générations Mouvement Interclubs du Guesclin Belon Région Pontvallain
+  thème 036510 (6) : Amicale des Sapeurs Pompiers D'Aubigne-Racan / Amicale des Sapeurs Pompiers de Luche ST Jean / 'Amicale du Corps des Sapeurs Pompiers du Lude' / Amicale des Sapeurs-Pompiers de Mayet-Verneil-Sarcé
+  thème 024035 (6) : Arrêtez le Massacre / Association des Habitants et Amis de Pringe ( A.h.a.p) / Groupement de Défense Contre les Ennemis des Cultures de la Sarthe Section de Luche Pringe / Association pour la Défense de L'Environnement et de la Santé des Luchois
+  thème 011075 (6) : Football Club de Coulonge / Football Club Luchois ( F C l ) / Futsalanimation / Vigilante Omnisports de Mayet
+  thème 007080 (6) : Ajem (Association de Jeux Équestre Médiévaux) / Rotary Club de Mayet Sud Sarthe / Les Electrons Sarceens / Etincelle Vedaquaise
+  thème 024000 (5) : Défense de la Nature, du Patrimoine et des Paysages de la Vallée du Loir / Association du Hameau du Port des Roches Solidaire / Dusty Town Village Alternatif / Les Amis du Sentier au Fil du Loir
+  thème 014000 (5) : U.NC. A.F.N de Chenu / Union Nationale des Combattants UNC / Seconde Vie Feline / Association de Parents D'Élèves de L'Enseignement Libre ( APEL) de Notre Dame de Bonneval
+  thème 013010 (5) : Association Agréée de Pêche et de Protection du Milieu Aquatique de Luche Pringe / Association Agréée de Pêche et de Protection du Milieu Aquatique le Lude / Les Étangs Mil'Fish / Association Agréée de Pêche et de Protection du Milieu Aquatique de Mansigne
+  thème 011005 (5) : Club Omnisports de Luche Pringe ( C.o.l.p) / Jeunesse Sportive Ludoise / Meilleure Forme (Votre Salle de Remise en Forme au Lude) / Association Sportive Cob le Lude
+  thème 006040 (5) : École de Danse du Lude / L.L.D Dance / Association 'Top'Dance' / Oizi-Danse Mayet
+  thème 006100 (5) : Le Ronsard - Association Culturelle et de Loisirs du Lude / Bling Bling Coffin / Village D'Arts et Cultures / Vitraux Fialeix
+  thème 014035 (4) : Aide,soutien et Accompagnement - A.s.a / Déclic - Association de Soutiens au Projet Professionnel, pour les Séniors, les Moins de 25 Ans et les Personnes en Situation de Handicap en Priorité / Tous pour Dany / Handicapé Ange - Leur Combat, Notre Bataille
+  thème 024026 (4) : Association Equiveg / Equi Help 72 / L'Arche de Margot ( Refuge) / Le Sanctuaire des Battements de Sabots
+  thème 050000 (4) : Les P'Tits Choux / Association des Chasseurs du Vieux Merve / More More Yes / Yvre le Polin Darts Club
+  thème 030050 (4) : Association Viticole de Château-L'Hermitage / Association la Bicyclude / Actel - Actions pour la Dynamique Économique du Bassin Ludois / Des Idées pour le Lude
+  thème 010022 (4) : Achenu ( Association Cheminement Histoire Environnement Nature Usages) / Association pour la Sauvegarde de la Chapelle Notre-Dame de la Miséricorde / Patrimotte / Les Cahiers Historiques de Sarcé
+  thème 014025 (4) : Groupement D'Employeurs de la Fare / Association des Commercants et Artisans Luchois / Amicale des Sapeurs-Pompiers D'Yvre le Polin / Union Commerciale et Artisanale de la Communauté de Commune Sud Sarthe
+  thème 006030 (4) : Société Musicale de Coulonge / La Boite a Musique / Batterie Fanfare de Requeil - Château L'Hermitage / Association Fanfare 'Le Reveil des Grillons'
+  thème 011050 (4) : Ambassadors Noirie Jump / Cavalude / Tequila Ranch / Association 'Les Sentiers de la Motte'
+  thème 015000 (4) : Association des Parents D'Éleves de L'Enseignement Libre de L'Ecole Sainte Anne Notre Dame / Amicale des Personnels du College des Quatres Vents ( Apqv) / Amicale Laique des Écoles Publiques de Mayet / Amicale des Écoles Publiques de la Fleche
+  thème 020010 (4) : Aide Alimentaire Sud Sarthe / Elan-Solidarité / JCM Family Nomad Raid / Les Surfeurs du Deserts
+  thème 015025 (4) : Usep Maternelle Georges Brassens le Lude / La Cabriole / Usep Sivos de la Fare / Usep des Peupliers Vaas
+  thème 020000 (4) : TÛT-TÛT le Lude. Transport Utile pour Tous / Gaz'Idel / 12 Mains au Togo / Les Polinais en Raid
+  thème 007030 (4) : Mansigné Légend Motors / Exclusive Cars Gathering / Le Club Pistonic / Les Vieilles Calandres en Musique
+  thème 011105 (3) : Les Galaxy'S 2000 / Mansigne Gymnastique Volontaire - M.G.V / Association Sportive et Culturelle Vernalienne
+  thème 007050 (3) : Le Paradis des Rescapes / Les Abois de la Jeunesse / Club Français des Selkirks
+  thème 017145 (3) : Maison Médicale de Luché Pringé / Association des Professionnels de Santé de Luché et le Lude / Association de Santé D'Yvré le Polin
+  thème 011180 (3) : Velo Club Ludois / Association Cyclotourisme Ludois / Team DSRB
+  thème 011165 (3) : Tennis Club Ludois / Sud Sarthe Swin-Golf / Tennis Club D'Yvre - Pontvallain
+  thème 011065 (3) : Basket Club Ludois / Club Mansigne Basket Club. / Club 'Club Loisirs'
+  thème 011115 (3) : Randoclub Ludois / Rand' Aune et Loir / Gaz'Idel
+  thème 023020 (3) : Arts des Champs / Association pour le Maintien D'Une Agriculture Paysanne, de Mayet / GDON de Sarcé
+  thème 020015 (3) : Les Gaz'Elles du Sud Sarthe / Aidocovid / 12 Mains au Togo
+  thème 015075 (3) : Foyer des Élèves du College de Mayet / Association Amicale de L'Ecole Publique de Saint Jean de la Motte. / Amicale des Etablissements Scolaires Publics
+  thème 011175 (2) : Société de Tir D'Aubigne-Racan / Esprit Trap
+  thème 019005 (2) : 'Familles Rurales' - Association D'Aubigne Racan / Bibliothèque Meli-Lemo
+  thème 011145 (2) : Jeunesse Sportive D'Aubigne Racan ( J.s.a.r.). / Karate Club Ludois
+  thème 038105 (2) : UNC- 72- Aubigne Racan / Unc-Afn-Soldat de France de Vaas
+  thème 017055 (2) : Operation Dino / Ô Sein de L'Espoir 3n
+  thème 017135 (2) : La Bulle Yoga / Apaixantedécouverte
+  thème 019040 (2) : Du Coeur a L'Espoir / Comité D'Initiative Ludois
+  thème 006010 (2) : Bibliothèque la Bruèroise / Les Amis de Paul Colin
+  thème 040000 (2) : Association des Amis de L' Abbaye de Château L'Hermitage / Les Flambeaux de la Foi - International
+  thème 021000 (2) : Mam les P'Tites Lumières / 12 Mains au Togo
+  thème 006005 (2) : Association pour la Gestion de la Bibliothèque Municipale de Luche Pringe ( Agbmlp) / L' Union
+  thème 022000 (2) : Assolus / Lions Club du Val de Loir
+  thème 011095 (2) : Sports Nautiques Ludois / La Retraite Sportive Aulne et Loir ( Rsal)
+  thème 023025 (2) : Salon de L'Artisanat et du Terroir Ludois / Association du Comice Agricole Artisanal et Commercial D'Yvré-Le-Pôlin
+  thème 011070 (2) : Handball Club Ludois ( H.C le Lude) / Pontvallain Handball
+  thème 011020 (2) : Couriraulude / L'Herculeenne
+  thème 011010 (2) : Association Sportive du College des Quatre Vents / Association Sportive U.s.e.p. des Écoles Primaires D'Yvre le Polin
+  thème 006090 (2) : Plaisirs a Lud'Age / Aiguilles et Crochets Solidaires
+  thème 011170 (2) : Club Pongiste Ludois / Pontvallain TT
+  thème 014050 (2) : Les Ailes du Soleil - Association / Association les Espaces D'Elles
+  thème 021020 (2) : Association Loisirs, Animations des Glycines ( A-Lag) / Association Bien Vivre a Requeil Château
+  thème 007010 (2) : Cbse - Championnat de Billard Sarthois en Équipes / Billard Club de Requeil
+  thème 030012 (2) : Groupement D'Entraide des Agents de la Commune / Collectif Citoyen Védaquais (C.C.V)
+  thème 017000 (2) : Association Santé au Pays de Pontvallain / Mieux Vivre
+  thème 010000 (2) : Le Domaine du Bourg / Association pour la Protection du Patrimoine Cultuel de la Vallée du Loir (PPCVL)
+  thème 011045 (2) : Twirling Club Pontvallain / Zumba Fitness de Requeil
+  thème 009000 (2) : Re-Actions21 Ag3p / Jeunes Agisudsarthe
+  thème 007025 (1) : Vehicules D'Epoque Aune et Loir
+  thème 018025 (1) : Abord'Age - Sud Sarthe
+  thème 010020 (1) : Le Refuge du Plessis
+  thème 023007 (1) : La Brueria 1156
+  thème 030000 (1) : Comité des Fêtes
+  thème 014080 (1) : Club des Aînés Ruraux de Coulonge
+  thème 009025 (1) : Mix / Âge
+  thème 011400 (1) : Association Loisirs, Culture et Sports de Luche-Pringe
+  thème 013000 (1) : Amicale des Chasseurs de Mortiers
+  thème 009045 (1) : Twirling Club Ludois
+  thème 003045 (1) : Union Nationale des Combattants 72 Section le Lude
+  thème 014030 (1) : Amicale des Employes Communaux Actifs et Retraités de la Ville du Lude.
+  thème 015010 (1) : Foyer Socio Educatif du College les Quatre Vents
+  thème 015070 (1) : Amicale des Écoles Laiques du Lude
+  thème 005020 (1) : Cador Baron Rivallant Esport
+  thème 001010 (1) : Association de Financement Électoral : Béatrice Latouche, Candidate à la Députation 2022 de la 3ème Circonscription de la Sarthe
+  thème 011190 (1) : MXGP des Chataigniers
+  thème 007060 (1) : Glou Glou Art
+  thème 023040 (1) : Association Gestion de la Bibliothèque Municipale de Mansigne
+  thème 005015 (1) : Photo Video Club Georges-Melies
+  thème 009050 (1) : Comité de Jumelage Lichtenau ( Wesphalie ) - Mayet ( F.).
+  thème 019000 (1) : Association Locale D'Aide a Domicile en Milieu Rural de Mayet.
+  thème 023000 (1) : Amicale des Hospitaliers de la Maison de Retraite de Mayet.
+  thème 011030 (1) : Vigilante Omnisports de Mayet Section Badminton
+  thème 009005 (1) : Maison des Jeunes et de la Culture de Mayet.
+  thème 015035 (1) : OGEC Notre Dame de Bonneval a Mayet
+  thème 024020 (1) : Amicale la Paquerie et Hameaux Alentour de Tireboeuf
+  thème 0 (1) : Musique Municipale de Mayet
+  thème 005030 (1) : Dahlias Esport
+  thème 011140 (1) : Judo Club de Pontvallain
+  thème 015065 (1) : La Maison des Collegiens
+  thème 019047 (1) : Foyer Foyer Socio-Educatif du College Jacques Prevert a Pontvallain.
+  thème 024045 (1) : Mes Mots 72
+  thème 014040 (1) : Association Française des Amis de la Congregation des Bienheureux Martyrs de Coree
+  thème 024015 (1) : Association pour la Défense de l Environnement et de la Santé des Mottais (Adesm)
+  thème 024025 (1) : Groupement D'Interet Cynegetique Lievre du Ludois
+  thème 010015 (1) : Association Vedacensis
+  thème 023045 (1) : Les Projets Intercommunaux
+  thème 006105 (1) : Planetes 3024 la Gazette des Decouvertes et Cultures Galactique
+  thème 015045 (1) : Maison Familiale Rurale D'Education et D'Orientation de Verneil le Chetif.
+  thème 007003 (1) : Amyp 72 - Association de Maquettes Yvré le Pôlin
+  thème 011192 (1) : JH Racing Team
+Aubigné-Racan : 37 associations
+La Bruère-sur-Loir : 5 associations
+La Chapelle-aux-Choux : 6 associations
+Château-l'Hermitage : 6 associations
+Chenu : 11 associations
+Coulongé : 15 associations
+Luché-Pringé : 30 associations
+Le Lude : 89 associations
+Mansigné : 29 associations
+Mayet : 52 associations
+Pontvallain : 30 associations
+Requeil : 15 associations
+Saint-Germain-d'Arcé : 11 associations
+Saint-Jean-de-la-Motte : 14 associations
+Sarcé : 9 associations
+Savigné-sous-le-Lude : 8 associations
+Vaas : 32 associations
+Verneil-le-Chétif : 8 associations
+Yvré-le-Pôlin : 30 associations
+437 associations écrites dans /home/runner/work/cl4ire.github.io/cl4ire.github.io/territoires/geosudsarthe/couches/associations/associations.geojson
+### fichiers (geosudsarthe)
+geosudsarthe : 34 fichiers disponibles
+### osm (geobelinois)
+Overpass : points d'intérêt
+  overpass-api.de : 947 éléments
+Overpass : cours d'eau et itinéraires
+  overpass-api.de essai 1 : HTTP Error 502: Bad Gateway
+  overpass-api.de : 246 éléments
+  commerces : 119
+  banques : 7
+  education : 21
+  parkings : 92
+  toilettes : 11
+  fontaines : 3
+  bibliotheques : 5
+  marches : aucun résultat (fichier non écrit)
+  airesJeu : 9
+  equipementSportif : 76
+  antennes : 16
+  lockers_osm : 6
+  dechets : 6
+  pompiers : 2
+  gendarmerie : 2
+  ehpad : 2
+  officesTourisme : 2
+  campingcar : 1
+  patrimoineRural : 16
+  cours_eau : 78
+  velo : aucun résultat (fichier non écrit)
+  randonnees_osm : aucun résultat (fichier non écrit)
+474 objets écrits pour geobelinois
+### sources (geobelinois)
+== mairies
+  mairies : 7 -> services/mairies.geojson
+== bal
+  bal : 17 -> services/bal.geojson
+== irve
+  irve : 12 -> services/irve.geojson
+== covoiturage
+  airecovoiturage : 8 -> mobilite/airecovoiturage.geojson
+== franceServices
+  franceServices : 1 -> services/franceServices.geojson
+== monuments
+  immeublesProteges : 4 -> patrimoine/immeublesProteges.geojson
+== aleop
+  arretsALEOP : 53 -> mobilite/arretsALEOP.geojson
+  reseauALEOP : 3 -> mobilite/reseauALEOP.geojson
+== rga
+  rga : 26 -> urbanisme/rga_2025_loir_luce_berce.geojson
+== plui
+  zonage_plui : 325 -> urbanisme/zonage_plui_loir_luce_berce_filtre.geojson
+== dpe
+  dpe : 2123 -> urbanisme/dpe_loir_luce_berce.geojson
+### artisans (geobelinois)
+Écommoy : 48 artisans
+Laigné-Saint-Gervais : 17 artisans
+Marigné-Laillé : 24 artisans
+Moncé-en-Belin : 33 artisans
+Saint-Biez-en-Belin : 3 artisans
+Saint-Ouen-en-Belin : 13 artisans
+Teloché : 37 artisans
+174 artisans écrits dans /home/runner/work/cl4ire.github.io/cl4ire.github.io/territoires/geobelinois/couches/commerces/artisans.geojson
+### associations (geobelinois)
+Téléchargement de https://media.interieur.gouv.fr/rna/rna_waldec_20261001.zip
+38630 lignes lues dans le RNA
+  thème 011160 (25) : 'Une Journee Un Circuit' / Les Mans'Zelles du Désert / Balades Sarthoises / Glinche Racing
+  thème 006030 (13) : Chant'Ecomm / After Not' / Association.covermind72 / Orchestre D'Harmonie du Belinois (O.h.b)
+  thème 011180 (10) : Amicale des Cyclos-Sportifs de la Sarthe 'Le Pedalier' / Etoile Cycliste Belinoise / Cap Forme 72 / Les Elles du BMX
+  thème 007000 (7) : Moto Club des Gluttes / La Carambole Ecommeenne / Shadow Sarthe Paintball / Les Amis du Rallye Parence
+  thème 015005 (7) : Amicale des Écoles Publiques D'Ecommoy / Association de Parents D'Eleves de L'Enseignement Libre de L' École Saint-Martin / Amicale du Groupe Scolaire Jean-Baptiste Galan / Diapason, Association de Parents D'Élèves, Élèves et Amis de L'École de Musique de L'Orée de Bercé Bélinois
+  thème 013005 (7) : Association de Chasse des Guerinieres D'Ecommoy / Association 'Chasse Amicale du Plessis a Saint-Gervais en Belin' / Association des Chasseurs de la Croix Manceau a Marigne Laille / Association de Chasse de M. Martineau Jean-Pierre
+  thème 006000 (7) : Compagnie du Dernier Rang / Tisseurs de Liens / Lumieres! / Urban Culture 72
+  thème 014000 (6) : Association du Personnel Communal D'Ecommoy / Mille et Une Fripes / MC Twin / Association les Socio-Coiffeuses Medico-Sociales
+  thème 009040 (6) : Club du Temps de Vivre D'Ecommoy / Générations Mouvement - Association des Séniors de Bercé Belinois / Générations Mouvement - Aînés Ruraux Club de Saint-Gervais en Belin / Générations Mouvement - Club de Marigne Laille
+  thème 050000 (6) : Association Sportive du Collège Alfred de Musset D'Ecommoy / Anim'À Coeur / Les Caves Sainte Anne / Association de Soutien et D'Accompagnement à la Parentalité - Asap72
+  thème 006100 (6) : Korbak Asso / Galaxian Compagnie / Touche de Rage / Asso Karma
+  thème 011075 (5) : Association 'Ecommoy Football-Club' / Entente Sportive Monceenne / FC 10 (Footgolf 72) / Teloche Football Club
+  thème 011000 (5) : Judo Club Belinois / Joueurs de L'Entente Sportive Moncéenne / Elanza / Ynes (Yoga et Nature pour L'Equilibre et la Sante)
+  thème 015000 (4) : Foyer Socio-Educatif du College Alfred de Musset a Ecommoy / Section de Gymnastique Volontaire de Laigne - Saint Gervais / Barba Jovis / Organisme de Gestion de L'Ecole Catholique Ste Therese-St Joseph (OGEC)
+  thème 011400 (4) : Club de Tir Sportif du Maine / Sports-Loisirs-Detente (S.L.D.) / Bercé sur Deux Roues / Lullaby Skate
+  thème 011105 (4) : Elan Gymnique Ecommeen / Cercle Olympique du Laigné-St Gervais (Colsg) / Union Sportive de Saint Ouen - Saint Biez / Fitness Center
+  thème 011190 (4) : Support'R Club D'Ecommoy FC / Les Pink Power / Club des Supporters de Football de Monce en Belin / Les Bidouilleurs
+  thème 021005 (4) : Mam les Petits Gervais / Mam le Royaume des Mignons / Mam la Petite Maison des Joyeux Lutins / Mam les Coccinelles du Belinois
+  thème 009030 (4) : Comité des Fêtes Laigne/saint Gervais / Comité des Fêtes de Marigne Laille / Comité D'Animations et de Loisirs de Saint Biez en Belin / Tel O Fête
+  thème 006040 (4) : Kizomans / 'Count-Folk-Danse' / Country Cheyenne 72 / The Hot Boots
+  thème 007040 (4) : Défenses et Maintiens des Fêtes Foraines du Mans / Moncé'Anim / Teloche Animation / Le PRÉ en Fête Teloché
+  thème 009050 (3) : Jumelage Sportif Franco-Allemand D'Ecommoy / Comité D'Échanges Européens du Pays D'Ecommoy / Comité de Jumelage Monce-Welton
+  thème 023020 (3) : Association Percheronne la Belinoise ( A.p.b.) / Comité Agricole Cantonal D'Echanges Techniques Internationaux / Comice LSG 2025
+  thème 011065 (3) : Kangourou Basket Club (K.B.C.) / Union Sportive D'Ecommoy Handball / Loisirs Basket Teloche
+  thème 019005 (3) : Familles Rurales - Association D'Ecommoy / Association Familles Rurales Laigne Saint Gervais / Familles Rurales - Association de Teloche
+  thème 007075 (3) : Liberty Mob / Association G'Garage / Association Télochéenne Loisirs, Découvertes, Terroir
+  thème 007080 (3) : Association pour le Développement des Loisirs / Club des Loisirs de Laigne-Saint Gervais en Belin / Teloch'Evenements
+  thème 021020 (3) : Générations Mouvement - Club de Laigne en Belin / Association Culture et Loisirs des Foyers de la Fuie / Association Mam les Petites Quenottes
+  thème 011010 (3) : Les Amis de L'Ecole Publique de Marigne Laille / Association Sportive U.s.e.p. de L'Ecole de Monce en Belin / École Maternelle Croque Lune
+  thème 036510 (2) : Amicale des Sapeurs-Pompiers D'Ecommoy / Amicale des Sapeurs Pompiers de Teloche
+  thème 018010 (2) : AEP Mille Clubs et Loisirs D'Ecommoy / We Dance
+  thème 011145 (2) : Judo Club Oree de Bercé / Qi Gong Teloche
+  thème 038105 (2) : Union Nationale des Combattants D'Ecommoy / Union Nationale des Combattants D'Afrique du Nord et D'Indochine - Section de Laigne en Belin
+  thème 011175 (2) : Les Archers D'Ecommoy / Les Amateurs d Équipements Pimpés
+  thème 011165 (2) : Tennis Club D'Ecommoy / Association 'Tennis de Table de Teloche - les 3t.'
+  thème 014035 (2) : Le Cabas Ecomméen / A Portee de Bonheur
+  thème 007070 (2) : Les Amis des Parcs et Jardins D'Ecommoy / Jardin Associatif Solid'Air des Figuiers
+  thème 014030 (2) : Amicale de la Futaie / Association du Personnel Communal de Monce en Belin
+  thème 011115 (2) : Courir à Ecommoy / Les Bipedes Gaudinois
+  thème 011035 (2) : Club Pétanque de Marigné-Laillé / Boules Monceenne
+  thème 024045 (2) : Orée de Bercé Bélinois Environnements / Association pour la Préservation et la Valorisation du Patrimoine de Téloché
+  thème 019010 (2) : La Ruche, Centre Social / Association D'Animation et de Gestion du Centre Socio-Culturel 'Le Val'Rhonne' de Monce en Belin
+  thème 007025 (2) : Modelisme Agricole en Belinois / Les Chevrons du Loir
+  thème 024025 (2) : Société de Chasse de Laille / Bercé, Naturellement
+  thème 022542 (2) : Be Happy Coaching / Association 'Chaine des Carrossiers'
+  thème 024000 (2) : Grain de Sable et Pomme de Pin / Espossibilis
+  thème 015075 (2) : Amicale des Écoles de Monce en Belin / Amicale de L'Ecole Publique de Saint-Biez en Belin
+  thème 011005 (2) : Association Sportive, Culturelle et de Loisirs / Sport Santé Sud-Sarthe
+  thème 006070 (2) : Compagnie Clair de Songes / Lez'Arts
+  thème 019000 (2) : Gaspi'Eat / Association Locale D'Aide a Domicile en Milieu Rural de L'Oree de Bercé
+  thème 013010 (1) : Association 'La Truite de L'Aune D'Ecommoy' pour la Pêche et la Protection du Milieu Aquatique - A.p.p.m.a.
+  thème 034240 (1) : Anim'Ecommoy
+  thème 036000 (1) : Association des Secouristes Francais Croix Blanche D'Ecommoy
+  thème 019020 (1) : Association Partage - Solidarité Par le Travail D'Ecommoy
+  thème 009025 (1) : Organisme de Gestion de L'Enseignement Catholique Saint-Martin D'Ecommoy
+  thème 011020 (1) : Club de Natation Bercé Belinois (C.N.B.B )
+  thème 011050 (1) : Société des Courses Hippiques D'Ecommoy
+  thème 024035 (1) : Association de Protection de L'Environnement et du Patrimoine du Sud D'Ecommoy - Apepse
+  thème 005025 (1) : Plac'Ecommoy
+  thème 007005 (1) : La Guilde du Roussard, Jeux de L'Imaginaire
+  thème 002020 (1) : Cercle Eugène Caillaux
+  thème 024020 (1) : Association de Bercey-Grammont
+  thème 030012 (1) : Renouveau pour Écommoy
+  thème 011030 (1) : Badminton Club Écommoy
+  thème 014050 (1) : Association Solidaire Aden
+  thème 017000 (1) : Institut National de Pédagogie en Addictologie
+  thème 009000 (1) : Rokastabi
+  thème 014025 (1) : Association des Producteurs de Chanvre de la Sarthe et des Departements Limitrophes
+  thème 017135 (1) : Bien-Être en Belinois
+  thème 017300 (1) : Association pour la Promotion de la Sterilisation des Animaux de Compagnie 72
+  thème 006020 (1) : Association L'Amie des Jeanne
+  thème 020005 (1) : Azidisa
+  thème 006110 (1) : Norine et Augustin, "caôsaient Sarthois, Dis-Tu ?"
+  thème 038000 (1) : Association pour L'Érection du Monument
+  thème 020000 (1) : Générations Mouvement- Club de Monce en Belin
+  thème 011170 (1) : Club Monce Tennis de Table - CMTT
+  thème 011150 (1) : Karate Monce en Belin
+  thème 007010 (1) : Moncé Billard Club
+  thème 020015 (1) : FBL Raid
+  thème 011100 (1) : Association Golf Moncéen
+  thème 003000 (1) : Ask Consent
+  thème 009035 (1) : Familles Rurales - Association de ST Ouen - ST Biez en Belin
+  thème 010020 (1) : Les Amis du Manoir de la Poissonniere en Belinois
+  thème 007050 (1) : Association Amateur Ornithologie Protection 72
+  thème 036520 (1) : Centre Francais de Secourisme de la Sarthe (CFS 72)
+  thème 022515 (1) : Organisme de Gestion de L'Etablissement Catholique D'Enseignement (O.G.E.C.) College Saint Jean Baptiste de la Salle
+  thème 006090 (1) : Artisanat Detente
+  thème 007085 (1) : Arcturia
+  thème 006105 (1) : L'Ordre du Pixel
+  thème 007060 (1) : La Petite Auberge des Mondes
+  thème 030000 (1) : Association Génération Lowcal
+Écommoy : 70 associations
+Laigné-Saint-Gervais : 34 associations
+Marigné-Laillé : 24 associations
+Moncé-en-Belin : 46 associations
+Saint-Biez-en-Belin : 11 associations
+Saint-Ouen-en-Belin : 14 associations
+Teloché : 50 associations
+249 associations écrites dans /home/runner/work/cl4ire.github.io/cl4ire.github.io/territoires/geobelinois/couches/associations/associations.geojson
+### fichiers (geobelinois)
+geobelinois : 34 fichiers disponibles
