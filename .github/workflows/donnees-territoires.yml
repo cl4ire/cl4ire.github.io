@@ -4,7 +4,8 @@ name: Données des territoires (OpenStreetMap, SIRENE, RNA)
 # de territoires/) depuis les sources publiques :
 # - OpenStreetMap via Overpass (outils/build_osm.py) : commerces, services, santé, sports, nature...
 # - autres sources ouvertes (outils/build_sources.py) : mairies, boîtes aux lettres, bornes de recharge, covoiturage,
-#   France services, monuments historiques, bus Aléop, argiles, zonage d'urbanisme, DPE
+#   France services, monuments historiques, bus Aléop, argiles, zonage d'urbanisme, DPE, défibrillateurs, élus
+# - prix de l'immobilier et parcelles vendues (outils/build_dvf.py, DVF + cadastre)
 # - registre SIRENE (outils/build_artisans.py) : artisans
 # - répertoire des associations RNA (outils/build_associations.py)
 # puis met à jour `fichiersDisponibles` de chaque territoire (outils/maj_fichiers_disponibles.py)
@@ -52,6 +53,7 @@ jobs:
             echo "::group::$id"
             etape osm python3 outils/build_osm.py --territoire "$id"
             etape sources python3 outils/build_sources.py --territoire "$id"
+            etape dvf python3 outils/build_dvf.py --territoire "$id"
             etape artisans python3 outils/build_artisans.py --territoire "$id"
             etape associations python3 outils/build_associations.py --territoire "$id"
             etape fichiers python3 outils/maj_fichiers_disponibles.py --territoire "$id"
