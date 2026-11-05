@@ -21,17 +21,18 @@
     /* Tons de la charte pour les données de la carte */
     --green: #5E8C61;
     --water: #2F6F8F;
-    --brique: #B5677A;
+    --brique: #C2677F;
 
     /* Anciens noms, conservés pour ne pas réécrire tout le CSS :
-       le « chrome » de l'interface (boutons, liens, titres) est marine. */
-    --foret: var(--marine);
+       le « chrome » de l'interface (boutons, liens, titres) est l'encre prune de swallow·AGE.
+       Le marine de l'icône ne sert plus qu'au logo. */
+    --foret: var(--ink);
     --feuille: var(--green);
     --terracotta: var(--brique);
     --riviere: var(--water);
     --ardoise: var(--soft);
-    --primaire: var(--marine);
-    --brume: var(--raised);
+    --primaire: var(--ink);
+    --brume: #F1ECEF;
     --fond: var(--paper);
     --bordure: var(--rule);
     --font-titre: 'Jost', sans-serif;
@@ -105,7 +106,7 @@ button { font-family: inherit; cursor: pointer; }
 .topbtn[hidden] { display: none !important; }
 .topbtn-plein { background: var(--primaire); border-color: var(--primaire); color: #fff; }
 .topbtn-plein i { color: #fff; }
-.topbtn-plein:hover { background: #0E2133; }
+.topbtn-plein:hover { background: #46384F; }
 .topbtn-actu { background: #4F7A52; border-color: #4F7A52; color: #fff; }
 .topbtn-actu i { color: #fff; }
 .topbtn-actu:hover { background: #416644; }
