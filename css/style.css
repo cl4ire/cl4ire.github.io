@@ -932,3 +932,11 @@ a.commune-badge-vigieau:hover { text-decoration: underline; }
     #plus-sheet button[hidden] { display: none; }
     #plus-sheet i { width: 18px; text-align: center; color: var(--primaire); }
 }
+
+/* Actualités sans flux intégrable (Intramuros) : liste des communes dans le menu, lien dans la fiche. */
+.actu-liste { list-style: none; margin: 0; padding: 0 14px 14px; display: flex; flex-direction: column; gap: 6px; }
+.actu-liste a { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--bordure); border-radius: 12px; background: #fff; color: var(--ink); font-weight: 600; font-size: 13.5px; text-decoration: none; }
+.leaflet-container .actu-liste a { color: var(--ink); }
+.actu-liste a:hover { background: var(--brume); }
+.actu-liste i { color: var(--primaire); font-size: 11px; }
+.commune-lien-actu { display: inline-block; margin-top: 10px; text-decoration: none; text-align: center; }

@@ -41,6 +41,10 @@ const TERRITOIRE = {
          { type: "lien", libelle: "Intramuros", url: "https://..." }
              le bouton ouvre ce lien dans un nouvel onglet (pour un service qui ne
              s'intègre pas dans la page, comme Intramuros) ;
+         { type: "intramuros", communes: { "72124": "https://www.intramuros.org/...", ... } }
+             une page Intramuros par commune (le service ne s'intègre pas dans la
+             page) : le bouton ouvre un menu des communes, chacune renvoyant vers sa
+             page dans un nouvel onglet, et la fiche de chaque commune a son lien ;
          null
              pas de bouton « Actualités ». */
     actualites: { type: "illiwap", id: "cc-loir-luce-berce", communes: true },

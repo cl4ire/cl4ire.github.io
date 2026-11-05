@@ -15,7 +15,18 @@ const TERRITOIRE = {
 
     /* À renseigner : actualités (voir js/territoire.js : Illiwap, lien ou null)
        et sous-domaine GoatCounter. null = pas de bouton / pas de suivi. */
-    actualites: null,
+    actualites: {
+        type: "intramuros",
+        communes: {
+            "72124": "https://www.intramuros.org/ecommoy",
+            "72155": "https://www.intramuros.org/laigne-saint-gervais",
+            "72187": "https://www.intramuros.org/marigne-laille",
+            "72200": "https://www.intramuros.org/monce-en-belin",
+            "72268": "https://www.intramuros.org/saint-biez-en-belin",
+            "72306": "https://www.intramuros.org/saint-ouen-en-belin",
+            "72350": "https://www.intramuros.org/teloche"
+        }
+    },
     goatcounter: null,
 
     couchesExclues: [],
