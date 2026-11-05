@@ -46,6 +46,7 @@ const TERRITOIRE = {
         "couches/mobilite/reseauALEOP.geojson",
         "couches/patrimoine/immeublesProteges.geojson",
         "couches/patrimoine/patrimoineRural.geojson",
+        "couches/securite/dae.geojson",
         "couches/securite/ehpad.geojson",
         "couches/securite/gendarmerie.geojson",
         "couches/securite/pompiers.geojson",

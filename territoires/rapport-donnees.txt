@@ -1,25 +1,22 @@
-Données des territoires, 2026-11-05T16:32Z
+Données des territoires, 2026-11-05T16:49Z
 ### osm (geosudsarthe)
 Overpass : points d'intérêt
-  overpass-api.de essai 1 : HTTP Error 502: Bad Gateway
-  overpass-api.de essai 2 : HTTP Error 502: Bad Gateway
-  overpass-api.de essai 3 : HTTP Error 502: Bad Gateway
-  overpass.kumi.systems : 1486 éléments
+  overpass-api.de : 1503 éléments
 Overpass : cours d'eau et itinéraires
   overpass-api.de : 1009 éléments
-  commerces : 141
+  commerces : 143
   banques : 16
   education : 33
-  parkings : 155
+  parkings : 157
   toilettes : 32
   fontaines : 5
   bibliotheques : 10
   marches : 1
-  airesJeu : 21
-  equipementSportif : 121
+  airesJeu : 22
+  equipementSportif : 124
   antennes : 22
   lockers_osm : aucun résultat (fichier non écrit)
-  dechets : 6
+  dechets : 7
   pompiers : 7
   gendarmerie : 4
   ehpad : 3
@@ -29,7 +26,7 @@ Overpass : cours d'eau et itinéraires
   cours_eau : 583
   velo : aucun résultat (fichier non écrit)
   randonnees_osm : aucun résultat (fichier non écrit)
-1182 objets écrits pour geosudsarthe
+1191 objets écrits pour geosudsarthe
 ### sources (geosudsarthe)
 == mairies
   mairies : 19 -> services/mairies.geojson
@@ -52,6 +49,9 @@ Overpass : cours d'eau et itinéraires
   zonage_plui : 576 -> urbanisme/zonage_plui_loir_luce_berce_filtre.geojson
 == dpe
   dpe : 3326 -> urbanisme/dpe_loir_luce_berce.geojson
+== dae
+  écartés : 0 inactifs, 0 doublons
+  dae : 49 -> securite/dae.geojson
 ### artisans (geosudsarthe)
 Aubigné-Racan : 15 artisans
 La Bruère-sur-Loir : 2 artisans
@@ -214,12 +214,12 @@ Verneil-le-Chétif : 8 associations
 Yvré-le-Pôlin : 30 associations
 437 associations écrites dans /home/runner/work/cl4ire.github.io/cl4ire.github.io/territoires/geosudsarthe/couches/associations/associations.geojson
 ### fichiers (geosudsarthe)
-geosudsarthe : 34 fichiers disponibles
+geosudsarthe : 35 fichiers disponibles
 ### osm (geobelinois)
 Overpass : points d'intérêt
+  overpass-api.de essai 1 : HTTP Error 502: Bad Gateway
   overpass-api.de : 947 éléments
 Overpass : cours d'eau et itinéraires
-  overpass-api.de essai 1 : HTTP Error 502: Bad Gateway
   overpass-api.de : 246 éléments
   commerces : 119
   banques : 7
@@ -266,6 +266,9 @@ Overpass : cours d'eau et itinéraires
   zonage_plui : 325 -> urbanisme/zonage_plui_loir_luce_berce_filtre.geojson
 == dpe
   dpe : 2123 -> urbanisme/dpe_loir_luce_berce.geojson
+== dae
+  écartés : 0 inactifs, 0 doublons
+  dae : 42 -> securite/dae.geojson
 ### artisans (geobelinois)
 Écommoy : 48 artisans
 Laigné-Saint-Gervais : 17 artisans
@@ -378,4 +381,4 @@ Saint-Ouen-en-Belin : 14 associations
 Teloché : 50 associations
 249 associations écrites dans /home/runner/work/cl4ire.github.io/cl4ire.github.io/territoires/geobelinois/couches/associations/associations.geojson
 ### fichiers (geobelinois)
-geobelinois : 34 fichiers disponibles
+geobelinois : 35 fichiers disponibles
