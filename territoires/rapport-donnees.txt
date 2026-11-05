@@ -1,7 +1,6 @@
-Données des territoires, 2026-11-05T19:50Z
+Données des territoires, 2026-11-05T22:27Z
 ### osm (geosudsarthe)
 Overpass : points d'intérêt
-  overpass-api.de essai 1 : HTTP Error 502: Bad Gateway
   overpass-api.de : 1503 éléments
 Overpass : cours d'eau et itinéraires
   overpass-api.de : 1009 éléments
@@ -212,6 +211,10 @@ Overpass : cours d'eau et itinéraires
     cadastre 72385 : 66787 parcelles cumulées
   8442 parcelles dessinées ; 84 sans géométrie cadastrale (fusion de communes ou parcelle disparue)
   mutations : 8442 -> urbanisme/parcelles_dvf_2021_2025_loir_luce_berce.geojson
+### demographie (geosudsarthe)
+  comparateur : 114 valeurs pour 19 commune(s) sur 19
+  âges : 19 commune(s) sur 19
+  demographie : 19 commune(s) -> urbanisme/demographie_communes.geojson
 ### petiteenfance (geosudsarthe)
   aubigne-racan.csv : 7 placés
   chenu.csv : 1 placés
@@ -392,10 +395,9 @@ Verneil-le-Chétif : 8 associations
 Yvré-le-Pôlin : 30 associations
 437 associations écrites dans /home/runner/work/cl4ire.github.io/cl4ire.github.io/territoires/geosudsarthe/couches/associations/associations.geojson
 ### fichiers (geosudsarthe)
-geosudsarthe : 38 fichiers disponibles
+geosudsarthe : 39 fichiers disponibles
 ### osm (geobelinois)
 Overpass : points d'intérêt
-  overpass-api.de essai 1 : HTTP Error 502: Bad Gateway
   overpass-api.de : 947 éléments
 Overpass : cours d'eau et itinéraires
   overpass-api.de : 246 éléments
@@ -510,6 +512,10 @@ Overpass : cours d'eau et itinéraires
     cadastre 72350 : 26880 parcelles cumulées
   3303 parcelles dessinées ; 66 sans géométrie cadastrale (fusion de communes ou parcelle disparue)
   mutations : 3303 -> urbanisme/parcelles_dvf_2021_2025_loir_luce_berce.geojson
+### demographie (geobelinois)
+  comparateur : 42 valeurs pour 7 commune(s) sur 7
+  âges : 7 commune(s) sur 7
+  demographie : 7 commune(s) -> urbanisme/demographie_communes.geojson
 ### petiteenfance (geobelinois)
   ecommoy.csv : 14 placés
   laigne-saint-gervais.csv : 13 placés
@@ -632,4 +638,4 @@ Saint-Ouen-en-Belin : 14 associations
 Teloché : 50 associations
 249 associations écrites dans /home/runner/work/cl4ire.github.io/cl4ire.github.io/territoires/geobelinois/couches/associations/associations.geojson
 ### fichiers (geobelinois)
-geobelinois : 38 fichiers disponibles
+geobelinois : 39 fichiers disponibles
