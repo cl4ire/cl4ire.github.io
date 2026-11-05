@@ -3680,3 +3680,25 @@ courant, ajouter une ligne à la table `ALIAS` de `js/url.js`.
   `triInitial: "prix"` ouvre la liste des stations déjà triée par prix.
 - Clic sur une commune : petite popup (nom, habitants) avec un bouton vers la
   fiche plein écran. Un clic sur une zone vide de la carte referme la popup.
+
+## Plusieurs territoires (GéoBercé, GéoSudSarthe, GéoBelinois)
+
+Le code (`js/*.js`) est le même pour tous les territoires. Ce qui change est
+dans **`js/territoire.js`** : nom, communes (code INSEE → nom), centre et zoom
+de la carte, SIREN de la communauté de communes, identifiant Illiwap,
+sous-domaine GoatCounter, couches à exclure.
+
+- Les clés de stockage du navigateur sont préfixées par `TERRITOIRE.id`
+  (`geoberce_…` pour GéoBercé : inchangé, les réglages des visiteurs sont gardés).
+- Une couche propre à un territoire déclare `territoires: ["geoberce"]` dans
+  `js/config.js` (c'est le cas des lots de chasse et des points remarquables de
+  Bercé) ; `couchesExclues` retire d'autres couches pour un territoire donné
+  (par exemple celles dont les fichiers de données n'existent pas encore).
+- Les textes visibles (titre de la page, nom dans la barre du haut et dans
+  « À propos », texte d'alerte du formulaire) viennent de `TERRITOIRE`. Les balises
+  statiques de `index.html` (aperçu de partage, données structurées) et
+  `manifest.json` restent à générer par territoire (étape suivante).
+
+Étapes suivantes : fichiers de territoire de GéoSudSarthe et GéoBelinois, scripts
+qui génèrent leurs données (communes, OpenStreetMap, SIRENE, associations...),
+publication de chacun dans son dossier de swallowage.
