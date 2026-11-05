@@ -634,19 +634,11 @@ function iconeDechet(feature) {
    une future "fiche parcelle" (croisement avec les mutations DVF, le
    DPE, le PLUi...).
    ========================================================= */
-const COMMUNES_TERRITOIRE = {
-    "72027": "Beaumont-sur-Dême", "72028": "Beaumont-Pied-de-Bœuf", "72052": "Chahaignes",
-    "72068": "La Chartre-sur-le-Loir", "72071": "Montval-sur-Loir", "72103": "Courdemanche",
-    "72115": "Dissay-sous-Courcillon", "72134": "Flée", "72143": "Le Grand-Lucé",
-    "72153": "Jupilles", "72160": "Lavernat", "72161": "Lhomme", "72173": "Luceau",
-    "72183": "Marçon", "72210": "Montreuil-le-Henri", "72221": "Nogent-sur-Loir",
-    "72248": "Pruillé-l'Éguillé", "72262": "Loir en Vallée", "72279": "Saint-Georges-de-la-Couée",
-    "72311": "Saint-Pierre-de-Chevillé", "72314": "Saint-Pierre-du-Lorouër",
-    "72325": "Saint-Vincent-du-Lorouër", "72356": "Thoiré-sur-Dinan", "72376": "Villaines-sous-Lucé"
-};
+/* Défini dans js/territoire.js (propre à chaque territoire). */
+const COMMUNES_TERRITOIRE = TERRITOIRE.communes;
 
-/* SIREN de la comcom Loir-Lucé-Bercé (code_siren dans couches/communes.geojson). */
-const URL_CADASTRE_EPCI = "https://cadastre.data.gouv.fr/bundler/cadastre-etalab/epcis/200070373/geojson/parcelles";
+/* SIREN de la comcom (TERRITOIRE.siren, voir js/territoire.js). */
+const URL_CADASTRE_EPCI = `https://cadastre.data.gouv.fr/bundler/cadastre-etalab/epcis/${TERRITOIRE.siren}/geojson/parcelles`;
 
 /* =========================================================
    ILLIWAP — actualités/alertes des mairies et de la CC
@@ -658,7 +650,7 @@ const URL_CADASTRE_EPCI = "https://cadastre.data.gouv.fr/bundler/cadastre-etalab
    La CC elle-même a un identifiant à part (pas de code INSEE pour
    une intercommunalité), fourni par l'utilisatrice.
    ========================================================= */
-const ILLIWAP_TERRITOIRE = "cc-loir-luce-berce";
+const ILLIWAP_TERRITOIRE = TERRITOIRE.illiwap;
 
 function urlIllwapEmbed(identifiant) {
     return `https://station.illiwap.com/fr/public/${identifiant}/actu/embed`;
@@ -941,7 +933,7 @@ function iconePointRemarquableBerce(feature) {
    possible avec un simple fichier statique. Géométrie des communes reprise de
    couches/communes.geojson (déjà dans le dépôt) plutôt que demandée à
    Géorisques : seuls les événements viennent du flux distant. */
-const CACHE_CATNAT_CLE = "geoberce-cache-catnat";
+const CACHE_CATNAT_CLE = TERRITOIRE.id + "-cache-catnat";
 const CACHE_CATNAT_DUREE_MS = 24 * 60 * 60 * 1000; // historique d'arrêtés, change rarement : cache plus long que les flux Overpass
 
 function lireCacheCatnat() {
@@ -1035,7 +1027,7 @@ function styleCatnat(feature) {
    Cache localStorage 24h comme CATNAT : un contrôle sanitaire ne change
    pas d'un chargement de page à l'autre, inutile de refaire les 24
    appels à chaque fois. */
-const CACHE_QUALITE_EAU_CLE = "geoberce-cache-qualite-eau";
+const CACHE_QUALITE_EAU_CLE = TERRITOIRE.id + "-cache-qualite-eau";
 const CACHE_QUALITE_EAU_DUREE_MS = 24 * 60 * 60 * 1000;
 const URL_HUBEAU_EAU_POTABLE = "https://hubeau.eaufrance.fr/api/v1/qualite_eau_potable/resultats_dis";
 
@@ -1541,7 +1533,7 @@ const LAYERS = [
         subtitleFields: ["capacity", "fee"]
     },
     {
-        id: "pointsRemarquablesBerce", group: "tourisme", label: "Points remarquables (forêt de Bercé)",
+        id: "pointsRemarquablesBerce", group: "tourisme", territoires: ["geoberce"], label: "Points remarquables (forêt de Bercé)",
         /* Extrait statique d'OpenStreetMap (arbres nommés, sources,
            attractions), filtré sur le vrai polygone du territoire,
            complété par un fichier local pour les sites emblématiques
@@ -1567,7 +1559,7 @@ const LAYERS = [
         subtitleFields: []
     },
     {
-        id: "lotsChasse", group: "tourisme", label: "Lots de chasse 2026-2027 (forêt de Bercé)",
+        id: "lotsChasse", group: "tourisme", territoires: ["geoberce"], label: "Lots de chasse 2026-2027 (forêt de Bercé)",
         /* Les numéros de l'affiche sont des parcelles forestières ONF,
            pas des parcelles cadastrales : la couche cadastre ne
            convient donc pas. Les 5 contours sont les périmètres
@@ -1731,7 +1723,7 @@ const LAYERS = [
         id: "carburants", group: "mobilite", label: "Prix des carburants",
         /* Flux instantané officiel (mis à jour ~10 min), filtré sur un rayon
            de 25 km autour du territoire pour ne récupérer que les stations utiles. */
-        file: "https://data.economie.gouv.fr/api/records/1.0/search/?dataset=prix-des-carburants-en-france-flux-instantane-v2&geofilter.distance=47.791528,0.412223,25000&rows=300",
+        file: `https://data.economie.gouv.fr/api/records/1.0/search/?dataset=prix-des-carburants-en-france-flux-instantane-v2&geofilter.distance=${TERRITOIRE.centre[0]},${TERRITOIRE.centre[1]},${TERRITOIRE.rayonCarburantsM}&rows=300`,
         transform: geojsonDepuisFluxODS,
         type: "point",
         icon: "fa-solid fa-gas-pump", color: PALETTE.riviere,
@@ -1740,6 +1732,13 @@ const LAYERS = [
         subtitleFields: ["ville", "cp", "gazole_prix", "sp95_prix", "e10_prix"]
     }
 ];
+
+/* Retire les couches exclues pour ce territoire (TERRITOIRE.couchesExclues)
+   ou réservées à d'autres (`territoires: [...]` sur la couche). */
+for (let i = LAYERS.length - 1; i >= 0; i--) {
+    const l = LAYERS[i];
+    if ((TERRITOIRE.couchesExclues || []).includes(l.id) || (l.territoires && !l.territoires.includes(TERRITOIRE.id))) LAYERS.splice(i, 1);
+}
 
 /* =========================================================
    THÉMATIQUES DE LA PAGE D'ACCUEIL
