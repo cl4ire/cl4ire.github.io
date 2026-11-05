@@ -3627,6 +3627,15 @@ depuis l'onglet Actions) :
   `com_insee`, `com_nom` - il est toujours gardé. Les 7 artisans d'abord
   saisis dans `commerces.geojson` ont été déplacés ici (6 fusionnés avec
   leur fiche du registre, Rivière Mathias ajouté en `manuel`).
+
+  **Doublons (novembre 2026)** : la couche OSM s'appelle désormais
+  « Commerces & services » (les artisans sont ici). Menuiserie Delaroue,
+  resté dans `commerces.geojson`, a été déplacé ici (site web et horaires
+  recopiés dans sa fiche) ; Renolandes (SIRET en `...0071`, même adresse
+  que `...0015`) et le 2e établissement d'E Abrahamse TP (`...0030`, même
+  zone artisanale) sont en `masquer`. Les 3 « Relais Poste » de
+  `lockers_osm.geojson` sont retirés : ils sont déjà dans `commerces.geojson`
+  (catégorie La Poste), avec un 4e en plus.
 - **Associations** (`couches/associations/associations.geojson`, nouveau
   groupe Associations) : `outils/build_associations.py` lit l'export
   « waldec » du Répertoire national des associations (data.gouv.fr). On
