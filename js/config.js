@@ -1733,11 +1733,20 @@ const LAYERS = [
     }
 ];
 
-/* Retire les couches exclues pour ce territoire (TERRITOIRE.couchesExclues)
-   ou réservées à d'autres (`territoires: [...]` sur la couche). */
+/* Retire les couches exclues pour ce territoire (TERRITOIRE.couchesExclues),
+   réservées à d'autres (`territoires: [...]` sur la couche), ou dont un
+   fichier local (couches/...) n'existe pas encore : si le territoire
+   déclare `fichiersDisponibles`, une couche n'est gardée que si tous ses
+   fichiers locaux y figurent (les couches en flux, sans fichier local,
+   restent toujours). GéoBercé ne déclare pas cette liste : tout est gardé. */
+function fichiersLocauxDeLaCouche(conf) {
+    return [].concat(conf.file || []).filter(f => typeof f === "string" && f.startsWith("couches/"));
+}
 for (let i = LAYERS.length - 1; i >= 0; i--) {
     const l = LAYERS[i];
-    if ((TERRITOIRE.couchesExclues || []).includes(l.id) || (l.territoires && !l.territoires.includes(TERRITOIRE.id))) LAYERS.splice(i, 1);
+    const manqueUnFichier = Array.isArray(TERRITOIRE.fichiersDisponibles)
+        && fichiersLocauxDeLaCouche(l).some(f => !TERRITOIRE.fichiersDisponibles.includes(f));
+    if ((TERRITOIRE.couchesExclues || []).includes(l.id) || (l.territoires && !l.territoires.includes(TERRITOIRE.id)) || manqueUnFichier) LAYERS.splice(i, 1);
 }
 
 /* =========================================================
