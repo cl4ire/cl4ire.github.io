@@ -59,9 +59,11 @@ def ouvrir(url, essais=6, timeout=180, entetes=None):
             h.update(entetes or {})
             return urllib.request.urlopen(urllib.request.Request(url, headers=h), timeout=timeout)
         except urllib.error.HTTPError as e:
-            if e.code in (400, 401, 403, 404):
-                raise RuntimeError(f"HTTP {e.code} : {url[:120]} {e.read()[:200].decode('utf8', 'ignore')}")
-            derniere = e
+            corps = re.sub(r"\s+", " ", e.read()[:900].decode("utf8", "ignore"))
+            # Serveur surchargé (« pool error », délai dépassé) : on réessaie ; les autres 4xx sont de vraies erreurs.
+            if e.code in (401, 403, 404) or (e.code == 400 and not re.search(r"pool error|timeout|timed out", corps, re.I)):
+                raise RuntimeError(f"HTTP {e.code} : {url[:120]} {corps}")
+            derniere = f"HTTP {e.code} {corps[-160:]}"
         except Exception as e:  # noqa: BLE001 - réseau instable : on réessaie
             derniere = e
         time.sleep(3 + 4 * i)
@@ -400,12 +402,16 @@ def src_rga():
 
 
 def src_plui():
+    # Zones des documents d'urbanisme du territoire : le PLUi de la communauté de communes (partition DU_<SIREN>)
+    # et d'éventuels documents communaux (DU_<code INSEE>). Plus léger et plus précis qu'un filtre par rectangle.
+    partitions = ["DU_" + T.siren] + ["DU_" + c for c in CODES]
+    cql = "partition IN (" + ",".join("'%s'" % p for p in partitions) + ")"
     lot = wfs_geojson("https://data.geopf.fr/wfs/ows", {
         "SERVICE": "WFS", "VERSION": "2.0.0", "REQUEST": "GetFeature", "TYPENAMES": "wfs_du:zone_urba",
-        "OUTPUTFORMAT": "application/json", "SRSNAME": "EPSG:4326", "BBOX": bbox_wfs()}, 1000, cles=("STARTINDEX", "COUNT"))
+        "OUTPUTFORMAT": "application/json", "SRSNAME": "EPSG:4326", "CQL_FILTER": cql, "SORTBY": "gid"}, 500, cles=("STARTINDEX", "COUNT"))
     features = []
     for f in lot:
-        if not f.get("geometry") or not intersecte(f["geometry"]):
+        if not f.get("geometry"):
             continue
         props = {k: v for k, v in f["properties"].items() if k != "gid"}
         geom = f["geometry"]

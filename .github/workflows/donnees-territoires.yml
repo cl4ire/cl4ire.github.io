@@ -34,6 +34,8 @@ jobs:
         env:
           TERRITOIRES_ENTREE: ${{ github.event.inputs.territoires }}
         run: |
+          # Pas de « set -e » : GitHub lance bash avec -e, qu'on retire pour qu'une étape en échec n'arrête pas les autres.
+          set +e
           set -uo pipefail
           TERRITOIRES="${TERRITOIRES_ENTREE:-geosudsarthe geobelinois}"
           RAPPORT="territoires/rapport-donnees.txt"
