@@ -2081,7 +2081,7 @@ const CONSEILS_RGA = {
 };
 function construirePopupRga(props) {
     const label = (typeof LABELS_RGA !== "undefined" && LABELS_RGA[props.niveau]) || String(props.niveau);
-    const couleur = { 1: "#F2C94C", 2: "#F2994A", 3: "#D85A30" }[props.niveau] || "#D85A30";
+    const couleur = (TYPES_RGA.find(t => t.id === categorieRga({ properties: props })) || TYPES_RGA[0]).color;
     const conseil = CONSEILS_RGA[props.niveau];
 
     return `<div class="popup-fiche">
