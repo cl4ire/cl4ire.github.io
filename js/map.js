@@ -75,7 +75,24 @@ fetch("couches/communes.geojson")
                 const code = feature.properties && feature.properties.code_insee;
                 if (!code || !COMMUNES_TERRITOIRE[code]) return;
                 couchesCommunesParInsee[code] = layer;
-                layer.on("click", () => ouvrirDashboardCommune(map, code));
+                /* Un clic sur une commune ouvre une petite fiche (nom, habitants,
+                   bouton "Voir la fiche de la commune") comme n'importe quelle
+                   autre popup, plutôt que d'ouvrir directement la page plein
+                   écran : un clic dans une zone vide referme simplement la
+                   popup, et la page commune reste à un bouton. */
+                const p = feature.properties;
+                const habitants = p.population ? `${Number(p.population).toLocaleString("fr-FR")} habitants` : "";
+                layer.bindPopup(`<div class="popup-fiche">
+                    <div class="popup-fiche-entete">
+                        <div class="popup-fiche-icon" style="background:${PALETTE.foret}"><i class="fa-solid fa-city"></i></div>
+                        <div class="popup-fiche-titre-wrap">
+                            <div class="popup-fiche-tag" style="color:${PALETTE.foret}">Commune</div>
+                            <div class="popup-fiche-titre">${echapperHtml(p.nom_offici || COMMUNES_TERRITOIRE[code])}</div>
+                            ${habitants ? `<div class="popup-fiche-adresse">${habitants}</div>` : ""}
+                        </div>
+                    </div>
+                    <div class="popup-fiche-section"><button type="button" class="rf-bouton-principal commune-popup-bouton" data-insee="${code}">Voir la fiche de la commune</button></div>
+                </div>`, OPTIONS_POPUP);
                 layer.on("mouseover", () => layer.setStyle({ weight: 2 }));
                 layer.on("mouseout", () => layer.setStyle({ weight: 1 }));
             }
@@ -351,3 +368,16 @@ document.getElementById("recherche-button").addEventListener("click", () => {
     ouvrirRecherche(map);
 });
 document.getElementById("recherche-back").addEventListener("click", () => fermerRechercheFonciere(map));
+
+/* Bouton "Voir la fiche de la commune" des popups de commune : branché à
+   l'ouverture de la popup (le contenu est du HTML, pas des éléments
+   déjà attachés). */
+map.on("popupopen", event => {
+    const element = event.popup.getElement();
+    const bouton = element && element.querySelector(".commune-popup-bouton");
+    if (!bouton) return;
+    bouton.addEventListener("click", () => {
+        map.closePopup();
+        ouvrirDashboardCommune(map, bouton.dataset.insee);
+    });
+});

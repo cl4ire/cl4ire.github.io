@@ -186,45 +186,64 @@
     <div id="hero">
         <div id="hero-inner">
             <p id="hero-title">Que recherchez-vous ?</p>
-            <p id="hero-subtitle">Tapez dans la barre de recherche en haut, choisissez votre commune, un raccourci ou une recherche de parcelle ci-dessous</p>
+            <p id="hero-subtitle">Choisissez un raccourci, ou tapez votre recherche dans la barre en haut</p>
 
-            <div id="hero-communes">
-                <label for="hero-commune-select">Votre commune</label>
-                <select id="hero-commune-select">
-                    <option value="">Choisir une commune...</option>
-                    <!-- Options générées par communes.js -->
-                </select>
-            </div>
+            <div id="hero-raccourcis"><!-- Généré par proximite.js : les raccourcis marqués "accueil" dans config.js --></div>
 
-            <div id="hero-raccourcis-titre">Ou un raccourci près de chez vous</div>
-            <div id="hero-raccourcis"><!-- Généré par proximite.js, défilement horizontal --></div>
+            <button type="button" id="hero-explore" class="rf-bouton-principal">Voir la carte</button>
 
             <details id="hero-plus">
-                <summary>Voir plus de thématiques</summary>
-                <div id="hero-tiles"><!-- Généré par hero.js --></div>
-            </details>
+                <summary>Plus d'options</summary>
 
-            <div id="hero-parcelle">
-                <div id="hero-parcelle-titre"><i class="fa-solid fa-magnifying-glass-location"></i> Rechercher une parcelle</div>
-                <form id="hero-parcelle-form">
-                    <select id="hp-commune" aria-label="Commune">
-                        <option value="">Toutes les communes</option>
-                        <!-- Options générées par recherche.js -->
+                <div id="hero-communes">
+                    <label for="hero-commune-select">Fiche d'une commune</label>
+                    <select id="hero-commune-select">
+                        <option value="">Choisir une commune...</option>
+                        <!-- Options générées par communes.js -->
                     </select>
-                    <input type="number" id="hp-surface-min" min="0" placeholder="Surface min (m²)">
-                    <label class="hp-case"><input type="checkbox" id="hp-constructible">Constructible</label>
-                    <label class="hp-case"><input type="checkbox" id="hp-dpe-connu">DPE connu</label>
-                    <button type="submit" class="rf-bouton-principal">Rechercher</button>
-                </form>
-            </div>
+                </div>
 
-            <button type="button" id="hero-explore">Voir la carte complète</button>
+                <div class="hero-sous-titre">Autres raccourcis près de chez vous</div>
+                <div id="hero-raccourcis-plus"><!-- Généré par proximite.js : les autres raccourcis --></div>
+
+                <div class="hero-sous-titre">Par thématique</div>
+                <div id="hero-tiles"><!-- Généré par hero.js --></div>
+
+                <div id="hero-parcelle">
+                    <div id="hero-parcelle-titre"><i class="fa-solid fa-magnifying-glass-location"></i> Rechercher une parcelle</div>
+                    <form id="hero-parcelle-form">
+                        <select id="hp-commune" aria-label="Commune">
+                            <option value="">Toutes les communes</option>
+                            <!-- Options générées par recherche.js -->
+                        </select>
+                        <input type="number" id="hp-surface-min" min="0" placeholder="Surface min (m²)">
+                        <label class="hp-case"><input type="checkbox" id="hp-constructible">Constructible</label>
+                        <label class="hp-case"><input type="checkbox" id="hp-dpe-connu">DPE connu</label>
+                        <button type="submit" class="rf-bouton-principal">Rechercher</button>
+                    </form>
+                </div>
+            </details>
         </div>
     </div>
     <!-- FIN ÉCRAN D'ACCUEIL -->
 
 </main>
 <!-- FIN APPLICATION -->
+
+<!-- DEBUT BARRE DU BAS (mobile) : les mêmes actions que la barre du haut, au pouce -->
+<nav id="bottom-nav" aria-label="Navigation principale">
+    <button type="button" data-cible="home-button"><i class="fa-solid fa-house"></i><span>Accueil</span></button>
+    <button type="button" data-cible="menu-button"><i class="fa-solid fa-layer-group"></i><span>Couches</span></button>
+    <button type="button" data-cible="recherche-button"><i class="fa-solid fa-sliders"></i><span>Parcelles</span></button>
+    <button type="button" data-cible="actu-button"><i class="fa-solid fa-bullhorn"></i><span>Actualités</span></button>
+    <button type="button" id="bn-plus" aria-expanded="false" aria-controls="plus-sheet"><i class="fa-solid fa-ellipsis"></i><span>Plus</span></button>
+</nav>
+<div id="plus-sheet" hidden>
+    <button type="button" data-cible="about-button"><i class="fa-solid fa-circle-info"></i>À propos</button>
+    <button type="button" data-cible="install-button" id="plus-install" hidden><i class="fa-solid fa-download"></i>Installer l'application</button>
+    <a href="https://swallowage.github.io/"><i class="fa-solid fa-arrow-left"></i>Retour à swallow·AGE</a>
+</div>
+<!-- FIN BARRE DU BAS -->
 
 <!-- DEBUT MODALE À PROPOS -->
 <div id="about-modal" class="modal">
@@ -294,6 +313,8 @@
 <script src="js/tour.js"></script>
 <script src="js/map.js"></script>
 <script src="js/installation.js"></script>
+<script src="js/navbas.js"></script>
+<script src="js/url.js"></script>
 <script src="js/analytics.js"></script>
 <!-- FIN SCRIPTS -->
 
