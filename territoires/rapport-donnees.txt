@@ -1,4 +1,4 @@
-Données des territoires, 2026-11-05T16:49Z
+Données des territoires, 2026-11-05T17:38Z
 ### osm (geosudsarthe)
 Overpass : points d'intérêt
   overpass-api.de : 1503 éléments
@@ -29,6 +29,8 @@ Overpass : cours d'eau et itinéraires
 1191 objets écrits pour geosudsarthe
 ### sources (geosudsarthe)
 == mairies
+  répertoire des élus : colonnes code='Code de la commune' nom="Nom de l'élu" prénom="Prénom de l'élu" fonction='Libellé de la fonction'
+  élus trouvés pour 19 commune(s) sur 19
   mairies : 19 -> services/mairies.geojson
 == bal
   bal : 28 -> services/bal.geojson
@@ -52,6 +54,162 @@ Overpass : cours d'eau et itinéraires
 == dae
   écartés : 0 inactifs, 0 doublons
   dae : 49 -> securite/dae.geojson
+### dvf (geosudsarthe)
+  Aubigné-Racan (72013)
+    2021 : 269 lignes
+    2022 : 368 lignes
+    2023 : 300 lignes
+    2024 : 287 lignes
+    2025 : 279 lignes
+    -> 199 ventes de logements exploitables
+  La Bruère-sur-Loir (72049)
+    2021 : 50 lignes
+    2022 : 46 lignes
+    2023 : 35 lignes
+    2024 : 97 lignes
+    2025 : 19 lignes
+    -> 19 ventes de logements exploitables
+  La Chapelle-aux-Choux (72060)
+    2021 : 27 lignes
+    2022 : 28 lignes
+    2023 : 43 lignes
+    2024 : 31 lignes
+    2025 : 36 lignes
+    -> 16 ventes de logements exploitables
+  Château-l'Hermitage (72072)
+    2021 : 17 lignes
+    2022 : 17 lignes
+    2023 : 13 lignes
+    2024 : 18 lignes
+    2025 : 11 lignes
+    -> 9 ventes de logements exploitables
+  Chenu (72077)
+    2021 : 88 lignes
+    2022 : 113 lignes
+    2023 : 36 lignes
+    2024 : 76 lignes
+    2025 : 97 lignes
+    -> 31 ventes de logements exploitables
+  Coulongé (72098)
+    2021 : 110 lignes
+    2022 : 141 lignes
+    2023 : 54 lignes
+    2024 : 145 lignes
+    2025 : 184 lignes
+    -> 47 ventes de logements exploitables
+  Luché-Pringé (72175)
+    2021 : 262 lignes
+    2022 : 269 lignes
+    2023 : 161 lignes
+    2024 : 148 lignes
+    2025 : 145 lignes
+    -> 106 ventes de logements exploitables
+  Le Lude (72176)
+    2021 : 416 lignes
+    2022 : 371 lignes
+    2023 : 373 lignes
+    2024 : 282 lignes
+    2025 : 446 lignes
+    -> 367 ventes de logements exploitables
+  Mansigné (72182)
+    2021 : 198 lignes
+    2022 : 191 lignes
+    2023 : 149 lignes
+    2024 : 119 lignes
+    2025 : 181 lignes
+    -> 126 ventes de logements exploitables
+  Mayet (72191)
+    2021 : 321 lignes
+    2022 : 344 lignes
+    2023 : 376 lignes
+    2024 : 273 lignes
+    2025 : 304 lignes
+    -> 255 ventes de logements exploitables
+  Pontvallain (72243)
+    2021 : 107 lignes
+    2022 : 286 lignes
+    2023 : 141 lignes
+    2024 : 95 lignes
+    2025 : 123 lignes
+    -> 119 ventes de logements exploitables
+  Requeil (72252)
+    2021 : 88 lignes
+    2022 : 149 lignes
+    2023 : 42 lignes
+    2024 : 62 lignes
+    2025 : 85 lignes
+    -> 74 ventes de logements exploitables
+  Saint-Germain-d'Arcé (72283)
+    2021 : 48 lignes
+    2022 : 32 lignes
+    2023 : 71 lignes
+    2024 : 57 lignes
+    2025 : 63 lignes
+    -> 29 ventes de logements exploitables
+  Saint-Jean-de-la-Motte (72291)
+    2021 : 95 lignes
+    2022 : 117 lignes
+    2023 : 95 lignes
+    2024 : 102 lignes
+    2025 : 98 lignes
+    -> 81 ventes de logements exploitables
+  Sarcé (72327)
+    2021 : 25 lignes
+    2022 : 71 lignes
+    2023 : 39 lignes
+    2024 : 35 lignes
+    2025 : 19 lignes
+    -> 20 ventes de logements exploitables
+  Savigné-sous-le-Lude (72330)
+    2021 : 127 lignes
+    2022 : 188 lignes
+    2023 : 72 lignes
+    2024 : 70 lignes
+    2025 : 278 lignes
+    -> 52 ventes de logements exploitables
+  Vaas (72364)
+    2021 : 235 lignes
+    2022 : 163 lignes
+    2023 : 182 lignes
+    2024 : 143 lignes
+    2025 : 207 lignes
+    -> 148 ventes de logements exploitables
+  Verneil-le-Chétif (72369)
+    2021 : 106 lignes
+    2022 : 93 lignes
+    2023 : 75 lignes
+    2024 : 36 lignes
+    2025 : 63 lignes
+    -> 52 ventes de logements exploitables
+  Yvré-le-Pôlin (72385)
+    2021 : 131 lignes
+    2022 : 132 lignes
+    2023 : 141 lignes
+    2024 : 156 lignes
+    2025 : 103 lignes
+    -> 129 ventes de logements exploitables
+  prix_immobilier_communes : 19 -> urbanisme/prix_immobilier_communes.geojson
+    cadastre 72013 : 7027 parcelles cumulées
+    cadastre 72049 : 8427 parcelles cumulées
+    cadastre 72060 : 10027 parcelles cumulées
+    cadastre 72072 : 10952 parcelles cumulées
+    cadastre 72077 : 14868 parcelles cumulées
+    cadastre 72098 : 17709 parcelles cumulées
+    cadastre 72175 : 22269 parcelles cumulées
+    cadastre 72176 : 31204 parcelles cumulées
+    cadastre 72182 : 34011 parcelles cumulées
+    cadastre 72191 : 40515 parcelles cumulées
+    cadastre 72243 : 44900 parcelles cumulées
+    cadastre 72252 : 47512 parcelles cumulées
+    cadastre 72283 : 48806 parcelles cumulées
+    cadastre 72291 : 51848 parcelles cumulées
+    cadastre 72327 : 53739 parcelles cumulées
+    cadastre 72330 : 57619 parcelles cumulées
+    cadastre 72364 : 61281 parcelles cumulées
+    cadastre 72369 : 62785 parcelles cumulées
+    cadastre 72385 : 66787 parcelles cumulées
+  8442 parcelles dessinées ; 84 sans géométrie cadastrale (fusion de communes ou parcelle disparue)
+  mutations : 8442 -> urbanisme/parcelles_dvf_2021_2025_loir_luce_berce.geojson
 ### artisans (geosudsarthe)
 Aubigné-Racan : 15 artisans
 La Bruère-sur-Loir : 2 artisans
@@ -214,7 +372,7 @@ Verneil-le-Chétif : 8 associations
 Yvré-le-Pôlin : 30 associations
 437 associations écrites dans /home/runner/work/cl4ire.github.io/cl4ire.github.io/territoires/geosudsarthe/couches/associations/associations.geojson
 ### fichiers (geosudsarthe)
-geosudsarthe : 35 fichiers disponibles
+geosudsarthe : 37 fichiers disponibles
 ### osm (geobelinois)
 Overpass : points d'intérêt
   overpass-api.de essai 1 : HTTP Error 502: Bad Gateway
@@ -246,6 +404,8 @@ Overpass : cours d'eau et itinéraires
 474 objets écrits pour geobelinois
 ### sources (geobelinois)
 == mairies
+  répertoire des élus : colonnes code='Code de la commune' nom="Nom de l'élu" prénom="Prénom de l'élu" fonction='Libellé de la fonction'
+  élus trouvés pour 7 commune(s) sur 7
   mairies : 7 -> services/mairies.geojson
 == bal
   bal : 17 -> services/bal.geojson
@@ -269,6 +429,66 @@ Overpass : cours d'eau et itinéraires
 == dae
   écartés : 0 inactifs, 0 doublons
   dae : 42 -> securite/dae.geojson
+### dvf (geobelinois)
+  Écommoy (72124)
+    2021 : 366 lignes
+    2022 : 442 lignes
+    2023 : 275 lignes
+    2024 : 250 lignes
+    2025 : 295 lignes
+    -> 300 ventes de logements exploitables
+  Laigné-Saint-Gervais (72155)
+    2021 : 177 lignes
+    2022 : 167 lignes
+    2023 : 110 lignes
+    2024 : 100 lignes
+    2025 : 216 lignes
+    -> 140 ventes de logements exploitables
+  Marigné-Laillé (72187)
+    2021 : 288 lignes
+    2022 : 167 lignes
+    2023 : 201 lignes
+    2024 : 130 lignes
+    2025 : 199 lignes
+    -> 124 ventes de logements exploitables
+  Moncé-en-Belin (72200)
+    2021 : 176 lignes
+    2022 : 136 lignes
+    2023 : 139 lignes
+    2024 : 159 lignes
+    2025 : 147 lignes
+    -> 209 ventes de logements exploitables
+  Saint-Biez-en-Belin (72268)
+    2021 : 40 lignes
+    2022 : 51 lignes
+    2023 : 51 lignes
+    2024 : 44 lignes
+    2025 : 19 lignes
+    -> 37 ventes de logements exploitables
+  Saint-Ouen-en-Belin (72306)
+    2021 : 151 lignes
+    2022 : 116 lignes
+    2023 : 91 lignes
+    2024 : 112 lignes
+    2025 : 83 lignes
+    -> 77 ventes de logements exploitables
+  Teloché (72350)
+    2021 : 268 lignes
+    2022 : 214 lignes
+    2023 : 158 lignes
+    2024 : 165 lignes
+    2025 : 131 lignes
+    -> 197 ventes de logements exploitables
+  prix_immobilier_communes : 7 -> urbanisme/prix_immobilier_communes.geojson
+    cadastre 72124 : 6317 parcelles cumulées
+    cadastre 72155 : 11725 parcelles cumulées
+    cadastre 72187 : 15889 parcelles cumulées
+    cadastre 72200 : 19498 parcelles cumulées
+    cadastre 72268 : 21121 parcelles cumulées
+    cadastre 72306 : 23680 parcelles cumulées
+    cadastre 72350 : 26880 parcelles cumulées
+  3303 parcelles dessinées ; 66 sans géométrie cadastrale (fusion de communes ou parcelle disparue)
+  mutations : 3303 -> urbanisme/parcelles_dvf_2021_2025_loir_luce_berce.geojson
 ### artisans (geobelinois)
 Écommoy : 48 artisans
 Laigné-Saint-Gervais : 17 artisans
@@ -381,4 +601,4 @@ Saint-Ouen-en-Belin : 14 associations
 Teloché : 50 associations
 249 associations écrites dans /home/runner/work/cl4ire.github.io/cl4ire.github.io/territoires/geobelinois/couches/associations/associations.geojson
 ### fichiers (geobelinois)
-geobelinois : 35 fichiers disponibles
+geobelinois : 37 fichiers disponibles
