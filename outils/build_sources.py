@@ -57,7 +57,7 @@ def ouvrir(url, essais=6, timeout=180, entetes=None):
     derniere = None
     for i in range(essais):
         try:
-            h = {"User-Agent": "geo-territoires (hirundAGE; données ouvertes)"}
+            h = {"User-Agent": "geo-territoires (swallowAGE; données ouvertes)"}
             h.update(entetes or {})
             return urllib.request.urlopen(urllib.request.Request(url, headers=h), timeout=timeout)
         except urllib.error.HTTPError as e:
