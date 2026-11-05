@@ -8,7 +8,7 @@ Pour le territoire donné (--territoire <id>, geoberce par défaut) :
   4. rattache chaque point à sa commune (couches/communes.geojson) ;
   5. écrit un fichier .geojson par couche, au même format que celles de GéoBercé.
 
-Couches produites : commerces, banques, education, parkings, toilettes, fontaines,
+Couches produites : commerces, banques, education, parkings, toilettes, fontaines, dechets,
 bibliotheques, marches, airesJeu, equipementSportif, antennes, lockers_osm, pompiers,
 gendarmerie, ehpad, officesTourisme, campingcar, patrimoineRural, cours_eau, velo,
 randonnees_osm. Les fichiers de complément saisis à la main (lockers_manuels,
@@ -49,60 +49,11 @@ MIROIRS = [
 # ----------------------------------------------------------------------------------------
 
 
-def polygones(geometrie):
-    """Liste de polygones [anneau extérieur, trous...] d'un Polygon/MultiPolygon GeoJSON."""
-    if geometrie["type"] == "Polygon":
-        return [geometrie["coordinates"]]
-    if geometrie["type"] == "MultiPolygon":
-        return geometrie["coordinates"]
-    return []
-
-
-def dans_anneau(x, y, anneau):
-    dedans = False
-    j = len(anneau) - 1
-    for i in range(len(anneau)):
-        xi, yi = anneau[i][0], anneau[i][1]
-        xj, yj = anneau[j][0], anneau[j][1]
-        if (yi > y) != (yj > y) and x < (xj - xi) * (y - yi) / ((yj - yi) or 1e-18) + xi:
-            dedans = not dedans
-        j = i
-    return dedans
-
-
-def boite(polys):
-    xs = [p[0] for poly in polys for p in poly[0]]
-    ys = [p[1] for poly in polys for p in poly[0]]
-    return (min(xs), min(ys), max(xs), max(ys))
-
-
-class Zone:
-    """Un ensemble de polygones, avec test point-dans-polygone rapide (boîte englobante d'abord)."""
-
-    def __init__(self, geometrie):
-        self.polys = polygones(geometrie)
-        self.boite = boite(self.polys)
-
-    def contient(self, x, y):
-        b = self.boite
-        if not (b[0] <= x <= b[2] and b[1] <= y <= b[3]):
-            return False
-        return any(dans_anneau(x, y, poly[0]) and not any(dans_anneau(x, y, t) for t in poly[1:]) for poly in self.polys)
+from territoires_commun import Zone, commune_de, dans_anneau, polygones  # noqa: E402,F401
 
 
 def charger_zones():
-    with open(os.path.join(T.couches, "epci.geojson"), encoding="utf-8") as f:
-        epci = json.load(f)["features"][0]["geometry"]
-    with open(os.path.join(T.couches, "communes.geojson"), encoding="utf-8") as f:
-        communes = json.load(f)["features"]
-    return Zone(epci), [(c["properties"]["code_insee"], c["properties"]["nom_offici"], Zone(c["geometry"])) for c in communes]
-
-
-def commune_de(x, y, communes):
-    for code, nom, zone in communes:
-        if zone.contient(x, y):
-            return code, nom
-    return None, None
+    return territoires_commun.charger_zones(T)
 
 
 def haversine_km(a, b):
@@ -119,7 +70,7 @@ def haversine_km(a, b):
 
 AMENITES = ("restaurant|bar|pub|fast_food|pharmacy|post_office|fuel|car_wash|vehicle_inspection|driving_school|cinema|"
             "bank|atm|school|college|kindergarten|parking|toilets|drinking_water|library|marketplace|parcel_locker|"
-            "fire_station|police|social_facility|fountain|washing_place")
+            "fire_station|police|social_facility|fountain|washing_place|recycling")
 LOISIRS = "playground|pitch|sports_centre|swimming_pool|track|horse_riding|recreation_ground|fitness_station"
 
 
@@ -273,6 +224,19 @@ def classer(el):
         sorties.append(("bibliotheques", tags_utiles(t)))
     if amenity == "marketplace":
         sorties.append(("marches", tags_utiles(t)))
+    if amenity == "recycling":
+        # Déchèterie (centre), dépôt de déchets verts (compost) ou point d'apport volontaire (container)
+        if t.get("recycling_type") == "centre":
+            genre = "centre"
+        elif t.get("recycling:green_waste") == "yes" or t.get("recycling:garden_waste") == "yes" or "compost" in (t.get("name") or "").lower():
+            genre = "compost"
+        else:
+            genre = "container"
+        sorties.append(("dechets", {
+            "type": genre, "name": t.get("name") or "Point de tri", "operator": t.get("operator"),
+            "opening_hours": t.get("opening_hours"),
+            "glass": prem(t, "recycling:glass_bottles", "recycling:glass"), "paper": t.get("recycling:paper"),
+            "waste": t.get("recycling:waste"), "plastic_packaging": t.get("recycling:plastic_packaging")}))
     if amenity == "parcel_locker":
         sorties.append(("lockers_osm", tags_utiles(t)))
     if amenity == "fire_station":
@@ -319,7 +283,7 @@ FICHIERS = {
     "fontaines": "services/fontaines.geojson", "bibliotheques": "services/bibliotheques.geojson",
     "marches": "services/marches.geojson", "airesJeu": "services/airesJeu.geojson",
     "equipementSportif": "services/equipementSportif.geojson", "antennes": "services/antennes.geojson",
-    "lockers_osm": "services/lockers_osm.geojson",
+    "lockers_osm": "services/lockers_osm.geojson", "dechets": "services/dechets.geojson",
     "pompiers": "securite/pompiers.geojson", "gendarmerie": "securite/gendarmerie.geojson", "ehpad": "securite/ehpad.geojson",
     "officesTourisme": "tourisme/officesTourisme.geojson", "campingcar": "tourisme/campingcar.geojson",
     "patrimoineRural": "patrimoine/patrimoineRural.geojson",
