@@ -1,12 +1,12 @@
 /* Suivi de visites (GoatCounter) : uniquement sur la vraie prod
-   (hirundoage.github.io/geoberce) - retour direct de l'utilisatrice
+   (hirundage.github.io/geoberce) - retour direct de l'utilisatrice
    ("ça sert à rien sur la dev"). index.html et js/ sont synchronisés
-   automatiquement depuis ce dépôt vers geoberce/ sur hirundoage (voir
-   sync-geoberce.yml côté hirundoage), donc une seule version de ce
+   automatiquement depuis ce dépôt vers geoberce/ sur hirundage (voir
+   sync-geoberce.yml côté hirundage), donc une seule version de ce
    fichier existe pour les deux : c'est à lui de décider où il s'active
    au chargement plutôt que d'exister en deux variantes selon le dépôt. */
 function estProd(hostname) {
-    return hostname === "hirundoage.github.io";
+    return hostname === "hirundage.github.io";
 }
 
 function injecterGoatCounter() {

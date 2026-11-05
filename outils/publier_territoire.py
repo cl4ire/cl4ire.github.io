@@ -13,7 +13,7 @@ territoires. Ce script y ajoute ce qui est propre au territoire :
 Il ne touche à rien d'autre dans le dossier de destination (README.md, par exemple).
 
 Usage : python3 outils/publier_territoire.py <id> <dossier_destination>
-Utilisé par .github/workflows/sync-geoberce.yml (dépôt hirundoage.github.io).
+Utilisé par .github/workflows/sync-geoberce.yml (dépôt hirundage.github.io).
 """
 import json
 import os

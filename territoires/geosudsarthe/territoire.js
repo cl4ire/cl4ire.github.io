@@ -7,7 +7,7 @@ const TERRITOIRE = {
     nom: "GéoSudSarthe",
     nomComplet: "Sud Sarthe",
     comcom: "Communauté de communes Sud Sarthe",
-    urlProd: "https://hirundoage.github.io/geosudsarthe/",
+    urlProd: "https://hirundage.github.io/geosudsarthe/",
     centre: [47.707432, 0.210716],
     zoom: 11,
     rayonCarburantsM: 25000,

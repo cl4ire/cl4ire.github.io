@@ -7,7 +7,7 @@ const TERRITOIRE = {
     nom: "GéoBelinois",
     nomComplet: "Orée de Bercé-Bélinois",
     comcom: "Communauté de communes Orée de Bercé – Bélinois",
-    urlProd: "https://hirundoage.github.io/geobelinois/",
+    urlProd: "https://hirundage.github.io/geobelinois/",
     centre: [47.8492, 0.2544],
     zoom: 12,
     rayonCarburantsM: 25000,
