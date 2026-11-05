@@ -3702,3 +3702,19 @@ sous-domaine GoatCounter, couches à exclure.
 Étapes suivantes : fichiers de territoire de GéoSudSarthe et GéoBelinois, scripts
 qui génèrent leurs données (communes, OpenStreetMap, SIRENE, associations...),
 publication de chacun dans son dossier de swallowage.
+
+### Publier un territoire
+
+`python3 outils/publier_territoire.py <id> <dossier>` construit le site d'un territoire dans
+un dossier : le code commun, plus `territoires/<id>/territoire.js` et `territoires/<id>/couches/`
+(pour GéoBercé : `js/territoire.js` et `couches/` de la racine). Les textes statiques de
+`index.html` et `manifest.json` (nom, communauté de communes, adresse) sont remplacés par ceux du
+territoire. `python3 outils/publier_territoire.py --liste` donne les territoires publiables :
+GéoBercé et chaque dossier de `territoires/` qui contient un `territoire.js`.
+Le workflow de synchro de swallowage.github.io appelle ce script pour chacun.
+
+`python3 outils/build_territoire.py <id>` génère le fichier de territoire et les contours (communes,
+communauté de communes) d'un nouveau territoire déclaré dans ce script.
+
+Un raccourci d'accueil ou une thématique dont les couches n'existent pas pour un territoire n'est pas
+proposé (voir `fichiersDisponibles` dans `territoires/<id>/territoire.js`).
