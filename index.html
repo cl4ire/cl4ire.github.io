@@ -70,6 +70,8 @@
 
 <!-- DEBUT HEADER -->
 <header id="topbar">
+    <a id="back-swallowage" href="https://swallowage.github.io/" title="Retour à swallow·AGE"><i class="fa-solid fa-arrow-left"></i><span>swallow·AGE</span></a>
+
     <div id="brand">
         <img src="img/geoberce.png" alt="Logo GéoBercé" class="brand-logo">
         <div>
@@ -78,6 +80,8 @@
         </div>
     </div>
 
+    <button type="button" id="home-button" class="topbtn" aria-label="Accueil"><i class="fa-solid fa-house"></i><span>Accueil</span></button>
+
     <div id="search-container">
         <span id="search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
         <input type="text" id="search" placeholder="Rechercher un lieu, une adresse, un service..." autocomplete="off">
@@ -85,10 +89,9 @@
     </div>
 
     <div id="topbar-actions">
-        <button type="button" id="home-button" aria-label="Accueil"><i class="fa-solid fa-house"></i></button>
-        <button type="button" id="menu-button" aria-label="Couches"><i class="fa-solid fa-layer-group"></i></button>
+        <button type="button" id="menu-button" class="topbtn topbtn-plein" aria-label="Couches"><i class="fa-solid fa-layer-group"></i><span>Couches</span></button>
         <div class="actu-wrap">
-            <button type="button" id="actu-button" aria-label="Actualités"><i class="fa-solid fa-bullhorn"></i></button>
+            <button type="button" id="actu-button" class="topbtn topbtn-actu" aria-label="Actualités"><i class="fa-solid fa-bullhorn"></i><span>Actualités</span></button>
             <div id="actu-dropdown" class="actu-dropdown" hidden>
                 <div class="actu-dropdown-header">
                     <span><i class="fa-solid fa-bullhorn"></i> Actualités du territoire</span>
@@ -99,14 +102,15 @@
                 </div>
             </div>
         </div>
-        <button type="button" id="recherche-button" title="Recherche foncière"><i class="fa-solid fa-sliders"></i><span>Recherche foncière</span></button>
+        <button type="button" id="recherche-button" class="topbtn topbtn-plein" title="Recherche foncière"><i class="fa-solid fa-sliders"></i><span>Recherche foncière</span></button>
+        <button type="button" id="about-button" class="topbtn" title="À propos"><i class="fa-solid fa-circle-info"></i><span>À propos</span></button>
         <!-- Masqué par défaut (hidden) : affiché par js/installation.js
              seulement quand le navigateur confirme (événement
              "beforeinstallprompt") que le site est réellement
              installable et pas déjà installé - jamais un bouton mort
-             qui ne ferait rien au clic. -->
-        <button type="button" id="install-button" title="Installer l'application" hidden><i class="fa-solid fa-download"></i></button>
-        <button type="button" id="about-button" title="À propos"><i class="fa-solid fa-circle-info"></i><span>À propos</span></button>
+             qui ne ferait rien au clic. Placé après "À propos", même
+             teinte. -->
+        <button type="button" id="install-button" class="topbtn" title="Installer l'application" hidden><i class="fa-solid fa-download"></i><span>Installer</span></button>
     </div>
 </header>
 <!-- FIN HEADER -->
@@ -159,8 +163,8 @@
             <div id="recherche-contenu"><!-- Généré par recherche.js --></div>
         </div>
 
-        <div id="layers-resize-handle" title="Faire glisser pour redimensionner le panneau"></div>
     </aside>
+    <div id="layers-resize-handle" role="separator" aria-orientation="vertical" title="Faire glisser pour redimensionner le panneau"><span class="grip"></span></div>
 
     <div id="map"></div>
 
@@ -231,7 +235,7 @@
         </div>
         <h2>GéoBercé</h2>
         <p>Un SIG local, gratuit et ouvert, qui regroupe au même endroit les informations utiles du territoire Loir-Lucé-Bercé : services, famille, commerces, mobilité, nature et patrimoine.</p>
-        <p>Les couches marquées d'un point orange ● dans le panneau sont chargées à la demande, seulement quand vous les cochez : certaines interrogent des données en direct (OpenStreetMap, Géorisques...) plutôt qu'un fichier déjà présent sur le site, et peuvent donc prendre quelques secondes à s'afficher.</p>
+        <p>Les couches marquées d'un point orange <span style="color:var(--terracotta)">●</span> dans le panneau sont chargées à la demande, seulement quand vous les cochez : certaines interrogent des données en direct (OpenStreetMap, Géorisques...) plutôt qu'un fichier déjà présent sur le site, et peuvent donc prendre quelques secondes à s'afficher.</p>
         <p class="about-source">Données : communes, EPCI, OpenStreetMap, data.gouv.fr, Vigieau, IGN Géoplateforme, Géoportail de l'Urbanisme, prix-carburants.gouv.fr, Géorisques, ANCT.</p>
 
         <button type="button" id="tour-relancer" class="rf-bouton-secondaire">Revoir la visite guidée</button>

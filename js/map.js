@@ -23,6 +23,17 @@
    ferment sans prévenir. */
 const map = L.map("map", { zoomControl: false, closePopupOnClick: false }).setView([47.791528, 0.412223], 12);
 
+/* Un clic sur une zone vide de la carte referme la popup ouverte (habitude
+   attendue). Fait à la main plutôt que via closePopupOnClick, pour ignorer
+   le clic synthétique qui suit de très près l'ouverture d'une popup sur
+   mobile (cause du problème décrit ci-dessus) : tout clic carte dans les
+   400 ms après une ouverture de popup est ignoré. */
+let dernierePopupOuverte = 0;
+map.on("popupopen", () => { dernierePopupOuverte = Date.now(); });
+map.on("click", () => {
+    if (Date.now() - dernierePopupOuverte > 400) map.closePopup();
+});
+
 L.control.zoom({ position: "topright" }).addTo(map);
 
 L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=cb1_33ph_1_a60cba5d2b6752f8d0e80255", {
@@ -187,19 +198,19 @@ function initRedimensionnementPanneau() {
     } catch (_) { /* navigation privée : tant pis, largeur par défaut (340px) */ }
 
     let enCours = false;
-    poignee.addEventListener("mousedown", event => {
+    poignee.addEventListener("pointerdown", event => {
         enCours = true;
         poignee.classList.add("en-cours");
         document.body.style.userSelect = "none";
         event.preventDefault();
     });
-    window.addEventListener("mousemove", event => {
+    window.addEventListener("pointermove", event => {
         if (!enCours) return;
         const largeur = Math.min(LARGEUR_MAX, Math.max(LARGEUR_MIN, event.clientX - panel.getBoundingClientRect().left));
         panel.style.width = largeur + "px";
         map.invalidateSize();
     });
-    window.addEventListener("mouseup", () => {
+    window.addEventListener("pointerup", () => {
         if (!enCours) return;
         enCours = false;
         poignee.classList.remove("en-cours");

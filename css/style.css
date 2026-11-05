@@ -10,9 +10,10 @@
     --ardoise: #5F5E5A;
 
     /* Couleur "chrome" de l'interface (boutons, focus, titres...) :
-       le bleu de la palette, pour ne pas tout teinter de vert. */
-    --primaire: var(--riviere);
-    --brume: #E9F1FA;
+       le vert forêt de l'identité (le bleu rivière reste réservé aux
+       données de la carte : eau, mobilité...). */
+    --primaire: var(--foret);
+    --brume: #E6F3EE;
     --fond: #FAFAF8;
     --bordure: #E4E1DB;
     --font-titre: 'Baloo 2', sans-serif;
@@ -62,45 +63,39 @@ button { font-family: inherit; cursor: pointer; }
 .suggestion-titre { font-size: 13px; font-weight: 600; }
 .suggestion-sous { font-size: 11px; color: var(--ardoise); }
 .suggestion-vide { padding: 12px 14px; font-size: 13px; color: var(--ardoise); }
-#topbar-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
-#home-button, #about-button, #actu-button {
-    border: 1px solid var(--bordure);
-    background: #fff;
-    border-radius: 999px;
-    font-size: 13px;
-    color: var(--ardoise);
+#topbar-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+/* Lien de retour vers swallow·AGE, comme sur les autres outils. */
+#back-swallowage {
+    display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;
+    font-size: 12px; font-weight: 700; color: var(--ardoise); text-decoration: none;
 }
-#about-button { padding: 8px 16px; display: inline-flex; align-items: center; gap: 6px; }
-#recherche-button {
-    border: none;
-    background: var(--primaire);
-    color: #fff;
-    border-radius: 999px;
-    padding: 8px 16px 8px 14px;
-    font-size: 13px;
-    font-weight: 700;
-    display: flex; align-items: center; gap: 7px;
-    flex-shrink: 0;
+#back-swallowage:hover { color: var(--primaire); text-decoration: underline; }
+/* Boutons de la barre du haut : tous sur le même modèle (pictogramme +
+   texte), pour qu'on sache ce que fait chacun sans deviner. Contour gris :
+   Accueil, À propos, Installer. Plein vert forêt : les deux outils
+   principaux (Couches, Recherche foncière). Vert clair : Actualités
+   (Illiwap). */
+.topbtn {
+    display: inline-flex; align-items: center; gap: 7px; flex-shrink: 0;
+    height: 38px; padding: 0 14px;
+    border: 1px solid var(--bordure); border-radius: 999px; background: #fff;
+    color: var(--ardoise); font-size: 13px; font-weight: 700; white-space: nowrap;
 }
-#home-button, #actu-button, #install-button {
-    width: 38px; height: 38px;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--primaire);
-    font-size: 15px;
-}
-#install-button { border: 1px solid var(--bordure); background: #fff; border-radius: 999px; }
-/* Toujours visible (avant : caché sur grand écran, où le panneau était
-   fixe en permanence) - permet de fermer/rouvrir le panneau des couches
-   sur PC aussi, pas seulement sur mobile, retour direct de
-   l'utilisatrice. */
-#menu-button {
-    display: inline-flex; align-items: center; justify-content: center;
-    border: none;
-    background: var(--primaire);
-    color: #fff;
-    width: 38px; height: 38px;
-    border-radius: 999px;
-    font-size: 15px;
+.topbtn i { font-size: 14px; color: var(--primaire); }
+.topbtn:hover { background: var(--brume); }
+.topbtn[hidden] { display: none !important; }
+.topbtn-plein { background: var(--primaire); border-color: var(--primaire); color: #fff; }
+.topbtn-plein i { color: #fff; }
+.topbtn-plein:hover { background: #0B5A47; }
+.topbtn-actu { background: var(--feuille); border-color: var(--feuille); color: #fff; }
+.topbtn-actu i { color: #fff; }
+.topbtn-actu:hover { background: #178563; }
+
+@media (max-width: 1180px) and (min-width: 781px) {
+    /* Écran moyen : on garde le texte seulement sur les deux outils
+       principaux, le reste repasse en pictogramme seul. */
+    #home-button span, #actu-button span, #about-button span, #install-button span { display: none; }
+    #home-button, #actu-button, #about-button, #install-button { width: 38px; padding: 0; justify-content: center; }
 }
 
 /* ---------- APPLICATION ---------- */
@@ -140,10 +135,14 @@ button { font-family: inherit; cursor: pointer; }
    droit serait purement et simplement coupé (invisible ET impossible à
    cliquer), constaté en testant. */
 #layers-resize-handle {
-    position: absolute; top: 0; right: 0; width: 6px; height: 100%;
-    cursor: col-resize; z-index: 5; background: transparent;
+    flex: 0 0 10px; display: flex; align-items: center; justify-content: center;
+    cursor: col-resize; background: #F1EFEA; border-right: 1px solid var(--bordure);
+    touch-action: none;
 }
-#layers-resize-handle:hover, #layers-resize-handle.en-cours { background: var(--primaire); opacity: 0.25; }
+#layers-resize-handle .grip { width: 4px; height: 44px; border-radius: 4px; background: #BDB9B0; }
+#layers-resize-handle:hover, #layers-resize-handle.en-cours { background: var(--brume); }
+#layers-resize-handle:hover .grip, #layers-resize-handle.en-cours .grip { background: var(--primaire); }
+#layers-panel.layers-panel-hidden + #layers-resize-handle { display: none; }
 .panel-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px 10px; }
 .panel-title { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--primaire); }
 .panel-close { display: block; border: none; background: none; font-size: 20px; color: var(--ardoise); }
@@ -773,11 +772,10 @@ a.commune-badge-vigieau:hover { text-decoration: underline; }
        42px de haut entre 390px et 375px de large rien qu'à cause du
        retour à la ligne, cassant l'alignement de toute la rangée de
        boutons. Taille fixe = plus aucune variation possible. */
-    #recherche-button span, #about-button span { display: none; }
-    #recherche-button, #about-button {
-        width: 38px; height: 38px; padding: 0;
-        display: inline-flex; align-items: center; justify-content: center;
-    }
+    .topbtn span { display: none; }
+    .topbtn { width: 38px; padding: 0; justify-content: center; }
+    #back-swallowage span { display: none; }
+    #topbar-actions { gap: 4px; }
     /* Hors champ par défaut (pas "display:none" comme sur PC) : c'est ce
        qui permet l'animation de glissement au lieu d'une simple
        apparition/disparition brute - layers-panel-hidden (PC) et
@@ -827,9 +825,8 @@ a.commune-badge-vigieau:hover { text-decoration: underline; }
        l'écran de ~27px même une fois la barre de recherche réduite à
        rien - resserré encore ici plutôt que de laisser "À propos"
        hors champ. Constaté en mesurant, pas une simple supposition. */
-    #home-button, #menu-button, #recherche-button, #actu-button, #about-button {
-        width: 34px; height: 34px;
-    }
+    .topbtn { width: 34px; height: 34px; }
+    #brand-title { display: none; }
 }
 /* ---------- Artisans et associations ---------- */
 /* Pastille avec un nombre (associations d'une commune) à la place d'une icône. */
