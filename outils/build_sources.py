@@ -21,7 +21,7 @@ Sources (--sources a,b,c pour n'en lancer que certaines ; toutes par défaut) :
   dae             Défibrillateurs : Géo'DAE, base nationale (Atlasanté)
 
 Prix de l'immobilier et parcelles DVF : outils/build_dvf.py.
-Pas encore couvertes : petite enfance (saisie à la main), démographie.
+Démographie (INSEE) : outils/build_demographie.py. Petite enfance : outils/build_petite_enfance.py (exports saisis à la main).
 
 Usage : python3 outils/build_sources.py [--territoire <id>] [--sources mairies,bal] [--sortie <dossier>]
 """
