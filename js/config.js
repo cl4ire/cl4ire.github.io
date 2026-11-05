@@ -8,7 +8,7 @@
 /* Couleurs des données de la carte (icônes, aplats). Les noms viennent de
    l'ancienne charte et sont gardés pour ne pas réécrire toutes les couches ;
    les valeurs sont indépendantes du logo, choisies pour bien se distinguer
-   sur la carte tout en restant dans les tons de la charte swallow·AGE :
+   sur la carte tout en restant dans les tons de la charte hirundo·AGE :
      foret      -> prune doux
      feuille    -> vert
      terracotta -> rose
@@ -1107,7 +1107,7 @@ function geojsonDepuisQualiteEau(data) {
     return { type: "FeatureCollection", features };
 }
 /* Trois niveaux, comme l'outil « Qu'y a-t-il dans l'eau de mon robinet ? »
-   (swallowAGE/eau) : une eau peut respecter toutes les LIMITES de qualité
+   (hirundoAGE/eau) : une eau peut respecter toutes les LIMITES de qualité
    (sanitaires) tout en dépassant une RÉFÉRENCE de qualité (confort, bon
    fonctionnement : fer, turbidité, etc.) - c'est « conforme, avec une
    réserve », pas « non conforme ». Un simple test sur la phrase de

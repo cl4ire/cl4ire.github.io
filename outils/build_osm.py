@@ -106,7 +106,7 @@ def interroger(requete, essais_par_miroir=3):
         for n in range(essais_par_miroir):
             try:
                 donnees = urllib.parse.urlencode({"data": requete}).encode()
-                req = urllib.request.Request(miroir, data=donnees, headers={"User-Agent": "geo-territoires (swallowAGE)"})
+                req = urllib.request.Request(miroir, data=donnees, headers={"User-Agent": "geo-territoires (hirundoAGE)"})
                 with urllib.request.urlopen(req, timeout=300) as r:
                     reponse = json.load(r)
                 if reponse.get("remark") and not reponse.get("elements"):

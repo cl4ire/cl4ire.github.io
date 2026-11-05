@@ -43,7 +43,7 @@ TERRITOIRES = {
     },
 }
 
-URL_PROD = "https://swallowage.github.io/{id}/"
+URL_PROD = "https://hirundoage.github.io/{id}/"
 GEO_API = "https://geo.api.gouv.fr/epcis/{siren}/communes?fields=nom,code,population,centre"
 WFS = "https://data.geopf.fr/wfs/ows"
 
