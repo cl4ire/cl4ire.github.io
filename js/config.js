@@ -1299,7 +1299,7 @@ const LAYERS = [
 
     /* ---------- COMMERCES ---------- */
     {
-        id: "commerces", group: "commerces", label: "Commerces, artisans & services",
+        id: "commerces", group: "commerces", label: "Commerces & services",
         file: "couches/commerces/commerces.geojson", type: "point",
         icon: "fa-solid fa-basket-shopping", color: PALETTE.feuille,
         iconePourFeature: iconeCommerce, sousTitrePourFeature: sousTitreCommerce,
@@ -1600,7 +1600,7 @@ const LAYERS = [
         subtitleFields: ["typezone"]
     },
     {
-        id: "rga", group: "urbanisme", label: "Retrait-gonflement des argiles",
+        id: "rga", group: "risques", label: "Retrait-gonflement des argiles",
         file: "couches/urbanisme/rga_2025_loir_luce_berce.geojson", type: "polygon",
         color: "#D85A30",
         lazy: true, searchable: false, cluster: false,

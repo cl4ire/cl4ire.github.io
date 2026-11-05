@@ -2074,9 +2074,15 @@ function construirePopupZonePLUi(props) {
 
 /* Aléa retrait-gonflement des argiles (RGA) : LABELS_RGA
    (recherche.js), même réutilisation que pour le zonage PLUi. */
+const CONSEILS_RGA = {
+    1: "Sol peu sensible au retrait-gonflement : des désordres restent possibles mais peu probables.",
+    2: "Sol sensible : les périodes de sécheresse puis de pluie peuvent fissurer les fondations et abîmer les canalisations enterrées (eau, assainissement). Une étude de sol est obligatoire pour vendre un terrain constructible et pour construire une maison individuelle.",
+    3: "Sol très sensible : le plus exposé aux fissures du bâti et aux casses de canalisations enterrées lors des sécheresses. Une étude de sol est obligatoire pour vendre un terrain constructible et pour construire une maison individuelle."
+};
 function construirePopupRga(props) {
     const label = (typeof LABELS_RGA !== "undefined" && LABELS_RGA[props.niveau]) || String(props.niveau);
     const couleur = { 1: "#F2C94C", 2: "#F2994A", 3: "#D85A30" }[props.niveau] || "#D85A30";
+    const conseil = CONSEILS_RGA[props.niveau];
 
     return `<div class="popup-fiche">
         <div class="popup-fiche-entete">
@@ -2087,6 +2093,12 @@ function construirePopupRga(props) {
             </div>
         </div>
         ${props.surf_m2 ? `<div class="popup-fiche-section"><div class="popup-fiche-ligne">Zone concernée : ${(props.surf_m2 / 10000).toFixed(1).replace(".", ",")} ha</div></div>` : ""}
+        ${conseil ? `<div class="popup-fiche-section"><div class="popup-fiche-ligne"><i class="fa-solid fa-house-crack"></i> ${echapperHtml(conseil)}</div></div>` : ""}
+        <div class="popup-fiche-section">
+            <a class="popup-fiche-contact" href="https://www.georisques.gouv.fr/risques/retrait-gonflement-des-argiles" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square"></i>En savoir plus (Géorisques)</a>
+            <a class="popup-fiche-contact" href="https://www.georisques.gouv.fr/" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-map-location-dot"></i>Consulter ma parcelle (Géorisques)</a>
+        </div>
+        <div class="popup-fiche-section"><div class="popup-fiche-precision">Cartographie nationale de l'aléa (BRGM/Géorisques) : indicatif, à l'échelle d'une zone, pas d'un terrain précis.</div></div>
     </div>`;
 }
 
