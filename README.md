@@ -1232,12 +1232,12 @@ direct de l'utilisatrice ("c'est un peu nul... ça envoie rien, ça ouvre
 une appli") : remplacé par un vrai envoi au clic via **Web3Forms**
 (`https://api.web3forms.com/submit`, `WEB3FORMS_ACCESS_KEY` dans
 `js/map.js`) - service pensé justement pour les sites statiques sans
-backend : la clé d'accès (liée à `swallowage@proton.me`, `EMAIL_CONTACT`)
+backend : la clé d'accès (liée à l'ancienne adresse `swallowage@proton.me` : les messages du formulaire y arrivent encore tant qu'une nouvelle clé n'a pas été créée sur web3forms.com pour `contact@hirundage.fr` ; `EMAIL_CONTACT` n'affiche que l'adresse de repli)
 est publique par conception, pas un secret à protéger, contrairement à
 des identifiants SMTP qu'on ne pourrait jamais mettre dans du JS
 exposé publiquement. Le bouton se désactive pendant l'envoi et affiche un
 message de statut (`#contact-statut`) : succès (champ vidé) ou échec avec
-un repli explicite vers `swallowage@proton.me` en direct.
+un repli explicite vers `contact@hirundage.fr` en direct.
 
 ## Servitudes d'utilité publique (SUP), démographie INSEE
 
