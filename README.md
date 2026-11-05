@@ -3718,3 +3718,12 @@ communauté de communes) d'un nouveau territoire déclaré dans ce script.
 
 Un raccourci d'accueil ou une thématique dont les couches n'existent pas pour un territoire n'est pas
 proposé (voir `fichiersDisponibles` dans `territoires/<id>/territoire.js`).
+
+### Actualités par territoire
+
+`actualites` dans le fichier de territoire décide du bouton « Actualités » :
+`{ type: "illiwap", id: "cc-...", communes: true }` (fenêtre intégrée, et flux de chaque commune
+dans sa fiche), `{ type: "lien", libelle: "Intramuros", url: "https://..." }` (ouvre le lien dans
+un nouvel onglet, pour un service qui ne s'intègre pas dans la page), ou `null` (pas de bouton).
+Le comportement est dans `js/territoire-appliquer.js`, commun à tous les territoires ;
+`js/territoire.js` et `territoires/<id>/territoire.js` ne contiennent que des données.
