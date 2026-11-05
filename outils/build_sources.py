@@ -17,8 +17,9 @@ Sources (--sources a,b,c pour n'en lancer que certaines ; toutes par défaut) :
   rga             Aléa retrait-gonflement des argiles (Géorisques)
   plui            Zonage des documents d'urbanisme (Géoportail de l'urbanisme)
   dpe             Diagnostics de performance énergétique (ADEME)
+  dae             Défibrillateurs : Géo'DAE, base nationale (Atlasanté)
 
-Pas encore couvertes : défibrillateurs (source nationale à identifier), petite enfance,
+Pas encore couvertes : petite enfance,
 prix de l'immobilier, démographie, parcelles DVF.
 
 Usage : python3 outils/build_sources.py [--territoire <id>] [--sources mairies,bal] [--sortie <dossier>]
@@ -419,6 +420,32 @@ def src_plui():
     return [("urbanisme/zonage_plui_loir_luce_berce_filtre.geojson", "zonage_plui", features)]
 
 
+def src_dae():
+    # Géo'DAE, base nationale des défibrillateurs (Atlasanté). Ressource CSV (« ; »), fichier d'environ 80 Mo.
+    chemin = fichier_url("https://www.data.gouv.fr/api/1/datasets/r/edb6a9e1-2f16-4bbf-99e7-c3eb6b90794c", ".csv")
+    features = []
+    ecartes = {"inactifs": 0, "doublons": 0}
+    for r in lignes_csv(chemin, ";"):
+        lat, lon = flottant(r.get("c_lat_coor1")), flottant(r.get("c_long_coor1"))
+        if lat is None or lon is None or not (r.get("c_com_insee") in T.communes or dans(lon, lat)):
+            continue
+        if r.get("c_etat") and r["c_etat"] != "Actif":
+            ecartes["inactifs"] += 1
+            continue
+        if (r.get("c_doublon") or "").strip().lower() in ("t", "true", "1"):
+            ecartes["doublons"] += 1
+            continue
+        props = {k: (v if v != "" else None) for k, v in r.items() if k and k not in ("the_geom", "cc_photo1")}
+        for cle in ("gid", "c_gid"):
+            if str(props.get(cle) or "").isdigit():
+                props[cle] = int(props[cle])
+        props["c_lat_coor1"], props["c_long_coor1"] = lat, lon
+        features.append(point(lon, lat, props))
+    os.remove(chemin)
+    print(f"  écartés : {ecartes['inactifs']} inactifs, {ecartes['doublons']} doublons")
+    return [("securite/dae.geojson", "dae", features)]
+
+
 def src_dpe():
     features = []
     base = "https://data.ademe.fr/data-fair/api/v1/datasets/meg-83tjwtg8dyz4vv7h1dqe/lines?"
@@ -452,7 +479,7 @@ def src_dpe():
 SOURCES = {
     "mairies": src_mairies, "bal": src_bal, "irve": src_irve, "covoiturage": src_covoiturage,
     "franceServices": src_franceServices, "monuments": src_monuments, "aleop": src_aleop,
-    "rga": src_rga, "plui": src_plui, "dpe": src_dpe,
+    "rga": src_rga, "plui": src_plui, "dpe": src_dpe, "dae": src_dae,
 }
 
 
