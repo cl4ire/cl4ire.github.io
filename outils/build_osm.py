@@ -358,6 +358,34 @@ def traiter_lignes(elements, zone):
     return eau, velo, rando
 
 
+def appliquer_horaires_decheteries(features):
+    """Horaires relevés à la main (saison d'hiver et d'été) : territoires/<id>/saisie/horaires-decheteries.json.
+    Chaque entrée dont « correspond » figure dans le nom d'une déchèterie ajoute ses deux périodes
+    (horaires_saisons, affichées toutes les deux dans la popup), l'adresse, le téléphone, et un
+    opening_hours saisonnier pour le badge « ouvert / fermé »."""
+    chemin = os.path.join(territoires_commun.RACINE, "territoires", T.id, "saisie", "horaires-decheteries.json")
+    if not os.path.isfile(chemin):
+        return
+    with open(chemin, encoding="utf-8") as f:
+        saisies = json.load(f)
+    n = 0
+    for ft in features:
+        p = ft["properties"]
+        if p.get("type") != "centre":
+            continue
+        for s in saisies:
+            if s["correspond"].lower() in (p.get("name") or "").lower():
+                for cle in ("adresse", "telephone"):
+                    if s.get(cle):
+                        p[cle] = s[cle]
+                if s.get("notes"):
+                    p["horaires_notes"] = s["notes"]
+                p["horaires_saisons"] = [{"label": x["label"], "mois": x["mois"], "horaires": x["horaires"]} for x in s["periodes"]]
+                p["opening_hours"] = "; ".join(f"{x['mois']}: {b.strip()}" for x in s["periodes"] for b in x["horaires"].split(";"))
+                n += 1
+    print(f"  horaires saisis : {n} déchèterie(s)")
+
+
 def main():
     zone, communes = charger_zones()
     b = zone.boite
@@ -381,6 +409,7 @@ def main():
     eau, velo, rando = traiter_lignes(lignes.get("elements", []), zone)
     par_couche["cours_eau"], par_couche["velo"], par_couche["randonnees_osm"] = eau, velo, rando
 
+    appliquer_horaires_decheteries(par_couche.get("dechets", []))
     total = 0
     for couche, chemin in FICHIERS.items():
         features = par_couche.get(couche, [])
