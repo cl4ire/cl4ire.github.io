@@ -3,6 +3,8 @@ name: Données des territoires (OpenStreetMap, SIRENE, RNA)
 # Construit les couches de données de GéoSudSarthe et GéoBelinois (ou d'un autre territoire
 # de territoires/) depuis les sources publiques :
 # - OpenStreetMap via Overpass (outils/build_osm.py) : commerces, services, santé, sports, nature...
+# - autres sources ouvertes (outils/build_sources.py) : mairies, boîtes aux lettres, bornes de recharge, covoiturage,
+#   France services, monuments historiques, bus Aléop, argiles, zonage d'urbanisme, DPE
 # - registre SIRENE (outils/build_artisans.py) : artisans
 # - répertoire des associations RNA (outils/build_associations.py)
 # puis met à jour `fichiersDisponibles` de chaque territoire (outils/maj_fichiers_disponibles.py)
@@ -23,7 +25,7 @@ permissions:
 jobs:
   donnees:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 240
     steps:
       - uses: actions/checkout@v4
 
@@ -34,13 +36,23 @@ jobs:
         run: |
           set -uo pipefail
           TERRITOIRES="${TERRITOIRES_ENTREE:-geosudsarthe geobelinois}"
+          RAPPORT="territoires/rapport-donnees.txt"
+          echo "Données des territoires, $(date -u +%Y-%m-%dT%H:%MZ)" > "$RAPPORT"
           echecs=""
+          # étape <nom> <commande...> : lance la commande, garde sa sortie dans le rapport, note l'échec sans s'arrêter
+          etape() {
+            local nom="$1"; shift
+            echo "### $nom ($id)" | tee -a "$RAPPORT"
+            "$@" 2>&1 | tee -a "$RAPPORT"
+            [ "${PIPESTATUS[0]}" -eq 0 ] || echecs="$echecs $nom:$id"
+          }
           for id in $TERRITOIRES; do
             echo "::group::$id"
-            python3 outils/build_osm.py --territoire "$id" || echecs="$echecs osm:$id"
-            python3 outils/build_artisans.py --territoire "$id" || echecs="$echecs artisans:$id"
-            python3 outils/build_associations.py --territoire "$id" || echecs="$echecs associations:$id"
-            python3 outils/maj_fichiers_disponibles.py --territoire "$id" || echecs="$echecs fichiers:$id"
+            etape osm python3 outils/build_osm.py --territoire "$id"
+            etape sources python3 outils/build_sources.py --territoire "$id"
+            etape artisans python3 outils/build_artisans.py --territoire "$id"
+            etape associations python3 outils/build_associations.py --territoire "$id"
+            etape fichiers python3 outils/maj_fichiers_disponibles.py --territoire "$id"
             echo "::endgroup::"
           done
           echo "echecs=$echecs" >> "$GITHUB_OUTPUT"

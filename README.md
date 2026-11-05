@@ -3737,6 +3737,10 @@ Pour GéoSudSarthe, GéoBelinois (et tout territoire de `territoires/`), les cou
   gendarmerie, EHPAD, offices de tourisme, aires de camping-car, petit patrimoine, cours d'eau, itinéraires
   vélo et randonnée). Chaque objet est filtré sur le vrai contour de la communauté de communes et rattaché à sa commune.
   `--essai points.json,lignes.json --sortie <dossier>` permet de le tester sans réseau.
+- `outils/build_sources.py --territoire <id> [--sources mairies,bal,...]` : mairies (annuaire de l'administration),
+  boîtes aux lettres (La Poste), bornes de recharge (IRVE), covoiturage (BNLC), France services (ANCT), monuments
+  historiques (Mérimée), arrêts et lignes Aléop (GTFS), aléa argiles (Géorisques), zonage d'urbanisme (GPU), DPE (ADEME).
+  Chaque source est indépendante ; le rapport de la dernière exécution est dans `territoires/rapport-donnees.txt`.
 - `outils/build_artisans.py --territoire <id>` : artisans (registre SIRENE).
 - `outils/build_associations.py --territoire <id>` : associations (RNA).
 - `outils/maj_fichiers_disponibles.py --territoire <id>` : met à jour `fichiersDisponibles` (les couches dont un

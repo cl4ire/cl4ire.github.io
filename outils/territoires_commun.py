@@ -50,3 +50,60 @@ def charger(identifiant):
         sys.exit(f"{fichier} : communes ou SIREN introuvables")
     return SimpleNamespace(id=identifiant, communes=communes, siren=siren.group(1),
                            couches=couches, fichier=fichier)
+
+
+# ----------------------------------------------------------------------------------------
+# Géométrie : contour de la communauté de communes et des communes
+# ----------------------------------------------------------------------------------------
+
+def polygones(geometrie):
+    """Liste de polygones [anneau extérieur, trous...] d'un Polygon/MultiPolygon GeoJSON."""
+    if geometrie["type"] == "Polygon":
+        return [geometrie["coordinates"]]
+    if geometrie["type"] == "MultiPolygon":
+        return geometrie["coordinates"]
+    return []
+
+
+def dans_anneau(x, y, anneau):
+    dedans = False
+    j = len(anneau) - 1
+    for i in range(len(anneau)):
+        xi, yi = anneau[i][0], anneau[i][1]
+        xj, yj = anneau[j][0], anneau[j][1]
+        if (yi > y) != (yj > y) and x < (xj - xi) * (y - yi) / ((yj - yi) or 1e-18) + xi:
+            dedans = not dedans
+        j = i
+    return dedans
+
+
+class Zone:
+    """Un ensemble de polygones, avec test point-dans-polygone rapide (boîte englobante d'abord)."""
+
+    def __init__(self, geometrie):
+        self.polys = polygones(geometrie)
+        xs = [p[0] for poly in self.polys for p in poly[0]]
+        ys = [p[1] for poly in self.polys for p in poly[0]]
+        self.boite = (min(xs), min(ys), max(xs), max(ys))
+
+    def contient(self, x, y):
+        b = self.boite
+        if not (b[0] <= x <= b[2] and b[1] <= y <= b[3]):
+            return False
+        return any(dans_anneau(x, y, poly[0]) and not any(dans_anneau(x, y, t) for t in poly[1:]) for poly in self.polys)
+
+
+def charger_zones(territoire):
+    """(Zone de la communauté de communes, [(code INSEE, nom, Zone) de chaque commune])."""
+    with open(os.path.join(territoire.couches, "epci.geojson"), encoding="utf-8") as f:
+        epci = json.load(f)["features"][0]["geometry"]
+    with open(os.path.join(territoire.couches, "communes.geojson"), encoding="utf-8") as f:
+        communes = json.load(f)["features"]
+    return Zone(epci), [(c["properties"]["code_insee"], c["properties"]["nom_offici"], Zone(c["geometry"])) for c in communes]
+
+
+def commune_de(x, y, communes):
+    for code, nom, zone in communes:
+        if zone.contient(x, y):
+            return code, nom
+    return None, None
