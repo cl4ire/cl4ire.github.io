@@ -3671,10 +3671,10 @@ courant, ajouter une ligne à la table `ALIAS` de `js/url.js`.
 ## Interface (barre du haut, mobile, accueil)
 
 - Barre du haut : Accueil à gauche de la recherche, boutons avec pictogramme +
-  texte, lien « ← swallow·AGE » en haut à gauche.
+  texte, lien « ← hirund·AGE » en haut à gauche.
 - Mobile (≤ 780 px) : barre de navigation en bas (`#bottom-nav`, `js/navbas.js`),
   qui déclenche les mêmes boutons que la barre du haut ; « Plus » regroupe
-  À propos, Installer et le retour à swallow·AGE.
+  À propos, Installer et le retour à hirund·AGE.
 - Accueil : 6 grandes tuiles (raccourcis marqués `accueil: true` dans
   `RACCOURCIS`, `js/config.js`) ; le reste est sous « Plus d'options ».
   `triInitial: "prix"` ouvre la liste des stations déjà triée par prix.
