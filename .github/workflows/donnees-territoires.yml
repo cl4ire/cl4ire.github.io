@@ -5,6 +5,7 @@ name: Données des territoires (OpenStreetMap, SIRENE, RNA)
 # - OpenStreetMap via Overpass (outils/build_osm.py) : commerces, services, santé, sports, nature...
 # - autres sources ouvertes (outils/build_sources.py) : mairies, boîtes aux lettres, bornes de recharge, covoiturage,
 #   France services, monuments historiques, bus Aléop, argiles, zonage d'urbanisme, DPE, défibrillateurs, élus
+# - petite enfance (outils/build_petite_enfance.py) : exports monenfant.fr déposés dans territoires/<id>/saisie/
 # - prix de l'immobilier et parcelles vendues (outils/build_dvf.py, DVF + cadastre)
 # - registre SIRENE (outils/build_artisans.py) : artisans
 # - répertoire des associations RNA (outils/build_associations.py)
@@ -54,6 +55,7 @@ jobs:
             etape osm python3 outils/build_osm.py --territoire "$id"
             etape sources python3 outils/build_sources.py --territoire "$id"
             etape dvf python3 outils/build_dvf.py --territoire "$id"
+            etape petiteenfance python3 outils/build_petite_enfance.py --territoire "$id"
             etape artisans python3 outils/build_artisans.py --territoire "$id"
             etape associations python3 outils/build_associations.py --territoire "$id"
             etape fichiers python3 outils/maj_fichiers_disponibles.py --territoire "$id"
