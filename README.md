@@ -3038,7 +3038,7 @@ disponible dans le jeu gratuit.
 ## Suivi de visites (GoatCounter), uniquement sur la prod
 
 Retour direct de l'utilisatrice : après le passage en "prod" du site
-sur `swallowage.github.io/geoberce`, besoin de compter les visites -
+sur `hirundage.fr/geoberce`, besoin de compter les visites -
 mais surtout pas sur ce dépôt (`cl4ire.github.io`), qui n'est qu'un
 environnement de test sans visiteurs réels à mesurer.
 
@@ -3050,8 +3050,8 @@ ces fichiers, une "avec tracking" et une "sans". La seule option
 propre est un seul fichier qui décide lui-même où il s'active.
 
 **`js/analytics.js`** (nouveau) : `estProdGeoberce(hostname)` compare
-le nom d'hôte réel du navigateur à `"swallowage.github.io"` (égalité
-stricte - un sous-domaine comme `www.swallowage.github.io` ne
+le nom d'hôte réel du navigateur à `"hirundage.fr"` (égalité
+stricte - un sous-domaine comme `www.hirundage.fr` ne
 matcherait pas, volontairement, pour éviter tout faux positif) ;
 `injecterGoatCounter()` insère le script GoatCounter
 (`//gc.zgo.at/count.js`, `data-goatcounter` pointant vers
@@ -3289,7 +3289,7 @@ données structurées `schema.org` (`WebSite`, JSON-LD) pour aider Google
 
 **Particularité propre à l'architecture à deux dépôts** : `canonical`,
 `og:url` et l'URL de l'image Open Graph pointent en dur vers
-`https://swallowage.github.io/geoberce/` - jamais une URL relative au
+`https://hirundage.fr/geoberce/` - jamais une URL relative au
 domaine qui sert réellement la page à l'instant T, puisque ce même
 `index.html` est servi aussi bien depuis ce dépôt de développement que
 depuis la vraie prod (mécanisme de synchro déjà en place, voir plus
@@ -3305,12 +3305,12 @@ aident Google à bien comprendre/afficher la page une fois qu'il l'a
 trouvée, mais ne garantissent pas qu'il la trouve vite. Pour accélérer
 l'indexation :
 1. Google Search Console (search.google.com/search-console) : ajouter
-   la propriété `https://swallowage.github.io/geoberce/`, puis
+   la propriété `https://hirundage.fr/geoberce/`, puis
    "Inspection de l'URL" → "Demander une indexation" - généralement
    indexé en quelques heures à quelques jours plutôt que d'attendre le
    passage naturel des robots.
 2. Un lien vers `/geoberce/` depuis la page d'accueil personnelle de
-   swallowage.github.io (déjà indexée) aiderait Google à découvrir la
+   hirundage.fr (déjà indexée) aiderait Google à découvrir la
    page plus vite - pas fait ici, cette page est hors du périmètre
    synchronisé automatiquement (voir plus haut, "geoberce/README.md
    n'est jamais touché" - même principe pour tout le reste de la racine
@@ -3658,8 +3658,8 @@ qui ouvre le formulaire de contact prérempli.
 On peut partager un lien qui ouvre la carte directement avec une ou plusieurs
 couches cochées, sans passer par l'écran d'accueil (ni la visite guidée) :
 
-- `https://swallowage.github.io/geoberce/?couche=carburant`
-- `https://swallowage.github.io/geoberce/?couche=carburant,courrier`
+- `https://hirundage.fr/geoberce/?couche=carburant`
+- `https://hirundage.fr/geoberce/?couche=carburant,courrier`
 
 Le nom est reconnu souplement (`js/url.js`) : identifiant exact de la couche
 (`carburants`), singulier/pluriel, sans accents ni majuscules, quelques mots
