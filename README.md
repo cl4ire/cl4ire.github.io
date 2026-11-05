@@ -3652,3 +3652,31 @@ Les noms d'associations et d'artisans sont aussi trouvables par la
 recherche, comme les métiers (« plombier », « électricien »…) grâce à
 `motsClesPourFeature`. Les fiches ont un bouton « Signaler une erreur »
 qui ouvre le formulaire de contact prérempli.
+
+## Ouvrir GéoBercé avec une couche déjà affichée (`?couche=`)
+
+On peut partager un lien qui ouvre la carte directement avec une ou plusieurs
+couches cochées, sans passer par l'écran d'accueil (ni la visite guidée) :
+
+- `https://swallowage.github.io/geoberce/?couche=carburant`
+- `https://swallowage.github.io/geoberce/?couche=carburant,courrier`
+
+Le nom est reconnu souplement (`js/url.js`) : identifiant exact de la couche
+(`carburants`), singulier/pluriel, sans accents ni majuscules, quelques mots
+courants (`essence`, `courrier`, `colis`, `assmat`, `artisan`, `argile`,
+`chasse`...), ou un morceau du libellé. Un nom inconnu est ignoré (un
+avertissement apparaît dans la console du navigateur). Pour un nouveau mot
+courant, ajouter une ligne à la table `ALIAS` de `js/url.js`.
+
+## Interface (barre du haut, mobile, accueil)
+
+- Barre du haut : Accueil à gauche de la recherche, boutons avec pictogramme +
+  texte, lien « ← swallow·AGE » en haut à gauche.
+- Mobile (≤ 780 px) : barre de navigation en bas (`#bottom-nav`, `js/navbas.js`),
+  qui déclenche les mêmes boutons que la barre du haut ; « Plus » regroupe
+  À propos, Installer et le retour à swallow·AGE.
+- Accueil : 6 grandes tuiles (raccourcis marqués `accueil: true` dans
+  `RACCOURCIS`, `js/config.js`) ; le reste est sous « Plus d'options ».
+  `triInitial: "prix"` ouvre la liste des stations déjà triée par prix.
+- Clic sur une commune : petite popup (nom, habitants) avec un bouton vers la
+  fiche plein écran. Un clic sur une zone vide de la carte referme la popup.
