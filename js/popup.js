@@ -2059,12 +2059,13 @@ function construirePopupLotChasse(props) {
    cohérent partout où un code de zone PLUi est affiché. */
 function construirePopupZonePLUi(props) {
     const label = (typeof LABELS_PLUI !== "undefined" && LABELS_PLUI[props.typezone]) || props.typezone || "Zone";
+    const couleur = (TYPES_PLUI.find(t => t.id === categoriePlui({ properties: props })) || {}).color || PALETTE.ardoise;
 
     return `<div class="popup-fiche">
         <div class="popup-fiche-entete">
-            <div class="popup-fiche-icon" style="background:${PALETTE.ardoise}"><i class="fa-solid fa-map"></i></div>
+            <div class="popup-fiche-icon" style="background:${couleur}"><i class="fa-solid fa-map"></i></div>
             <div class="popup-fiche-titre-wrap">
-                <div class="popup-fiche-tag" style="color:${PALETTE.ardoise}">Zonage PLUi</div>
+                <div class="popup-fiche-tag" style="color:${couleur}">Zonage PLUi</div>
                 <div class="popup-fiche-titre">${echapperHtml(label)}</div>
                 ${(props.libelong && props.libelong !== label) ? `<div class="popup-fiche-adresse">${echapperHtml(props.libelong)}</div>` : ""}
             </div>
