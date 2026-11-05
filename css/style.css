@@ -914,6 +914,7 @@ a.commune-badge-vigieau:hover { text-decoration: underline; }
     }
     #bottom-nav button i { font-size: 18px; color: var(--primaire); }
     #bottom-nav button:active { background: var(--brume); }
+    #bottom-nav button[hidden] { display: none; }
 
     #plus-sheet {
         display: flex; flex-direction: column; position: fixed; right: 10px;

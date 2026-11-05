@@ -329,6 +329,9 @@ function construireCartePrixImmobilier(codeInsee) {
 }
 
 function construireCarteActualites(codeInsee) {
+    /* Seulement quand le territoire a un flux Illiwap par commune (voir TERRITOIRE.actualites). */
+    const actu = TERRITOIRE.actualites;
+    if (!actu || actu.type !== "illiwap" || !actu.communes) return "";
     return `<div class="commune-carte commune-carte-large">
         <div class="commune-carte-titre"><i class="fa-solid fa-bullhorn"></i>Actualités (Illiwap)</div>
         <div class="illiwap-embed">
@@ -570,6 +573,13 @@ function construireSelecteurCommunes(map) {
    ça n'a pas besoin de prendre la place de tout le panneau pour un
    simple coup d'œil aux actus du territoire. */
 function toggleActuDropdown(forcerOuvert) {
+    const actu = TERRITOIRE.actualites;
+    if (!actu) return;
+    /* Un simple lien (ex. Intramuros) : ouvert dans un nouvel onglet, rien à intégrer. */
+    if (actu.type === "lien") {
+        if (forcerOuvert !== false) window.open(actu.url, "_blank", "noopener");
+        return;
+    }
     const dropdown = document.getElementById("actu-dropdown");
     const seraOuvert = forcerOuvert !== undefined ? forcerOuvert : dropdown.hidden;
     dropdown.hidden = !seraOuvert;

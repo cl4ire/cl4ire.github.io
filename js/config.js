@@ -661,7 +661,7 @@ const URL_CADASTRE_EPCI = `https://cadastre.data.gouv.fr/bundler/cadastre-etalab
    La CC elle-même a un identifiant à part (pas de code INSEE pour
    une intercommunalité), fourni par l'utilisatrice.
    ========================================================= */
-const ILLIWAP_TERRITOIRE = TERRITOIRE.illiwap;
+const ILLIWAP_TERRITOIRE = (TERRITOIRE.actualites && TERRITOIRE.actualites.type === "illiwap") ? TERRITOIRE.actualites.id : null;
 
 function urlIllwapEmbed(identifiant) {
     return `https://station.illiwap.com/fr/public/${identifiant}/actu/embed`;
