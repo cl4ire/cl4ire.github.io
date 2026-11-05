@@ -1,4 +1,4 @@
-Données des territoires, 2026-11-05T18:04Z
+Données des territoires, 2026-11-05T18:54Z
 ### osm (geobelinois)
 Overpass : points d'intérêt
   overpass-api.de : 947 éléments
@@ -116,8 +116,14 @@ Overpass : cours d'eau et itinéraires
   mutations : 3303 -> urbanisme/parcelles_dvf_2021_2025_loir_luce_berce.geojson
 ### petiteenfance (geobelinois)
   ecommoy.csv : 14 placés
-  4 non placés (adresse absente, incomplète ou hors du territoire) : Inna CHERMAN (Cré'Activités Sourires 72220 ECOMMOY) / Jennifer EDE (pas d adresse) / Cecile GERAULT (pas d adresse) / Karine PAPILLON (1 Résidence des Tilleuls 72220 ECOMMOY)
-  petiteEnfance : 14 -> famille/petiteEnfance.geojson
+  laigne-saint-gervais.csv : 13 placés
+  marigne-laille.csv : 11 placés
+  monce-en-belin.csv : 20 placés
+  saint-biez-en-belin.csv : 2 placés
+  saint-ouen-en-belin.csv : 9 placés
+  teloche.csv : 14 placés
+  11 non placés (adresse absente, incomplète ou hors du territoire) : Inna CHERMAN (Cré'Activités Sourires 72220 ECOMMOY) / Jennifer EDE (pas d adresse) / Cecile GERAULT (pas d adresse) / Karine PAPILLON (1 Résidence des Tilleuls 72220 ECOMMOY) / Adeline BIDALLIER (9bis Route de Fromenteau 72220 LAIGNE ST GERVAIS) / Roselyne MICHELON (72220 LAIGNE EN BELIN) / Marjorie MOQUET (72230 MONCE EN BELIN) / Charlene COHERGNE (18 Place du Mail 72220 ST GERVAIS EN BELIN) / Sandrine DUPONT (72220 TELOCHE) / Severine PEAN (72220 TELOCHE) / Nathalie LESAGE (72220 TELOCHE)
+  petiteEnfance : 83 -> famille/petiteEnfance.geojson
 ### artisans (geobelinois)
 Écommoy : 48 artisans
 Laigné-Saint-Gervais : 17 artisans
