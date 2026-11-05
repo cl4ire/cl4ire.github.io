@@ -6,7 +6,7 @@ de monenfant.fr, un fichier CSV par commune, déposés dans
 
     territoires/<id>/saisie/assistantes-maternelles/<commune>.csv
 
-Colonnes lues : Nom ; Adresse ; Téléphone ; E-mail (les autres, dont « Disponibilité » trop vite
+Colonnes lues : Nom ; Adresse ; Téléphone ; E-mail ; Fiche monenfant.fr (les autres, dont « Disponibilité » trop vite
 périmée et « Distance », sont ignorées). Chaque adresse est géolocalisée avec la Base adresse
 nationale (Géoplateforme) ; une ligne sans adresse, ou introuvable, n'est pas placée sur la carte
 et figure dans le rapport. Écrit couches/famille/petiteEnfance.geojson.
@@ -43,7 +43,8 @@ def geocoder(adresse):
         params["postcode"] = m.group(1)
     j = S.json_url(GEOCODEUR + urllib.parse.urlencode(params))
     for r in j.get("features", []):
-        if (r["properties"].get("score") or 0) < 0.5:
+        # une commune entière n'est pas une adresse : on ne place pas au hasard au centre du bourg
+        if (r["properties"].get("score") or 0) < 0.5 or r["properties"].get("type") == "municipality":
             continue
         lon, lat = r["geometry"]["coordinates"]
         if S.dans(lon, lat):
@@ -83,7 +84,7 @@ def main():
             n += 1
             features.append({"type": "Feature", "geometry": {"type": "Point", "coordinates": [round(position[0], 6), round(position[1], 6)]},
                              "properties": {"nom": nom, "adresse": adresse, "telephone": telephone(r.get("Téléphone")),
-                                            "mail": (r.get("E-mail") or "").strip() or None, "ficheCAF": None,
+                                            "mail": (r.get("E-mail") or "").strip() or None, "ficheCAF": (r.get("Fiche monenfant.fr") or "").strip() or None,
                                             "type": "Assistant maternel"}})
         print(f"  {os.path.basename(chemin)} : {n} placés")
     if non_places:
