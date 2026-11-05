@@ -3727,3 +3727,22 @@ dans sa fiche), `{ type: "lien", libelle: "Intramuros", url: "https://..." }` (o
 un nouvel onglet, pour un service qui ne s'intègre pas dans la page), ou `null` (pas de bouton).
 Le comportement est dans `js/territoire-appliquer.js`, commun à tous les territoires ;
 `js/territoire.js` et `territoires/<id>/territoire.js` ne contiennent que des données.
+
+### Données des territoires
+
+Pour GéoSudSarthe, GéoBelinois (et tout territoire de `territoires/`), les couches se construisent par script :
+
+- `outils/build_osm.py --territoire <id>` : OpenStreetMap via Overpass (commerces, banques, écoles, parkings, toilettes,
+  fontaines, bibliothèques, marchés, aires de jeux, équipements sportifs, antennes, casiers colis, pompiers,
+  gendarmerie, EHPAD, offices de tourisme, aires de camping-car, petit patrimoine, cours d'eau, itinéraires
+  vélo et randonnée). Chaque objet est filtré sur le vrai contour de la communauté de communes et rattaché à sa commune.
+  `--essai points.json,lignes.json --sortie <dossier>` permet de le tester sans réseau.
+- `outils/build_artisans.py --territoire <id>` : artisans (registre SIRENE).
+- `outils/build_associations.py --territoire <id>` : associations (RNA).
+- `outils/maj_fichiers_disponibles.py --territoire <id>` : met à jour `fichiersDisponibles` (les couches dont un
+  fichier manque restent masquées).
+
+Le workflow **« Données des territoires »** (`.github/workflows/donnees-territoires.yml`, lancement manuel ou le 8 de
+chaque mois) enchaîne tout pour les territoires demandés et commite sur `main`. Il tourne chez GitHub : les API publiques
+(Overpass, SIRENE) y sont accessibles, ce qui n'est pas toujours le cas depuis un environnement de développement.
+Les données de GéoBercé restent saisies et vérifiées à la main : ce workflow ne les touche pas.

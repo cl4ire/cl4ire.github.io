@@ -13,7 +13,7 @@ Vie privée : le siège d'une petite association est souvent le domicile d'un
 ou d'une bénévole. On ne publie donc PAS l'adresse : chaque commune donne un
 seul point (le centre de la commune) qui porte la liste de ses associations.
 
-Usage : python3 outils/build_associations.py [rna_waldec.zip ou .csv] [sortie.geojson]
+Usage : python3 outils/build_associations.py [--territoire <id>] [rna_waldec.zip ou .csv] [sortie.geojson]
 Sans fichier, le dernier export est téléchargé depuis data.gouv.fr.
 """
 import csv
@@ -32,16 +32,11 @@ RACINE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATASET = "https://www.data.gouv.fr/api/1/datasets/repertoire-national-des-associations/"
 ANS_MAX = 10
 
-COMMUNES = {
-    "72027": "Beaumont-sur-Dême", "72028": "Beaumont-Pied-de-Bœuf", "72052": "Chahaignes",
-    "72068": "La Chartre-sur-le-Loir", "72071": "Montval-sur-Loir", "72103": "Courdemanche",
-    "72115": "Dissay-sous-Courcillon", "72134": "Flée", "72143": "Le Grand-Lucé",
-    "72153": "Jupilles", "72160": "Lavernat", "72161": "Lhomme", "72173": "Luceau",
-    "72183": "Marçon", "72210": "Montreuil-le-Henri", "72221": "Nogent-sur-Loir",
-    "72248": "Pruillé-l'Éguillé", "72262": "Loir en Vallée", "72279": "Saint-Georges-de-la-Couée",
-    "72311": "Saint-Pierre-de-Chevillé", "72314": "Saint-Pierre-du-Lorouër",
-    "72325": "Saint-Vincent-du-Lorouër", "72356": "Thoiré-sur-Dinan", "72376": "Villaines-sous-Lucé",
-}
+# Territoire (--territoire <id>, geoberce par défaut) : communes lues dans son fichier territoire.js.
+import territoires_commun
+TERRITOIRE_ID, ARGS = territoires_commun.separer_argument(sys.argv)
+T = territoires_commun.charger(TERRITOIRE_ID)
+COMMUNES = T.communes
 
 
 def cle(t):
@@ -52,11 +47,13 @@ def cle(t):
 # Nom de commune (actuel ou ancien) -> code Insee actuel, pour les déclarations
 # qui portent encore le code ou le nom d'une commune déléguée.
 PAR_NOM = {cle(n): c for c, n in COMMUNES.items()}
-PAR_NOM.update({
-    cle("Château-du-Loir"): "72071", cle("Montabon"): "72071", cle("Vouvray-sur-Loir"): "72071",
-    cle("Ruillé-sur-Loir"): "72262", cle("La Chapelle-Gaugain"): "72262", cle("Lavenay"): "72262",
-    cle("Poncé-sur-le-Loir"): "72262",
-})
+# Anciennes communes fusionnées (déclarations RNA qui portent encore leur nom) : propres à Loir-Lucé-Bercé.
+if T.id == "geoberce":
+    PAR_NOM.update({
+        cle("Château-du-Loir"): "72071", cle("Montabon"): "72071", cle("Vouvray-sur-Loir"): "72071",
+        cle("Ruillé-sur-Loir"): "72262", cle("La Chapelle-Gaugain"): "72262", cle("Lavenay"): "72262",
+        cle("Poncé-sur-le-Loir"): "72262",
+    })
 
 # Catégories affichées (id utilisé par js/config.js), dans cet ordre :
 # 1. quelques mots sans ambiguïté dans le nom (« comité des fêtes »…) ;
@@ -203,7 +200,7 @@ def lignes(chemin):
 
 def centres():
     """Centre approximatif de chaque commune (barycentre de son plus grand polygone)."""
-    with open(os.path.join(RACINE, "couches", "communes.geojson"), encoding="utf-8") as f:
+    with open(os.path.join(T.couches, "communes.geojson"), encoding="utf-8") as f:
         data = json.load(f)
     out = {}
     for feat in data["features"]:
@@ -227,8 +224,8 @@ def centres():
 
 
 def main():
-    source = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1] != "-" else telecharger()
-    sortie = sys.argv[2] if len(sys.argv) > 2 else os.path.join(RACINE, "couches", "associations", "associations.geojson")
+    source = ARGS[0] if len(ARGS) > 0 and ARGS[0] != "-" else telecharger()
+    sortie = ARGS[1] if len(ARGS) > 1 else os.path.join(T.couches, "associations", "associations.geojson")
     limite = str(int(time.strftime("%Y")) - ANS_MAX) + time.strftime("-%m-%d")
     par_commune = {c: [] for c in COMMUNES}
     lues = 0

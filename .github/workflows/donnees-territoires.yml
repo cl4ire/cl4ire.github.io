@@ -1,0 +1,68 @@
+name: Données des territoires (OpenStreetMap, SIRENE, RNA)
+
+# Construit les couches de données de GéoSudSarthe et GéoBelinois (ou d'un autre territoire
+# de territoires/) depuis les sources publiques :
+# - OpenStreetMap via Overpass (outils/build_osm.py) : commerces, services, santé, sports, nature...
+# - registre SIRENE (outils/build_artisans.py) : artisans
+# - répertoire des associations RNA (outils/build_associations.py)
+# puis met à jour `fichiersDisponibles` de chaque territoire (outils/maj_fichiers_disponibles.py)
+# et commite directement sur main (seuls les dossiers territoires/<id>/ changent : GéoBercé n'est pas touché).
+# Chaque étape qui échoue est signalée, les autres sont quand même gardées.
+on:
+  schedule:
+    - cron: '41 4 8 * *'
+  workflow_dispatch:
+    inputs:
+      territoires:
+        description: "Territoires à mettre à jour, séparés par des espaces"
+        default: "geosudsarthe geobelinois"
+
+permissions:
+  contents: write
+
+jobs:
+  donnees:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Données de chaque territoire
+        id: donnees
+        env:
+          TERRITOIRES_ENTREE: ${{ github.event.inputs.territoires }}
+        run: |
+          set -uo pipefail
+          TERRITOIRES="${TERRITOIRES_ENTREE:-geosudsarthe geobelinois}"
+          echecs=""
+          for id in $TERRITOIRES; do
+            echo "::group::$id"
+            python3 outils/build_osm.py --territoire "$id" || echecs="$echecs osm:$id"
+            python3 outils/build_artisans.py --territoire "$id" || echecs="$echecs artisans:$id"
+            python3 outils/build_associations.py --territoire "$id" || echecs="$echecs associations:$id"
+            python3 outils/maj_fichiers_disponibles.py --territoire "$id" || echecs="$echecs fichiers:$id"
+            echo "::endgroup::"
+          done
+          echo "echecs=$echecs" >> "$GITHUB_OUTPUT"
+
+      - name: Commit si les données ont changé
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add territoires
+          if git diff --cached --quiet; then
+            echo "Pas de changement dans les données."
+            exit 0
+          fi
+          git commit -m "Mise à jour des données des territoires"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+      - name: Signaler un échec
+        if: steps.donnees.outputs.echecs != ''
+        env:
+          ECHECS: ${{ steps.donnees.outputs.echecs }}
+        run: |
+          echo "::error::Étapes en échec :${ECHECS}"
+          exit 1
