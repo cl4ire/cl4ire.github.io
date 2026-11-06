@@ -1,21 +1,19 @@
-Données des territoires, 2026-11-06T13:52Z
+Données des territoires, 2026-11-06T14:21Z
 ### osm (geosudsarthe)
 Overpass : points d'intérêt
-  overpass-api.de : 1503 éléments
+  overpass-api.de : 1504 éléments
 Overpass : cours d'eau et itinéraires
   overpass-api.de essai 1 : HTTP Error 502: Bad Gateway
   overpass-api.de essai 2 : HTTP Error 502: Bad Gateway
-  overpass-api.de essai 3 : HTTP Error 502: Bad Gateway
-  overpass.kumi.systems essai 1 : HTTP Error 504: Gateway Timeout
-  overpass.kumi.systems : 1003 éléments
-  diagnostic : éléments par type {'way': 942, 'relation': 61} ; relations par route={'hiking': 51, 'bicycle': 10}
-    hiking lwn - « Circuit de Carnuta à Bercé » : 11 membres, 11 voies, 7 avec géométrie, 0 dans le territoire
+  overpass-api.de : 1009 éléments
+  diagnostic : éléments par type {'way': 946, 'relation': 63} ; relations par route={'hiking': 53, 'bicycle': 10}
+    hiking lwn - « Circuit de Carnuta à Bercé » : 13 membres, 13 voies, 9 avec géométrie, 0 dans le territoire
     hiking lwn - « Sentier de l'École de la Forêt » : 2 membres, 2 voies, 2 avec géométrie, 0 dans le territoire
-    hiking lwn J5 « J5 » : 3 membres, 3 voies, 3 avec géométrie, 0 dans le territoire
+    hiking lwn J5 « J5 » : 60 membres, 60 voies, 24 avec géométrie, 0 dans le territoire
     bicycle lcn 28 « Lac du Val Joyeux et campagne tourangelle » : 75 membres, 75 voies, 25 avec géométrie, 0 dans le territoire
     bicycle lcn 35 « La route des vergers » : 44 membres, 44 voies, 14 avec géométrie, 0 dans le territoire
     bicycle lcn 2 « Loir et Châteaux » : 68 membres, 68 voies, 37 avec géométrie, 29 dans le territoire
-    bicycle ncn V47 « La Vallée du Loir à vélo 4/5 » : 269 membres, 269 voies, 84 avec géométrie, 63 dans le territoire
+    bicycle ncn V47 « La Vallée du Loir à vélo 4/5 » : 267 membres, 267 voies, 84 avec géométrie, 63 dans le territoire
     hiking lwn D « Sentier des Menhirs » : 59 membres, 59 voies, 59 avec géométrie, 58 dans le territoire
     hiking lwn B « Sentier du Château de Gallerande » : 45 membres, 45 voies, 45 avec géométrie, 45 dans le territoire
     hiking lwn C « Sentier de la Mare aux Cochons » : 59 membres, 58 voies, 58 avec géométrie, 58 dans le territoire
@@ -24,7 +22,7 @@ Overpass : cours d'eau et itinéraires
   horaires saisis : 2 déchèterie(s)
   commerces : 143
   banques : 16
-  education : 33
+  education : 31
   parkings : 157
   toilettes : 32
   fontaines : 5
@@ -38,13 +36,14 @@ Overpass : cours d'eau et itinéraires
   pompiers : 7
   gendarmerie : 4
   ehpad : 3
+  structures_pe : 3
   officesTourisme : 1
   campingcar : 4
   patrimoineRural : 17
-  cours_eau : 581
+  cours_eau : 583
   velo : 6
   randonnees_osm : 40
-1235 objets écrits pour geosudsarthe
+1238 objets écrits pour geosudsarthe
 ### sources (geosudsarthe)
 == mairies
   répertoire des élus : colonnes code='Code de la commune' nom="Nom de l'élu" prénom="Prénom de l'élu" fonction='Libellé de la fonction'
@@ -237,7 +236,7 @@ Overpass : cours d'eau et itinéraires
   chenu.csv : 1 placés
   coulonge.csv : 2 placés
   la-chapelle-aux-choux.csv : 1 placés
-  le-lude.csv : 9 placés
+  le-lude.csv : 11 placés
   luche-pringe.csv : 4 placés
   mansigne.csv : 10 placés
   mayet.csv : 13 placés
@@ -248,8 +247,12 @@ Overpass : cours d'eau et itinéraires
   vaas.csv : 8 placés
   verneil-le-chetif.csv : 1 placés
   yvre-le-polin.csv : 10 placés
-  8 non placés (adresse absente, incomplète ou hors du territoire) : Caroline THOMANN (72800 AUBIGNE RACAN) / Aurelie PAPILLON (72800 LE LUDE) / Sophie GAUTIER (72800 LE LUDE) / Sonia MARTIN (Le Champ des Muriers II 72800 LE LUDE) / Sandra CAMUS (72360 MAYET) / Marie Laure ROUSSILLON (72510 PONTVALLAIN) / Sandrine TISON (72510 REQUEIL) / Laetitia PAPIN (Lieu-dit Derreux 72360 VERNEIL LE CHETIF)
-  petiteEnfance : 91 -> famille/petiteEnfance.geojson
+  6 assistantes maternelles non placées (adresse absente, incomplète ou hors du territoire) : Caroline THOMANN (72800 AUBIGNE RACAN) / Sonia MARTIN (Le Champ des Muriers II 72800 LE LUDE) / Sandra CAMUS (72360 MAYET) / Marie Laure ROUSSILLON (72510 PONTVALLAIN) / Sandrine TISON (72510 REQUEIL) / Laetitia PAPIN (Lieu-dit Derreux 72360 VERNEIL LE CHETIF)
+  structures saisies : 0 ; trouvées sur OpenStreetMap : 3
+    Relais Petite Enfance : Relais Petite Enfance (sans adresse)
+    Crèche : Les petits pieds (sans adresse)
+    Crèche : Le Jardin des Bambins (sans adresse)
+  petiteEnfance : 96 -> famille/petiteEnfance.geojson
 ### artisans (geosudsarthe)
 Aubigné-Racan : 15 artisans
 La Bruère-sur-Loir : 2 artisans
@@ -412,4 +415,268 @@ Verneil-le-Chétif : 8 associations
 Yvré-le-Pôlin : 30 associations
 436 associations écrites dans /home/runner/work/cl4ire.github.io/cl4ire.github.io/territoires/geosudsarthe/couches/associations/associations.geojson
 ### fichiers (geosudsarthe)
-geosudsarthe : 41 fichiers disponibles
+geosudsarthe : 42 fichiers disponibles
+### osm (geobelinois)
+Overpass : points d'intérêt
+  overpass-api.de essai 1 : HTTP Error 502: Bad Gateway
+  overpass-api.de : 947 éléments
+Overpass : cours d'eau et itinéraires
+  overpass-api.de : 246 éléments
+  diagnostic : éléments par type {'way': 226, 'relation': 20} ; relations par route={'bicycle': 8, 'hiking': 12}
+    bicycle lcn 1 « Voie verte du bord de Sarthe » : 34 membres, 34 voies, 4 avec géométrie, 0 dans le territoire
+    bicycle lcn - « Boulevard Nature » : 321 membres, 321 voies, 22 avec géométrie, 0 dans le territoire
+    hiking lwn - « Circuit de Carnuta à Bercé » : 13 membres, 13 voies, 9 avec géométrie, 0 dans le territoire
+    hiking lwn - « Sentier de l'École de la Forêt » : 2 membres, 2 voies, 2 avec géométrie, 0 dans le territoire
+    hiking lwn J5 « J5 » : 60 membres, 60 voies, 24 avec géométrie, 2 dans le territoire
+    bicycle ncn V44 « Vélobuissonnière » : 992 membres, 972 voies, 26 avec géométrie, 0 dans le territoire
+    bicycle rcn V438 « La Sarthe à Vélo du Mans à Château-du-Loir » : 286 membres, 286 voies, 14 avec géométrie, 0 dans le territoire
+    hiking nwn - « De la Manche aux Pyrénées 07, Saint-Mars-d'Outillé - Le Lude » : 185 membres, 185 voies, 72 avec géométrie, 25 dans le territoire
+    hiking nwn - « De la Manche aux Pyrénées 07, Yvré-l'Évêque - Saint-Mars-d'Outillé » : 134 membres, 134 voies, 28 avec géométrie, 0 dans le territoire
+    bicycle - - « ? » : 1 membres, 1 voies, 1 avec géométrie, 0 dans le territoire
+    bicycle - - « ? » : 1 membres, 1 voies, 1 avec géométrie, 0 dans le territoire
+    bicycle lcn - « Boulevard Nature » : 19 membres, 19 voies, 19 avec géométrie, 0 dans le territoire
+  horaires saisis : 2 déchèterie(s)
+  déchèteries voisines ajoutées : 2
+  commerces : 119
+  banques : 7
+  education : 21
+  parkings : 92
+  toilettes : 11
+  fontaines : 3
+  bibliotheques : 5
+  marches : aucun résultat (fichier non écrit)
+  airesJeu : 9
+  equipementSportif : 76
+  antennes : 16
+  lockers_osm : 6
+  dechets : 8
+  pompiers : 2
+  gendarmerie : 2
+  ehpad : 2
+  structures_pe : aucun résultat (fichier non écrit)
+  officesTourisme : 2
+  campingcar : 1
+  patrimoineRural : 16
+  cours_eau : 78
+  velo : aucun résultat (fichier non écrit)
+  randonnees_osm : 3
+479 objets écrits pour geobelinois
+### sources (geobelinois)
+== mairies
+  répertoire des élus : colonnes code='Code de la commune' nom="Nom de l'élu" prénom="Prénom de l'élu" fonction='Libellé de la fonction'
+  élus trouvés pour 7 commune(s) sur 7
+  mairies : 7 -> services/mairies.geojson
+== bal
+  bal : 17 -> services/bal.geojson
+== irve
+  irve : 12 -> services/irve.geojson
+== covoiturage
+  airecovoiturage : 8 -> mobilite/airecovoiturage.geojson
+== franceServices
+  franceServices : 1 -> services/franceServices.geojson
+== monuments
+  immeublesProteges : 4 -> patrimoine/immeublesProteges.geojson
+== aleop
+  arretsALEOP : 53 -> mobilite/arretsALEOP.geojson
+  reseauALEOP : 3 -> mobilite/reseauALEOP.geojson
+== rga
+  rga : 26 -> urbanisme/rga_2025_loir_luce_berce.geojson
+== plui
+  zonage_plui : 325 -> urbanisme/zonage_plui_loir_luce_berce_filtre.geojson
+== dpe
+  dpe : 2123 -> urbanisme/dpe_loir_luce_berce.geojson
+== dae
+  écartés : 0 inactifs, 0 doublons
+  dae : 42 -> securite/dae.geojson
+### dvf (geobelinois)
+  Écommoy (72124)
+    2021 : 366 lignes
+    2022 : 442 lignes
+    2023 : 275 lignes
+    2024 : 250 lignes
+    2025 : 295 lignes
+    -> 300 ventes de logements exploitables
+  Laigné-Saint-Gervais (72155)
+    2021 : 177 lignes
+    2022 : 167 lignes
+    2023 : 110 lignes
+    2024 : 100 lignes
+    2025 : 216 lignes
+    -> 140 ventes de logements exploitables
+  Marigné-Laillé (72187)
+    2021 : 288 lignes
+    2022 : 167 lignes
+    2023 : 201 lignes
+    2024 : 130 lignes
+    2025 : 199 lignes
+    -> 124 ventes de logements exploitables
+  Moncé-en-Belin (72200)
+    2021 : 176 lignes
+    2022 : 136 lignes
+    2023 : 139 lignes
+    2024 : 159 lignes
+    2025 : 147 lignes
+    -> 209 ventes de logements exploitables
+  Saint-Biez-en-Belin (72268)
+    2021 : 40 lignes
+    2022 : 51 lignes
+    2023 : 51 lignes
+    2024 : 44 lignes
+    2025 : 19 lignes
+    -> 37 ventes de logements exploitables
+  Saint-Ouen-en-Belin (72306)
+    2021 : 151 lignes
+    2022 : 116 lignes
+    2023 : 91 lignes
+    2024 : 112 lignes
+    2025 : 83 lignes
+    -> 77 ventes de logements exploitables
+  Teloché (72350)
+    2021 : 268 lignes
+    2022 : 214 lignes
+    2023 : 158 lignes
+    2024 : 165 lignes
+    2025 : 131 lignes
+    -> 197 ventes de logements exploitables
+  prix_immobilier_communes : 7 -> urbanisme/prix_immobilier_communes.geojson
+    cadastre 72124 : 6317 parcelles cumulées
+    cadastre 72155 : 11725 parcelles cumulées
+    cadastre 72187 : 15889 parcelles cumulées
+    cadastre 72200 : 19498 parcelles cumulées
+    cadastre 72268 : 21121 parcelles cumulées
+    cadastre 72306 : 23680 parcelles cumulées
+    cadastre 72350 : 26880 parcelles cumulées
+  3303 parcelles dessinées ; 66 sans géométrie cadastrale (fusion de communes ou parcelle disparue)
+  mutations : 3303 -> urbanisme/parcelles_dvf_2021_2025_loir_luce_berce.geojson
+### demographie (geobelinois)
+  comparateur : 42 valeurs pour 7 commune(s) sur 7
+  âges : 7 commune(s) sur 7
+  demographie : 7 commune(s) -> urbanisme/demographie_communes.geojson
+### petiteenfance (geobelinois)
+  ecommoy.csv : 14 placés
+  laigne-saint-gervais.csv : 13 placés
+  marigne-laille.csv : 11 placés
+  monce-en-belin.csv : 20 placés
+  saint-biez-en-belin.csv : 2 placés
+  saint-ouen-en-belin.csv : 9 placés
+  teloche.csv : 14 placés
+  11 assistantes maternelles non placées (adresse absente, incomplète ou hors du territoire) : Inna CHERMAN (Cré'Activités Sourires 72220 ECOMMOY) / Jennifer EDE (pas d adresse) / Cecile GERAULT (pas d adresse) / Karine PAPILLON (1 Résidence des Tilleuls 72220 ECOMMOY) / Adeline BIDALLIER (9bis Route de Fromenteau 72220 LAIGNE ST GERVAIS) / Roselyne MICHELON (72220 LAIGNE EN BELIN) / Marjorie MOQUET (72230 MONCE EN BELIN) / Charlene COHERGNE (18 Place du Mail 72220 ST GERVAIS EN BELIN) / Sandrine DUPONT (72220 TELOCHE) / Severine PEAN (72220 TELOCHE) / Nathalie LESAGE (72220 TELOCHE)
+  structures saisies : 4 ; trouvées sur OpenStreetMap : 0
+    Crèche : Crèche d'Écommoy (Chemin de l'Abreuvoir 72220 Écommoy)
+    Crèche : Petite crèche de Laigné-Saint-Gervais (34 rue des Frères Bailleul 72220 Laigné-Saint-Gervais)
+    Crèche : Petite crèche de Moncé-en-Belin (Allée de l'Europe 72230 Moncé-en-Belin)
+    Relais Petite Enfance : Relais Petite Enfance (Espace du Belin) (34 rue des Frères Bailleul 72220 Laigné-Saint-Gervais)
+  petiteEnfance : 87 -> famille/petiteEnfance.geojson
+### artisans (geobelinois)
+Écommoy : 48 artisans
+Laigné-Saint-Gervais : 17 artisans
+Marigné-Laillé : 24 artisans
+Moncé-en-Belin : 33 artisans
+Saint-Biez-en-Belin : 3 artisans
+Saint-Ouen-en-Belin : 13 artisans
+Teloché : 37 artisans
+174 artisans écrits dans /home/runner/work/cl4ire.github.io/cl4ire.github.io/territoires/geobelinois/couches/commerces/artisans.geojson
+### associations (geobelinois)
+Téléchargement de https://media.interieur.gouv.fr/rna/rna_waldec_20261001.zip
+38630 lignes lues dans le RNA
+  thème 011160 (25) : 'Une Journee Un Circuit' / Les Mans'Zelles du Désert / Balades Sarthoises / Glinche Racing
+  thème 006030 (13) : Chant'Ecomm / After Not' / Association.covermind72 / Orchestre D'Harmonie du Belinois (O.h.b)
+  thème 011180 (10) : Amicale des Cyclos-Sportifs de la Sarthe 'Le Pedalier' / Etoile Cycliste Belinoise / Cap Forme 72 / Les Elles du BMX
+  thème 007000 (7) : Moto Club des Gluttes / La Carambole Ecommeenne / Shadow Sarthe Paintball / Les Amis du Rallye Parence
+  thème 015005 (7) : Amicale des Écoles Publiques D'Ecommoy / Association de Parents D'Eleves de L'Enseignement Libre de L' École Saint-Martin / Amicale du Groupe Scolaire Jean-Baptiste Galan / Diapason, Association de Parents D'Élèves, Élèves et Amis de L'École de Musique de L'Orée de Bercé Bélinois
+  thème 013005 (7) : Association de Chasse des Guerinieres D'Ecommoy / Association 'Chasse Amicale du Plessis a Saint-Gervais en Belin' / Association des Chasseurs de la Croix Manceau a Marigne Laille / Association de Chasse de M. Martineau Jean-Pierre
+  thème 006000 (7) : Compagnie du Dernier Rang / Tisseurs de Liens / Lumieres! / Urban Culture 72
+  thème 014000 (6) : Association du Personnel Communal D'Ecommoy / Mille et Une Fripes / MC Twin / Association les Socio-Coiffeuses Medico-Sociales
+  thème 009040 (6) : Club du Temps de Vivre D'Ecommoy / Générations Mouvement - Association des Séniors de Bercé Belinois / Générations Mouvement - Aînés Ruraux Club de Saint-Gervais en Belin / Générations Mouvement - Club de Marigne Laille
+  thème 050000 (6) : Association Sportive du Collège Alfred de Musset D'Ecommoy / Anim'À Coeur / Les Caves Sainte Anne / Association de Soutien et D'Accompagnement à la Parentalité - Asap72
+  thème 006100 (6) : Korbak Asso / Galaxian Compagnie / Touche de Rage / Asso Karma
+  thème 011075 (5) : Association 'Ecommoy Football-Club' / Entente Sportive Monceenne / FC 10 (Footgolf 72) / Teloche Football Club
+  thème 011000 (5) : Judo Club Belinois / Joueurs de L'Entente Sportive Moncéenne / Elanza / Ynes (Yoga et Nature pour L'Equilibre et la Sante)
+  thème 015000 (4) : Foyer Socio-Educatif du College Alfred de Musset a Ecommoy / Section de Gymnastique Volontaire de Laigne - Saint Gervais / Barba Jovis / Organisme de Gestion de L'Ecole Catholique Ste Therese-St Joseph (OGEC)
+  thème 011400 (4) : Club de Tir Sportif du Maine / Sports-Loisirs-Detente (S.L.D.) / Bercé sur Deux Roues / Lullaby Skate
+  thème 011105 (4) : Elan Gymnique Ecommeen / Cercle Olympique du Laigné-St Gervais (Colsg) / Union Sportive de Saint Ouen - Saint Biez / Fitness Center
+  thème 011190 (4) : Support'R Club D'Ecommoy FC / Les Pink Power / Club des Supporters de Football de Monce en Belin / Les Bidouilleurs
+  thème 021005 (4) : Mam les Petits Gervais / Mam le Royaume des Mignons / Mam la Petite Maison des Joyeux Lutins / Mam les Coccinelles du Belinois
+  thème 009030 (4) : Comité des Fêtes Laigne/saint Gervais / Comité des Fêtes de Marigne Laille / Comité D'Animations et de Loisirs de Saint Biez en Belin / Tel O Fête
+  thème 006040 (4) : Kizomans / 'Count-Folk-Danse' / Country Cheyenne 72 / The Hot Boots
+  thème 007040 (4) : Défenses et Maintiens des Fêtes Foraines du Mans / Moncé'Anim / Teloche Animation / Le PRÉ en Fête Teloché
+  thème 009050 (3) : Jumelage Sportif Franco-Allemand D'Ecommoy / Comité D'Échanges Européens du Pays D'Ecommoy / Comité de Jumelage Monce-Welton
+  thème 023020 (3) : Association Percheronne la Belinoise ( A.p.b.) / Comité Agricole Cantonal D'Echanges Techniques Internationaux / Comice LSG 2025
+  thème 011065 (3) : Kangourou Basket Club (K.B.C.) / Union Sportive D'Ecommoy Handball / Loisirs Basket Teloche
+  thème 019005 (3) : Familles Rurales - Association D'Ecommoy / Association Familles Rurales Laigne Saint Gervais / Familles Rurales - Association de Teloche
+  thème 007075 (3) : Liberty Mob / Association G'Garage / Association Télochéenne Loisirs, Découvertes, Terroir
+  thème 007080 (3) : Association pour le Développement des Loisirs / Club des Loisirs de Laigne-Saint Gervais en Belin / Teloch'Evenements
+  thème 021020 (3) : Générations Mouvement - Club de Laigne en Belin / Association Culture et Loisirs des Foyers de la Fuie / Association Mam les Petites Quenottes
+  thème 011010 (3) : Les Amis de L'Ecole Publique de Marigne Laille / Association Sportive U.s.e.p. de L'Ecole de Monce en Belin / École Maternelle Croque Lune
+  thème 036510 (2) : Amicale des Sapeurs-Pompiers D'Ecommoy / Amicale des Sapeurs Pompiers de Teloche
+  thème 018010 (2) : AEP Mille Clubs et Loisirs D'Ecommoy / We Dance
+  thème 011145 (2) : Judo Club Oree de Bercé / Qi Gong Teloche
+  thème 038105 (2) : Union Nationale des Combattants D'Ecommoy / Union Nationale des Combattants D'Afrique du Nord et D'Indochine - Section de Laigne en Belin
+  thème 011175 (2) : Les Archers D'Ecommoy / Les Amateurs d Équipements Pimpés
+  thème 011165 (2) : Tennis Club D'Ecommoy / Association 'Tennis de Table de Teloche - les 3t.'
+  thème 014035 (2) : Le Cabas Ecomméen / A Portee de Bonheur
+  thème 007070 (2) : Les Amis des Parcs et Jardins D'Ecommoy / Jardin Associatif Solid'Air des Figuiers
+  thème 014030 (2) : Amicale de la Futaie / Association du Personnel Communal de Monce en Belin
+  thème 011115 (2) : Courir à Ecommoy / Les Bipedes Gaudinois
+  thème 011035 (2) : Club Pétanque de Marigné-Laillé / Boules Monceenne
+  thème 024045 (2) : Orée de Bercé Bélinois Environnements / Association pour la Préservation et la Valorisation du Patrimoine de Téloché
+  thème 019010 (2) : La Ruche, Centre Social / Association D'Animation et de Gestion du Centre Socio-Culturel 'Le Val'Rhonne' de Monce en Belin
+  thème 007025 (2) : Modelisme Agricole en Belinois / Les Chevrons du Loir
+  thème 024025 (2) : Société de Chasse de Laille / Bercé, Naturellement
+  thème 022542 (2) : Be Happy Coaching / Association 'Chaine des Carrossiers'
+  thème 024000 (2) : Grain de Sable et Pomme de Pin / Espossibilis
+  thème 015075 (2) : Amicale des Écoles de Monce en Belin / Amicale de L'Ecole Publique de Saint-Biez en Belin
+  thème 011005 (2) : Association Sportive, Culturelle et de Loisirs / Sport Santé Sud-Sarthe
+  thème 006070 (2) : Compagnie Clair de Songes / Lez'Arts
+  thème 019000 (2) : Gaspi'Eat / Association Locale D'Aide a Domicile en Milieu Rural de L'Oree de Bercé
+  thème 013010 (1) : Association 'La Truite de L'Aune D'Ecommoy' pour la Pêche et la Protection du Milieu Aquatique - A.p.p.m.a.
+  thème 034240 (1) : Anim'Ecommoy
+  thème 036000 (1) : Association des Secouristes Francais Croix Blanche D'Ecommoy
+  thème 019020 (1) : Association Partage - Solidarité Par le Travail D'Ecommoy
+  thème 009025 (1) : Organisme de Gestion de L'Enseignement Catholique Saint-Martin D'Ecommoy
+  thème 011020 (1) : Club de Natation Bercé Belinois (C.N.B.B )
+  thème 011050 (1) : Société des Courses Hippiques D'Ecommoy
+  thème 024035 (1) : Association de Protection de L'Environnement et du Patrimoine du Sud D'Ecommoy - Apepse
+  thème 005025 (1) : Plac'Ecommoy
+  thème 007005 (1) : La Guilde du Roussard, Jeux de L'Imaginaire
+  thème 002020 (1) : Cercle Eugène Caillaux
+  thème 024020 (1) : Association de Bercey-Grammont
+  thème 030012 (1) : Renouveau pour Écommoy
+  thème 011030 (1) : Badminton Club Écommoy
+  thème 014050 (1) : Association Solidaire Aden
+  thème 017000 (1) : Institut National de Pédagogie en Addictologie
+  thème 009000 (1) : Rokastabi
+  thème 014025 (1) : Association des Producteurs de Chanvre de la Sarthe et des Departements Limitrophes
+  thème 017135 (1) : Bien-Être en Belinois
+  thème 017300 (1) : Association pour la Promotion de la Sterilisation des Animaux de Compagnie 72
+  thème 006020 (1) : Association L'Amie des Jeanne
+  thème 020005 (1) : Azidisa
+  thème 006110 (1) : Norine et Augustin, "caôsaient Sarthois, Dis-Tu ?"
+  thème 038000 (1) : Association pour L'Érection du Monument
+  thème 020000 (1) : Générations Mouvement- Club de Monce en Belin
+  thème 011170 (1) : Club Monce Tennis de Table - CMTT
+  thème 011150 (1) : Karate Monce en Belin
+  thème 007010 (1) : Moncé Billard Club
+  thème 020015 (1) : FBL Raid
+  thème 011100 (1) : Association Golf Moncéen
+  thème 003000 (1) : Ask Consent
+  thème 009035 (1) : Familles Rurales - Association de ST Ouen - ST Biez en Belin
+  thème 010020 (1) : Les Amis du Manoir de la Poissonniere en Belinois
+  thème 007050 (1) : Association Amateur Ornithologie Protection 72
+  thème 036520 (1) : Centre Francais de Secourisme de la Sarthe (CFS 72)
+  thème 022515 (1) : Organisme de Gestion de L'Etablissement Catholique D'Enseignement (O.G.E.C.) College Saint Jean Baptiste de la Salle
+  thème 006090 (1) : Artisanat Detente
+  thème 007085 (1) : Arcturia
+  thème 006105 (1) : L'Ordre du Pixel
+  thème 007060 (1) : La Petite Auberge des Mondes
+  thème 030000 (1) : Association Génération Lowcal
+Écommoy : 70 associations
+Laigné-Saint-Gervais : 34 associations
+Marigné-Laillé : 24 associations
+Moncé-en-Belin : 46 associations
+Saint-Biez-en-Belin : 11 associations
+Saint-Ouen-en-Belin : 14 associations
+Teloché : 50 associations
+249 associations écrites dans /home/runner/work/cl4ire.github.io/cl4ire.github.io/territoires/geobelinois/couches/associations/associations.geojson
+### fichiers (geobelinois)
+geobelinois : 40 fichiers disponibles
