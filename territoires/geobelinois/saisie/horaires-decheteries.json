@@ -2,21 +2,46 @@
   {
     "correspond": "commoy",
     "periodes": [
-      {"label": "Du 1er octobre au 31 mars", "mois": "Oct-Mar",
-       "horaires": "Mo 14:00-18:00; Tu off; We 10:00-13:00,14:00-18:00; Th off; Fr 14:00-18:00; Sa 09:00-13:00,14:00-18:00"},
-      {"label": "Du 1er avril au 30 septembre", "mois": "Apr-Sep",
-       "horaires": "Mo 14:00-19:00; Tu off; We 10:00-13:00,14:00-19:00; Th off; Fr 14:00-18:00; Sa 09:00-13:00,14:00-18:00"}
+      {
+        "label": "Du 1er octobre au 31 mars",
+        "mois": "Oct-Mar",
+        "horaires": "Mo 14:00-18:00; Tu off; We 10:00-13:00,14:00-18:00; Th off; Fr 14:00-18:00; Sa 09:00-13:00,14:00-18:00"
+      },
+      {
+        "label": "Du 1er avril au 30 septembre",
+        "mois": "Apr-Sep",
+        "horaires": "Mo 14:00-19:00; Tu off; We 10:00-13:00,14:00-19:00; Th off; Fr 14:00-18:00; Sa 09:00-13:00,14:00-18:00"
+      }
     ],
-    "notes": ["Horaires pour les particuliers.", "Lundi 10h-13h : réservé aux professionnels.", "Vendredi 9h-13h : retrait de compost, service gratuit."]
+    "notes": [
+      "Horaires pour les particuliers.",
+      "Lundi 10h-13h : réservé aux professionnels.",
+      "Vendredi 9h-13h : retrait de compost, service gratuit.",
+      "Accès avec une vignette, à demander à la mairie, à la communauté de communes ou aux gardiens.",
+      "Professionnels acceptés uniquement ici."
+    ],
+    "adresse": "Le Casseau, 72220 Écommoy",
+    "telephone": "02 43 42 60 64"
   },
   {
     "correspond": "laign",
     "periodes": [
-      {"label": "Du 1er octobre au 31 mars", "mois": "Oct-Mar",
-       "horaires": "Mo 14:00-18:00; Tu off; We 10:30-13:00,14:00-18:00; Th off; Fr 14:00-18:00; Sa 09:00-13:00,14:00-18:00"},
-      {"label": "Du 1er avril au 30 septembre", "mois": "Apr-Sep",
-       "horaires": "Mo 14:00-19:00; Tu off; We 10:30-13:00,14:00-19:00; Th off; Fr 14:00-18:00; Sa 09:00-13:00,14:00-18:00"}
+      {
+        "label": "Du 1er octobre au 31 mars",
+        "mois": "Oct-Mar",
+        "horaires": "Mo 14:00-18:00; Tu off; We 10:30-13:00,14:00-18:00; Th off; Fr 14:00-18:00; Sa 09:00-13:00,14:00-18:00"
+      },
+      {
+        "label": "Du 1er avril au 30 septembre",
+        "mois": "Apr-Sep",
+        "horaires": "Mo 14:00-19:00; Tu off; We 10:30-13:00,14:00-19:00; Th off; Fr 14:00-18:00; Sa 09:00-13:00,14:00-18:00"
+      }
     ],
-    "notes": ["Horaires pour les particuliers."]
+    "notes": [
+      "Horaires pour les particuliers.",
+      "Accès avec une vignette, à demander à la mairie, à la communauté de communes ou aux gardiens."
+    ],
+    "adresse": "Le Pâtis, 72220 Laigné-Saint-Gervais",
+    "telephone": "02 43 42 97 15"
   }
 ]
