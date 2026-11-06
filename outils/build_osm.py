@@ -69,7 +69,7 @@ def haversine_km(a, b):
 # ----------------------------------------------------------------------------------------
 
 AMENITES = ("restaurant|bar|pub|fast_food|pharmacy|post_office|fuel|car_wash|vehicle_inspection|driving_school|cinema|"
-            "bank|atm|school|college|kindergarten|parking|toilets|drinking_water|library|marketplace|parcel_locker|"
+            "bank|atm|school|college|kindergarten|childcare|parking|toilets|drinking_water|library|marketplace|parcel_locker|"
             "fire_station|police|social_facility|fountain|washing_place|recycling")
 LOISIRS = "playground|pitch|sports_centre|swimming_pool|track|horse_riding|recreation_ground|fitness_station"
 
@@ -136,6 +136,22 @@ BRUIT = {"fixme", "FIXME", "note", "created_by", "source:date", "survey:date", "
 
 def tags_utiles(tags):
     return {k: v for k, v in tags.items() if k not in BRUIT and not k.startswith(("fixme", "note:", "source:", "check_date:"))}
+
+
+MOTIF_RPE = re.compile(r"relais.{0,25}(petite enfance|assistant|rpe|ram)|\b(rpe|ram)\b", re.I)
+MOTIF_CRECHE = re.compile(r"cr[èe]che|multi.?accueil|halte.?garderie|garderie|jardin d.enfants|micro.?cr[èe]che|bambin|petits? (loup|pas|monde)|\bmam\b|maison d.assistant", re.I)
+
+
+def structure_petite_enfance(t):
+    """Renvoie « Relais Petite Enfance », « Crèche » ou None pour un point OpenStreetMap."""
+    if t.get("amenity") not in ("kindergarten", "childcare"):
+        return None
+    nom = t.get("name") or ""
+    if MOTIF_RPE.search(nom):
+        return "Relais Petite Enfance"
+    if t.get("amenity") == "childcare" or MOTIF_CRECHE.search(nom) or (t.get("kindergarten:FR") or "").lower() in ("creche", "crèche"):
+        return "Crèche"
+    return None
 
 
 def prem(tags, *cles):
@@ -207,7 +223,14 @@ def classer(el):
             "network": t.get("network"), "wheelchair": t.get("wheelchair"), "opening_hours": t.get("opening_hours"),
             "bank_id_code": t.get("ref:FR:BIC") or t.get("bic"), "has_atm": t.get("atm"), "brand_wikidata": t.get("brand:wikidata")}))
 
-    if amenity in ("school", "college", "kindergarten"):
+    genre_pe = structure_petite_enfance(t)
+    if genre_pe:
+        sorties.append(("structures_pe", {
+            "nom": t.get("name") or genre_pe, "type": genre_pe, "adresse": " ".join(x for x in (adresse(t), prem(t, "addr:postcode", "contact:postcode"), prem(t, "addr:city", "contact:city")) if x) or None,
+            "telephone": prem(t, "phone", "contact:phone"), "mail": prem(t, "email", "contact:email"),
+            "site": prem(t, "website", "contact:website"), "horaires": t.get("opening_hours"), "capacite": t.get("capacity"),
+            "osm_id": oid}))
+    elif amenity in ("school", "college", "kindergarten"):
         statut = (t.get("operator:type") or "").lower()
         sorties.append(("education", {
             "osm_id": oid, "name": t.get("name"), "type": amenity, "type_fr": type_fr_ecole(t),
@@ -285,7 +308,7 @@ FICHIERS = {
     "equipementSportif": "services/equipementSportif.geojson", "antennes": "services/antennes.geojson",
     "lockers_osm": "services/lockers_osm.geojson", "dechets": "services/dechets.geojson",
     "pompiers": "securite/pompiers.geojson", "gendarmerie": "securite/gendarmerie.geojson", "ehpad": "securite/ehpad.geojson",
-    "officesTourisme": "tourisme/officesTourisme.geojson", "campingcar": "tourisme/campingcar.geojson",
+    "structures_pe": "famille/structures_pe_osm.geojson", "officesTourisme": "tourisme/officesTourisme.geojson", "campingcar": "tourisme/campingcar.geojson",
     "patrimoineRural": "patrimoine/patrimoineRural.geojson",
     "cours_eau": "tourisme/cours_eau.geojson", "velo": "tourisme/velo.geojson", "randonnees_osm": "tourisme/randonnees_osm.geojson",
 }
@@ -407,6 +430,22 @@ def appliquer_horaires_decheteries(features):
     print(f"  horaires saisis : {n} déchèterie(s)")
 
 
+def ajouter_decheteries_voisines(features):
+    """Déchèteries de communes voisines ouvertes à des habitants du territoire : territoires/<id>/saisie/decheteries-voisines.json
+    (hors du périmètre, donc absentes d'OpenStreetMap ici ; position issue de l'index des lieux de la Géoplateforme)."""
+    chemin = os.path.join(territoires_commun.RACINE, "territoires", T.id, "saisie", "decheteries-voisines.json")
+    if not os.path.isfile(chemin):
+        return
+    with open(chemin, encoding="utf-8") as f:
+        voisines = json.load(f)
+    for d in voisines:
+        props = {"type": "centre", "name": d["name"], "com_nom": d.get("com_nom"), "adresse": d.get("adresse"),
+                 "telephone": d.get("telephone"), "horaires_notes": d.get("notes")}
+        features.append({"type": "Feature", "properties": {k: v for k, v in props.items() if v},
+                         "geometry": {"type": "Point", "coordinates": d["coordonnees"]}})
+    print(f"  déchèteries voisines ajoutées : {len(voisines)}")
+
+
 def main():
     zone, communes = charger_zones()
     b = zone.boite
@@ -432,6 +471,7 @@ def main():
     par_couche["cours_eau"], par_couche["velo"], par_couche["randonnees_osm"] = eau, velo, rando
 
     appliquer_horaires_decheteries(par_couche.get("dechets", []))
+    ajouter_decheteries_voisines(par_couche.setdefault("dechets", []))
     total = 0
     for couche, chemin in FICHIERS.items():
         features = par_couche.get(couche, [])
