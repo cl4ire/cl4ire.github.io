@@ -60,11 +60,61 @@ def lire(chemin):
         yield from csv.DictReader(f, delimiter=delim)
 
 
+def distance_m(a, b):
+    from math import cos, radians, hypot
+    return hypot((a[0] - b[0]) * 111320 * cos(radians(a[1])), (a[1] - b[1]) * 110540)
+
+
+def normaliser(t):
+    import unicodedata
+    return re.sub(r"[^a-z0-9]+", "", "".join(c for c in unicodedata.normalize("NFD", (t or "").lower()) if unicodedata.category(c) != "Mn"))
+
+
+def structures_saisies():
+    """Crèches et relais saisis à la main : territoires/<id>/saisie/structures-petite-enfance.csv
+    (Type ; Nom ; Adresse ; Téléphone ; E-mail ; Lien ; Précisions)."""
+    chemin = os.path.join(S.territoires_commun.RACINE, "territoires", T.id, "saisie", "structures-petite-enfance.csv")
+    out, non_places = [], []
+    if not os.path.isfile(chemin):
+        return out, non_places
+    for r in lire(chemin):
+        nom, adresse = (r.get("Nom") or "").strip(), (r.get("Adresse") or "").strip()
+        if not nom:
+            continue
+        pos = geocoder(adresse) if adresse else None
+        if not pos:
+            non_places.append(f"{nom} ({adresse or 'pas d adresse'})")
+            continue
+        out.append({"type": "Feature", "geometry": {"type": "Point", "coordinates": [round(pos[0], 6), round(pos[1], 6)]},
+                    "properties": {"nom": nom, "adresse": adresse, "telephone": telephone(r.get("Téléphone")),
+                                   "mail": (r.get("E-mail") or "").strip() or None, "ficheCAF": (r.get("Lien") or "").strip() or None,
+                                   "type": (r.get("Type") or "Crèche").strip(), "precision": (r.get("Précisions") or "").strip() or None}})
+    return out, non_places
+
+
+def structures_osm(deja):
+    """Crèches et relais d'OpenStreetMap (build_osm.py), sauf ceux déjà saisis (même nom ou à moins de 300 m)."""
+    chemin = os.path.join(T.couches, "famille", "structures_pe_osm.geojson")
+    if not os.path.isfile(chemin):
+        return []
+    with open(chemin, encoding="utf-8") as f:
+        brut = json.load(f)["features"]
+    out = []
+    for ft in brut:
+        p = ft["properties"]
+        pos = ft["geometry"]["coordinates"]
+        if any(normaliser(p.get("nom")) == normaliser(d["properties"]["nom"]) or
+               (p.get("type") == d["properties"]["type"] and distance_m(pos, d["geometry"]["coordinates"]) < 300) for d in deja):
+            continue
+        precision = " · ".join(x for x in ((f"{p['capacite']} places" if p.get("capacite") else None), (f"Horaires : {p['horaires']}" if p.get("horaires") else None)) if x) or None
+        out.append({"type": "Feature", "geometry": ft["geometry"],
+                    "properties": {"nom": p.get("nom"), "adresse": p.get("adresse"), "telephone": telephone(p.get("telephone")),
+                                   "mail": p.get("mail"), "ficheCAF": p.get("site"), "type": p.get("type"), "precision": precision}})
+    return out
+
+
 def main():
     fichiers = sorted(glob.glob(os.path.join(DOSSIER, "*.csv")))
-    if not fichiers:
-        print(f"Pas d'export dans {os.path.relpath(DOSSIER, S.territoires_commun.RACINE)} : couche petite enfance ignorée.")
-        return
     features, non_places, vus = [], [], set()
     for chemin in fichiers:
         n = 0
@@ -88,9 +138,16 @@ def main():
                                             "type": "Assistant maternel"}})
         print(f"  {os.path.basename(chemin)} : {n} placés")
     if non_places:
-        print(f"  {len(non_places)} non placés (adresse absente, incomplète ou hors du territoire) : " + " / ".join(non_places))
+        print(f"  {len(non_places)} assistantes maternelles non placées (adresse absente, incomplète ou hors du territoire) : " + " / ".join(non_places))
+    saisies, saisies_non_placees = structures_saisies()
+    osm = structures_osm(saisies)
+    print(f"  structures saisies : {len(saisies)} ; trouvées sur OpenStreetMap : {len(osm)}" + (f" ; non placées : {' / '.join(saisies_non_placees)}" if saisies_non_placees else ""))
+    for x in saisies + osm:
+        print(f"    {x['properties']['type']} : {x['properties']['nom']} ({x['properties'].get('adresse') or 'sans adresse'})")
+    features += saisies + osm
     if not features:
-        sys.exit("aucune assistante maternelle placée")
+        print(f"Pas d'export dans {os.path.relpath(DOSSIER, S.territoires_commun.RACINE)} ni de structure : couche petite enfance ignorée.")
+        return
     S.ecrire("famille/petiteEnfance.geojson", "petiteEnfance", features)
     print(f"  petiteEnfance : {len(features)} -> famille/petiteEnfance.geojson")
 
