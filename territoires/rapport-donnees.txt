@@ -1,23 +1,22 @@
-Données des territoires, 2026-11-06T12:15Z
+Données des territoires, 2026-11-06T12:37Z
 ### osm (geosudsarthe)
 Overpass : points d'intérêt
-  overpass-api.de essai 1 : HTTP Error 502: Bad Gateway
   overpass-api.de : 1503 éléments
 Overpass : cours d'eau et itinéraires
   overpass-api.de : 1009 éléments
   diagnostic : éléments par type {'way': 946, 'relation': 63} ; relations par route={'hiking': 53, 'bicycle': 10}
-    hiking lwn - « Circuit de Carnuta à Bercé » : 0 membres, 0 voies, 0 avec géométrie, 0 dans le territoire
-    hiking lwn - « Sentier de l'École de la Forêt » : 0 membres, 0 voies, 0 avec géométrie, 0 dans le territoire
-    hiking lwn J5 « J5 » : 0 membres, 0 voies, 0 avec géométrie, 0 dans le territoire
-    bicycle lcn 28 « Lac du Val Joyeux et campagne tourangelle » : 0 membres, 0 voies, 0 avec géométrie, 0 dans le territoire
-    bicycle lcn 35 « La route des vergers » : 0 membres, 0 voies, 0 avec géométrie, 0 dans le territoire
-    bicycle lcn 2 « Loir et Châteaux » : 0 membres, 0 voies, 0 avec géométrie, 0 dans le territoire
-    bicycle ncn V47 « La Vallée du Loir à vélo 4/5 » : 0 membres, 0 voies, 0 avec géométrie, 0 dans le territoire
-    hiking lwn D « Sentier des Menhirs » : 0 membres, 0 voies, 0 avec géométrie, 0 dans le territoire
-    hiking lwn B « Sentier du Château de Gallerande » : 0 membres, 0 voies, 0 avec géométrie, 0 dans le territoire
-    hiking lwn C « Sentier de la Mare aux Cochons » : 0 membres, 0 voies, 0 avec géométrie, 0 dans le territoire
-    hiking lwn 09 « Chemin du Bord de Loir » : 0 membres, 0 voies, 0 avec géométrie, 0 dans le territoire
-    bicycle lcn 19 « Entre étang et village de caractère » : 0 membres, 0 voies, 0 avec géométrie, 0 dans le territoire
+    hiking lwn - « Circuit de Carnuta à Bercé » : 13 membres, 13 voies, 9 avec géométrie, 0 dans le territoire
+    hiking lwn - « Sentier de l'École de la Forêt » : 2 membres, 2 voies, 2 avec géométrie, 0 dans le territoire
+    hiking lwn J5 « J5 » : 60 membres, 60 voies, 24 avec géométrie, 0 dans le territoire
+    bicycle lcn 28 « Lac du Val Joyeux et campagne tourangelle » : 75 membres, 75 voies, 25 avec géométrie, 0 dans le territoire
+    bicycle lcn 35 « La route des vergers » : 44 membres, 44 voies, 14 avec géométrie, 0 dans le territoire
+    bicycle lcn 2 « Loir et Châteaux » : 68 membres, 68 voies, 37 avec géométrie, 29 dans le territoire
+    bicycle ncn V47 « La Vallée du Loir à vélo 4/5 » : 267 membres, 267 voies, 84 avec géométrie, 63 dans le territoire
+    hiking lwn D « Sentier des Menhirs » : 59 membres, 59 voies, 59 avec géométrie, 58 dans le territoire
+    hiking lwn B « Sentier du Château de Gallerande » : 45 membres, 45 voies, 45 avec géométrie, 45 dans le territoire
+    hiking lwn C « Sentier de la Mare aux Cochons » : 59 membres, 58 voies, 58 avec géométrie, 58 dans le territoire
+    hiking lwn 09 « Chemin du Bord de Loir » : 36 membres, 36 voies, 36 avec géométrie, 36 dans le territoire
+    bicycle lcn 19 « Entre étang et village de caractère » : 64 membres, 64 voies, 64 avec géométrie, 64 dans le territoire
   horaires saisis : 2 déchèterie(s)
   commerces : 143
   banques : 16
@@ -39,9 +38,9 @@ Overpass : cours d'eau et itinéraires
   campingcar : 4
   patrimoineRural : 17
   cours_eau : 583
-  velo : aucun résultat (fichier non écrit)
-  randonnees_osm : aucun résultat (fichier non écrit)
-1191 objets écrits pour geosudsarthe
+  velo : 6
+  randonnees_osm : 40
+1237 objets écrits pour geosudsarthe
 ### sources (geosudsarthe)
 == mairies
   répertoire des élus : colonnes code='Code de la commune' nom="Nom de l'élu" prénom="Prénom de l'élu" fonction='Libellé de la fonction'
@@ -409,25 +408,25 @@ Verneil-le-Chétif : 8 associations
 Yvré-le-Pôlin : 30 associations
 436 associations écrites dans /home/runner/work/cl4ire.github.io/cl4ire.github.io/territoires/geosudsarthe/couches/associations/associations.geojson
 ### fichiers (geosudsarthe)
-geosudsarthe : 39 fichiers disponibles
+geosudsarthe : 41 fichiers disponibles
 ### osm (geobelinois)
 Overpass : points d'intérêt
   overpass-api.de : 947 éléments
 Overpass : cours d'eau et itinéraires
   overpass-api.de : 246 éléments
   diagnostic : éléments par type {'way': 226, 'relation': 20} ; relations par route={'bicycle': 8, 'hiking': 12}
-    bicycle lcn 1 « Voie verte du bord de Sarthe » : 0 membres, 0 voies, 0 avec géométrie, 0 dans le territoire
-    bicycle lcn - « Boulevard Nature » : 0 membres, 0 voies, 0 avec géométrie, 0 dans le territoire
-    hiking lwn - « Circuit de Carnuta à Bercé » : 0 membres, 0 voies, 0 avec géométrie, 0 dans le territoire
-    hiking lwn - « Sentier de l'École de la Forêt » : 0 membres, 0 voies, 0 avec géométrie, 0 dans le territoire
-    hiking lwn J5 « J5 » : 0 membres, 0 voies, 0 avec géométrie, 0 dans le territoire
-    bicycle ncn V44 « Vélobuissonnière » : 0 membres, 0 voies, 0 avec géométrie, 0 dans le territoire
-    bicycle rcn V438 « La Sarthe à Vélo du Mans à Château-du-Loir » : 0 membres, 0 voies, 0 avec géométrie, 0 dans le territoire
-    hiking nwn - « De la Manche aux Pyrénées 07, Saint-Mars-d'Outillé - Le Lude » : 0 membres, 0 voies, 0 avec géométrie, 0 dans le territoire
-    hiking nwn - « De la Manche aux Pyrénées 07, Yvré-l'Évêque - Saint-Mars-d'Outillé » : 0 membres, 0 voies, 0 avec géométrie, 0 dans le territoire
-    bicycle - - « ? » : 0 membres, 0 voies, 0 avec géométrie, 0 dans le territoire
-    bicycle - - « ? » : 0 membres, 0 voies, 0 avec géométrie, 0 dans le territoire
-    bicycle lcn - « Boulevard Nature » : 0 membres, 0 voies, 0 avec géométrie, 0 dans le territoire
+    bicycle lcn 1 « Voie verte du bord de Sarthe » : 34 membres, 34 voies, 4 avec géométrie, 0 dans le territoire
+    bicycle lcn - « Boulevard Nature » : 321 membres, 321 voies, 22 avec géométrie, 0 dans le territoire
+    hiking lwn - « Circuit de Carnuta à Bercé » : 13 membres, 13 voies, 9 avec géométrie, 0 dans le territoire
+    hiking lwn - « Sentier de l'École de la Forêt » : 2 membres, 2 voies, 2 avec géométrie, 0 dans le territoire
+    hiking lwn J5 « J5 » : 60 membres, 60 voies, 24 avec géométrie, 2 dans le territoire
+    bicycle ncn V44 « Vélobuissonnière » : 992 membres, 972 voies, 26 avec géométrie, 0 dans le territoire
+    bicycle rcn V438 « La Sarthe à Vélo du Mans à Château-du-Loir » : 286 membres, 286 voies, 14 avec géométrie, 0 dans le territoire
+    hiking nwn - « De la Manche aux Pyrénées 07, Saint-Mars-d'Outillé - Le Lude » : 185 membres, 185 voies, 72 avec géométrie, 25 dans le territoire
+    hiking nwn - « De la Manche aux Pyrénées 07, Yvré-l'Évêque - Saint-Mars-d'Outillé » : 134 membres, 134 voies, 28 avec géométrie, 0 dans le territoire
+    bicycle - - « ? » : 1 membres, 1 voies, 1 avec géométrie, 0 dans le territoire
+    bicycle - - « ? » : 1 membres, 1 voies, 1 avec géométrie, 0 dans le territoire
+    bicycle lcn - « Boulevard Nature » : 19 membres, 19 voies, 19 avec géométrie, 0 dans le territoire
   horaires saisis : 2 déchèterie(s)
   commerces : 119
   banques : 7
@@ -450,8 +449,8 @@ Overpass : cours d'eau et itinéraires
   patrimoineRural : 16
   cours_eau : 78
   velo : aucun résultat (fichier non écrit)
-  randonnees_osm : aucun résultat (fichier non écrit)
-474 objets écrits pour geobelinois
+  randonnees_osm : 3
+477 objets écrits pour geobelinois
 ### sources (geobelinois)
 == mairies
   répertoire des élus : colonnes code='Code de la commune' nom="Nom de l'élu" prénom="Prénom de l'élu" fonction='Libellé de la fonction'
@@ -665,4 +664,4 @@ Saint-Ouen-en-Belin : 14 associations
 Teloché : 50 associations
 249 associations écrites dans /home/runner/work/cl4ire.github.io/cl4ire.github.io/territoires/geobelinois/couches/associations/associations.geojson
 ### fichiers (geobelinois)
-geobelinois : 39 fichiers disponibles
+geobelinois : 40 fichiers disponibles
