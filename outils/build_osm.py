@@ -97,7 +97,7 @@ def requete_lignes(bbox):
   way["waterway"~"^(river|stream|canal|drain|ditch)$"]({b});
   relation["route"~"^(bicycle|hiking)$"]({b});
 );
-out geom tags;"""
+out geom({b});"""   # « out geom tags » ne renvoyait pas les tronçons des relations (membres vides) : on veut le corps complet avec les tracés
 
 
 def interroger(requete, essais_par_miroir=3):
