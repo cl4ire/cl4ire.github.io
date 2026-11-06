@@ -332,6 +332,27 @@ def traiter_points(elements, zone, communes):
     return par_couche
 
 
+def diagnostic_itineraires(elements, zone):
+    """Compte ce qu'Overpass a renvoyé pour les itinéraires, pour comprendre une couche vélo ou randonnée vide."""
+    types = {}
+    for el in elements:
+        types[el["type"]] = types.get(el["type"], 0) + 1
+    rel = [e for e in elements if e["type"] == "relation"]
+    routes = {}
+    for e in rel:
+        r = (e.get("tags") or {}).get("route", "?")
+        routes[r] = routes.get(r, 0) + 1
+    print(f"  diagnostic : éléments par type {types} ; relations par route={routes}")
+    for e in [e for e in rel if (e.get("tags") or {}).get("route") in ("bicycle", "hiking")][:12]:
+        membres = e.get("members", [])
+        voies = [m for m in membres if m.get("type") == "way"]
+        avec_geom = [m for m in voies if m.get("geometry")]
+        dedans = [m for m in avec_geom if any(zone.contient(p["lon"], p["lat"]) for p in m["geometry"] if p)]
+        t = e.get("tags") or {}
+        print(f"    {t.get('route')} {t.get('network','-')} {t.get('ref','-')} « {t.get('name','?')} » : {len(membres)} membres, {len(voies)} voies, "
+              f"{len(avec_geom)} avec géométrie, {len(dedans)} dans le territoire")
+
+
 def traiter_lignes(elements, zone):
     eau, velo, rando = [], [], []
     for el in elements:
@@ -406,6 +427,7 @@ def main():
         lignes = interroger(requete_lignes(bbox))
 
     par_couche = traiter_points(points.get("elements", []), zone, communes)
+    diagnostic_itineraires(lignes.get("elements", []), zone)
     eau, velo, rando = traiter_lignes(lignes.get("elements", []), zone)
     par_couche["cours_eau"], par_couche["velo"], par_couche["randonnees_osm"] = eau, velo, rando
 
