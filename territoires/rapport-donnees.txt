@@ -1,10 +1,8 @@
-Données des territoires, 2026-11-06T14:21Z
+Données des territoires, 2026-11-08T11:31Z
 ### osm (geosudsarthe)
 Overpass : points d'intérêt
   overpass-api.de : 1504 éléments
 Overpass : cours d'eau et itinéraires
-  overpass-api.de essai 1 : HTTP Error 502: Bad Gateway
-  overpass-api.de essai 2 : HTTP Error 502: Bad Gateway
   overpass-api.de : 1009 éléments
   diagnostic : éléments par type {'way': 946, 'relation': 63} ; relations par route={'hiking': 53, 'bicycle': 10}
     hiking lwn - « Circuit de Carnuta à Bercé » : 13 membres, 13 voies, 9 avec géométrie, 0 dans le territoire
@@ -20,7 +18,7 @@ Overpass : cours d'eau et itinéraires
     hiking lwn 09 « Chemin du Bord de Loir » : 36 membres, 36 voies, 36 avec géométrie, 36 dans le territoire
     bicycle lcn 19 « Entre étang et village de caractère » : 64 membres, 64 voies, 64 avec géométrie, 64 dans le territoire
   horaires saisis : 2 déchèterie(s)
-  commerces : 143
+  commerces : 142
   banques : 16
   education : 31
   parkings : 157
@@ -43,7 +41,7 @@ Overpass : cours d'eau et itinéraires
   cours_eau : 583
   velo : 6
   randonnees_osm : 40
-1238 objets écrits pour geosudsarthe
+1237 objets écrits pour geosudsarthe
 ### sources (geosudsarthe)
 == mairies
   répertoire des élus : colonnes code='Code de la commune' nom="Nom de l'élu" prénom="Prénom de l'élu" fonction='Libellé de la fonction'
@@ -418,8 +416,7 @@ Yvré-le-Pôlin : 30 associations
 geosudsarthe : 42 fichiers disponibles
 ### osm (geobelinois)
 Overpass : points d'intérêt
-  overpass-api.de essai 1 : HTTP Error 502: Bad Gateway
-  overpass-api.de : 947 éléments
+  overpass-api.de : 946 éléments
 Overpass : cours d'eau et itinéraires
   overpass-api.de : 246 éléments
   diagnostic : éléments par type {'way': 226, 'relation': 20} ; relations par route={'bicycle': 8, 'hiking': 12}
@@ -579,7 +576,7 @@ Teloché : 37 artisans
 ### associations (geobelinois)
 Téléchargement de https://media.interieur.gouv.fr/rna/rna_waldec_20261001.zip
 38630 lignes lues dans le RNA
-  thème 011160 (25) : 'Une Journee Un Circuit' / Les Mans'Zelles du Désert / Balades Sarthoises / Glinche Racing
+  thème 011160 (24) : 'Une Journee Un Circuit' / Les Mans'Zelles du Désert / Balades Sarthoises / Glinche Racing
   thème 006030 (13) : Chant'Ecomm / After Not' / Association.covermind72 / Orchestre D'Harmonie du Belinois (O.h.b)
   thème 011180 (10) : Amicale des Cyclos-Sportifs de la Sarthe 'Le Pedalier' / Etoile Cycliste Belinoise / Cap Forme 72 / Les Elles du BMX
   thème 007000 (7) : Moto Club des Gluttes / La Carambole Ecommeenne / Shadow Sarthe Paintball / Les Amis du Rallye Parence
@@ -676,7 +673,7 @@ Marigné-Laillé : 24 associations
 Moncé-en-Belin : 46 associations
 Saint-Biez-en-Belin : 11 associations
 Saint-Ouen-en-Belin : 14 associations
-Teloché : 50 associations
-249 associations écrites dans /home/runner/work/cl4ire.github.io/cl4ire.github.io/territoires/geobelinois/couches/associations/associations.geojson
+Teloché : 49 associations
+248 associations écrites dans /home/runner/work/cl4ire.github.io/cl4ire.github.io/territoires/geobelinois/couches/associations/associations.geojson
 ### fichiers (geobelinois)
 geobelinois : 40 fichiers disponibles
