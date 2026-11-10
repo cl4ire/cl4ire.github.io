@@ -6,7 +6,7 @@ de monenfant.fr, un fichier CSV par commune, déposés dans
 
     territoires/<id>/saisie/assistantes-maternelles/<commune>.csv
 
-Colonnes lues : Nom ; Adresse ; Téléphone ; E-mail ; Fiche monenfant.fr (les autres, dont « Disponibilité » trop vite
+Colonnes lues : Nom ; Adresse ; Position (facultative : « latitude,longitude », prioritaire sur l'adresse) ; Téléphone ; E-mail ; Fiche monenfant.fr (les autres, dont « Disponibilité » trop vite
 périmée et « Distance », sont ignorées). Chaque adresse est géolocalisée avec la Base adresse
 nationale (Géoplateforme) ; une ligne sans adresse, ou introuvable, n'est pas placée sur la carte
 et figure dans le rapport. Écrit couches/famille/petiteEnfance.geojson.
@@ -50,6 +50,15 @@ def geocoder(adresse):
         if S.dans(lon, lat):
             return lon, lat
     return None
+
+
+def position_saisie(v):
+    """Colonne facultative « Position » (latitude,longitude relevées sur la carte) : prioritaire sur l'adresse."""
+    m = re.fullmatch(r"\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*", v or "")
+    if not m:
+        return None
+    lat, lon = float(m.group(1)), float(m.group(2))
+    return (lon, lat) if S.dans(lon, lat) else None
 
 
 def lire(chemin):
@@ -127,7 +136,7 @@ def main():
             if cle in vus:
                 continue
             vus.add(cle)
-            position = geocoder(adresse) if adresse else None
+            position = position_saisie(r.get("Position")) or (geocoder(adresse) if adresse else None)
             if not position:
                 non_places.append(f"{nom} ({adresse or 'pas d adresse'})")
                 continue
