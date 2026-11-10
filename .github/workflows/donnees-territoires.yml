@@ -62,6 +62,7 @@ jobs:
             etape artisans python3 outils/build_artisans.py --territoire "$id"
             etape associations python3 outils/build_associations.py --territoire "$id"
             etape biodiversite python3 outils/build_biodiversite.py --territoire "$id"
+            etape nomsespeces python3 outils/build_noms_especes.py --territoire "$id"
             etape fichiers python3 outils/maj_fichiers_disponibles.py --territoire "$id"
             echo "::endgroup::"
           done
