@@ -1,8 +1,12 @@
-Données des territoires, 2026-11-08T11:31Z
+Données des territoires, 2026-11-10T13:14Z
 ### osm (geosudsarthe)
 Overpass : points d'intérêt
+  overpass-api.de essai 1 : HTTP Error 502: Bad Gateway
+  overpass-api.de essai 2 : HTTP Error 502: Bad Gateway
   overpass-api.de : 1504 éléments
 Overpass : cours d'eau et itinéraires
+  overpass-api.de essai 1 : HTTP Error 502: Bad Gateway
+  overpass-api.de essai 2 : HTTP Error 502: Bad Gateway
   overpass-api.de : 1009 éléments
   diagnostic : éléments par type {'way': 946, 'relation': 63} ; relations par route={'hiking': 53, 'bicycle': 10}
     hiking lwn - « Circuit de Carnuta à Bercé » : 13 membres, 13 voies, 9 avec géométrie, 0 dans le territoire
@@ -234,7 +238,7 @@ Overpass : cours d'eau et itinéraires
   chenu.csv : 1 placés
   coulonge.csv : 2 placés
   la-chapelle-aux-choux.csv : 1 placés
-  le-lude.csv : 11 placés
+  le-lude.csv : 12 placés
   luche-pringe.csv : 4 placés
   mansigne.csv : 10 placés
   mayet.csv : 13 placés
@@ -242,15 +246,15 @@ Overpass : cours d'eau et itinéraires
   requeil.csv : 8 placés
   saint-jean-de-la-motte.csv : 4 placés
   savigne-sous-le-lude.csv : 2 placés
-  vaas.csv : 8 placés
-  verneil-le-chetif.csv : 1 placés
+  vaas.csv : 7 placés
+  verneil-le-chetif.csv : 2 placés
   yvre-le-polin.csv : 10 placés
-  6 assistantes maternelles non placées (adresse absente, incomplète ou hors du territoire) : Caroline THOMANN (72800 AUBIGNE RACAN) / Sonia MARTIN (Le Champ des Muriers II 72800 LE LUDE) / Sandra CAMUS (72360 MAYET) / Marie Laure ROUSSILLON (72510 PONTVALLAIN) / Sandrine TISON (72510 REQUEIL) / Laetitia PAPIN (Lieu-dit Derreux 72360 VERNEIL LE CHETIF)
+  5 assistantes maternelles non placées (adresse absente, incomplète ou hors du territoire) : Caroline THOMANN (72800 AUBIGNE RACAN) / Sandra CAMUS (72360 MAYET) / Marie Laure ROUSSILLON (72510 PONTVALLAIN) / Sandrine TISON (72510 REQUEIL) / Melissa CORBIN (Lieu-dit Verdillon 72500 VAAS)
   structures saisies : 0 ; trouvées sur OpenStreetMap : 3
     Relais Petite Enfance : Relais Petite Enfance (sans adresse)
     Crèche : Les petits pieds (sans adresse)
     Crèche : Le Jardin des Bambins (sans adresse)
-  petiteEnfance : 96 -> famille/petiteEnfance.geojson
+  petiteEnfance : 97 -> famille/petiteEnfance.geojson
 ### artisans (geosudsarthe)
 Aubigné-Racan : 15 artisans
 La Bruère-sur-Loir : 2 artisans
@@ -286,8 +290,8 @@ Téléchargement de https://media.interieur.gouv.fr/rna/rna_waldec_20261001.zip
   thème 022535 (9) : Association du Comice Agricole D'Aubigne Racan / Association Organisatrice du Comice Disse sous le Lude / Association Locale Comice Mansigne / Association Locale Comice Requeil-Château L'Hermitage
   thème 007075 (9) : Ma Vie D'Chateau / Association Up' Magazine / Comice Luché Pringé 2022 / D.K.L Administratif
   thème 007040 (8) : Comité des Fêtes / Kreol Aubigné Show / Comité des Fêtes Bruèrois / Écran Large du Sud Sarthe
-  thème 007005 (8) : Piquer sur le Carreau le Coeur du Trefle / Potes aux Jeux / La Guilde du Loir / Association la Tour de Mayet
   thème 006070 (8) : Ago Ile / Le Rideau Ecarlate / Interlude / Jazz Mo Asso
+  thème 007005 (7) : Piquer sur le Carreau le Coeur du Trefle / Potes aux Jeux / La Guilde du Loir / Club Scrabble Club de Mayet 'Les 102 Dalmayetais'
   thème 021005 (7) : Aub'Outchou Association D'Assistante Maternelle / Mam'Explorateurs / Les P'Tits Pas de Mansigne / Mam les Calin'Ours
   thème 009040 (7) : Générations Mouvement Aînés Ruraux du Pays Ludois / Les Séniors du Lac / Générations Mouvement -Club de Mayet / Générations Mouvement Interclubs du Guesclin Belon Région Pontvallain
   thème 036510 (6) : Amicale des Sapeurs Pompiers D'Aubigne-Racan / Amicale des Sapeurs Pompiers de Luche ST Jean / 'Amicale du Corps des Sapeurs Pompiers du Lude' / Amicale des Sapeurs-Pompiers de Mayet-Verneil-Sarcé
@@ -401,7 +405,7 @@ Coulongé : 14 associations
 Luché-Pringé : 30 associations
 Le Lude : 89 associations
 Mansigné : 29 associations
-Mayet : 52 associations
+Mayet : 51 associations
 Pontvallain : 30 associations
 Requeil : 15 associations
 Saint-Germain-d'Arcé : 11 associations
@@ -411,7 +415,7 @@ Savigné-sous-le-Lude : 8 associations
 Vaas : 32 associations
 Verneil-le-Chétif : 8 associations
 Yvré-le-Pôlin : 30 associations
-436 associations écrites dans /home/runner/work/cl4ire.github.io/cl4ire.github.io/territoires/geosudsarthe/couches/associations/associations.geojson
+435 associations écrites dans /home/runner/work/cl4ire.github.io/cl4ire.github.io/territoires/geosudsarthe/couches/associations/associations.geojson
 ### fichiers (geosudsarthe)
 geosudsarthe : 42 fichiers disponibles
 ### osm (geobelinois)
@@ -550,29 +554,29 @@ Overpass : cours d'eau et itinéraires
   âges : 7 commune(s) sur 7
   demographie : 7 commune(s) -> urbanisme/demographie_communes.geojson
 ### petiteenfance (geobelinois)
-  ecommoy.csv : 14 placés
-  laigne-saint-gervais.csv : 13 placés
+  ecommoy.csv : 15 placés
+  laigne-saint-gervais.csv : 14 placés
   marigne-laille.csv : 11 placés
   monce-en-belin.csv : 20 placés
   saint-biez-en-belin.csv : 2 placés
-  saint-ouen-en-belin.csv : 9 placés
+  saint-ouen-en-belin.csv : 10 placés
   teloche.csv : 14 placés
-  11 assistantes maternelles non placées (adresse absente, incomplète ou hors du territoire) : Inna CHERMAN (Cré'Activités Sourires 72220 ECOMMOY) / Jennifer EDE (pas d adresse) / Cecile GERAULT (pas d adresse) / Karine PAPILLON (1 Résidence des Tilleuls 72220 ECOMMOY) / Adeline BIDALLIER (9bis Route de Fromenteau 72220 LAIGNE ST GERVAIS) / Roselyne MICHELON (72220 LAIGNE EN BELIN) / Marjorie MOQUET (72230 MONCE EN BELIN) / Charlene COHERGNE (18 Place du Mail 72220 ST GERVAIS EN BELIN) / Sandrine DUPONT (72220 TELOCHE) / Severine PEAN (72220 TELOCHE) / Nathalie LESAGE (72220 TELOCHE)
+  8 assistantes maternelles non placées (adresse absente, incomplète ou hors du territoire) : Inna CHERMAN (Cré'Activités Sourires 72220 ECOMMOY) / Jennifer EDE (pas d adresse) / Cecile GERAULT (pas d adresse) / Roselyne MICHELON (72220 LAIGNE EN BELIN) / Marjorie MOQUET (72230 MONCE EN BELIN) / Sandrine DUPONT (72220 TELOCHE) / Severine PEAN (72220 TELOCHE) / Nathalie LESAGE (72220 TELOCHE)
   structures saisies : 4 ; trouvées sur OpenStreetMap : 0
     Crèche : Crèche d'Écommoy (Chemin de l'Abreuvoir 72220 Écommoy)
     Crèche : Petite crèche de Laigné-Saint-Gervais (34 rue des Frères Bailleul 72220 Laigné-Saint-Gervais)
     Crèche : Petite crèche de Moncé-en-Belin (Allée de l'Europe 72230 Moncé-en-Belin)
     Relais Petite Enfance : Relais Petite Enfance (Espace du Belin) (34 rue des Frères Bailleul 72220 Laigné-Saint-Gervais)
-  petiteEnfance : 87 -> famille/petiteEnfance.geojson
+  petiteEnfance : 90 -> famille/petiteEnfance.geojson
 ### artisans (geobelinois)
-Écommoy : 48 artisans
+Écommoy : 49 artisans
 Laigné-Saint-Gervais : 17 artisans
 Marigné-Laillé : 24 artisans
 Moncé-en-Belin : 33 artisans
 Saint-Biez-en-Belin : 3 artisans
 Saint-Ouen-en-Belin : 13 artisans
 Teloché : 37 artisans
-174 artisans écrits dans /home/runner/work/cl4ire.github.io/cl4ire.github.io/territoires/geobelinois/couches/commerces/artisans.geojson
+175 artisans écrits dans /home/runner/work/cl4ire.github.io/cl4ire.github.io/territoires/geobelinois/couches/commerces/artisans.geojson
 ### associations (geobelinois)
 Téléchargement de https://media.interieur.gouv.fr/rna/rna_waldec_20261001.zip
 38630 lignes lues dans le RNA
