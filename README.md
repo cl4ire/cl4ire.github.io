@@ -3759,7 +3759,7 @@ jeux nationaux les plus utilisés), en écartant ce qui existe déjà ou a déj�
 
 | Couche (`id`) | Groupe | Source | Mode |
 |---|---|---|---|
-| Chantiers sur les routes départementales (`chantiers`) | Risques | Département de la Sarthe, data.sarthe.fr | en direct |
+| Chantiers sur les routes départementales (`chantiers`) | Mobilité | Département de la Sarthe, data.sarthe.fr | en direct |
 | Plans de prévention des risques (`ppr`) | Risques | DDT de la Sarthe, WFS geo-ide | `outils/build_ppr.py` |
 | Aide au numérique (`numerique`) | Services | Département, data.sarthe.fr | en direct |
 | Consultations PMI (`pmi`) | Famille | Département, data.sarthe.fr | en direct |
