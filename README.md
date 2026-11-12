@@ -3772,6 +3772,13 @@ jeux nationaux les plus utilisés), en écartant ce qui existe déjà ou a déj�
   GeoJSON du jeu (toute la Sarthe) et ne garde que ce qui tombe dans le contour de
   `couches/epci.geojson` (`featureDansTerritoire`). Les chantiers gardent une marge de 0,05°
   autour du territoire : une route barrée juste à côté gêne aussi.
+- **Tronçons des chantiers** : le Département ne publie qu'un point (milieu) et une longueur.
+  `tronconChantier` cherche la route du même numéro (`cpx_numero`, ex. `D304`) dans la BD TOPO
+  (WFS `data.geopf.fr`, CORS ouvert) autour du point, puis la suit sur longueur/2 de chaque
+  côté, en passant d'un tronçon à celui qui prolonge le mieux la direction. C'est une
+  reconstitution : si la route n'est pas trouvée à moins de 150 m, seul le point s'affiche.
+- **Légende des PPR** : `legendePpr` reprend `COULEURS_PPR`, avec les libellés de
+  `TYPES_REGLEMENT` dans `outils/build_ppr.py`.
 - **PPR** : le serveur WFS de la DDT n'accepte pas de reprojection et ne sort que du GML en
   Lambert 93. `outils/build_ppr.py` fait la conversion (formules IGN, sans dépendance),
   simplifie les contours à 3 m et ne garde que les zones qui touchent une commune du
