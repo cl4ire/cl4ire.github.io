@@ -788,11 +788,13 @@ function featureDansTerritoire(feature, contour, marge) {
     return b && pt[0] >= b[0] - marge && pt[0] <= b[2] + marge && pt[1] >= b[1] - marge && pt[1] <= b[3] + marge;
 }
 function fetchDataSarthe(dataset, marge = 0) {
+    /* Un second essai après 2 s : le serveur coupe parfois une première connexion. */
+    const lire = () => fetch(`${URL_DATA_SARTHE}/${dataset}/exports/geojson`).then(r => {
+        if (!r.ok) throw new Error("Erreur HTTP " + r.status + " sur data.sarthe.fr (" + dataset + ")");
+        return r.json();
+    });
     return Promise.all([
-        fetch(`${URL_DATA_SARTHE}/${dataset}/exports/geojson`).then(r => {
-            if (!r.ok) throw new Error("Erreur HTTP " + r.status + " sur data.sarthe.fr (" + dataset + ")");
-            return r.json();
-        }),
+        lire().catch(() => new Promise(ok => setTimeout(ok, 2000)).then(lire)),
         contourTerritoire()
     ]).then(([geo, contour]) => ({
         type: "FeatureCollection",
