@@ -5,12 +5,12 @@
       {
         "label": "Du 1er octobre au 31 mars",
         "mois": "Oct-Mar",
-        "horaires": "Mo 14:00-18:00; Tu off; We 10:00-13:00,14:00-18:00; Th off; Fr 14:00-18:00; Sa 09:00-13:00,14:00-18:00"
+        "horaires": "Mo 14:00-18:00; Tu off; We 10:00-13:00,14:00-18:00; Th off; Fr 14:00-18:00; Sa 09:00-13:00,14:00-18:00; PH off"
       },
       {
         "label": "Du 1er avril au 30 septembre",
         "mois": "Apr-Sep",
-        "horaires": "Mo 14:00-19:00; Tu off; We 10:00-13:00,14:00-19:00; Th off; Fr 14:00-18:00; Sa 09:00-13:00,14:00-18:00"
+        "horaires": "Mo 14:00-19:00; Tu off; We 10:00-13:00,14:00-19:00; Th off; Fr 14:00-18:00; Sa 09:00-13:00,14:00-18:00; PH off"
       }
     ],
     "notes": [
@@ -29,12 +29,12 @@
       {
         "label": "Du 1er octobre au 31 mars",
         "mois": "Oct-Mar",
-        "horaires": "Mo 14:00-18:00; Tu off; We 10:30-13:00,14:00-18:00; Th off; Fr 14:00-18:00; Sa 09:00-13:00,14:00-18:00"
+        "horaires": "Mo 14:00-18:00; Tu off; We 10:30-13:00,14:00-18:00; Th off; Fr 14:00-18:00; Sa 09:00-13:00,14:00-18:00; PH off"
       },
       {
         "label": "Du 1er avril au 30 septembre",
         "mois": "Apr-Sep",
-        "horaires": "Mo 14:00-19:00; Tu off; We 10:30-13:00,14:00-19:00; Th off; Fr 14:00-18:00; Sa 09:00-13:00,14:00-18:00"
+        "horaires": "Mo 14:00-19:00; Tu off; We 10:30-13:00,14:00-19:00; Th off; Fr 14:00-18:00; Sa 09:00-13:00,14:00-18:00; PH off"
       }
     ],
     "notes": [
