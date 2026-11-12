@@ -3766,6 +3766,7 @@ jeux nationaux les plus utilisés), en écartant ce qui existe déjà ou a déj�
 | Espaces naturels sensibles (`ens`) | Nature & rando | Département, data.sarthe.fr | en direct |
 | Parcelles forestières ONF (`parcellesForestieres`) | Nature & rando | ONF (copie Esri France ArcGIS Online) | `outils/build_onf.py` |
 | Points de rencontre des secours en forêt (`prsf`) | Sécurité & santé | IGN Géoplateforme (PRSF) | `outils/build_onf.py` |
+| Collectes de don du sang (`donSang`) | Sécurité & santé | Établissement français du sang, API « oudonner » v3 | en direct |
 
 - **data.sarthe.fr** (Opendatasoft du Département) répond avec `Access-Control-Allow-Origin: *`
   (vérifié le 12/11/2026) : `fetchDataSarthe(dataset, marge)` (`js/config.js`) récupère l'export
