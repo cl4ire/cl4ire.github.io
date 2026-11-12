@@ -3767,6 +3767,7 @@ jeux nationaux les plus utilisés), en écartant ce qui existe déjà ou a déj�
 | Parcelles forestières ONF (`parcellesForestieres`) | Nature & rando | ONF (copie Esri France ArcGIS Online) | `outils/build_onf.py` |
 | Points de rencontre des secours en forêt (`prsf`) | Sécurité & santé | IGN Géoplateforme (PRSF) | `outils/build_onf.py` |
 | Collectes de don du sang (`donSang`) | Sécurité & santé | Établissement français du sang, API « oudonner » v3 | en direct |
+| Événements locaux (`evenements`) | Sorties & événements | Agendas des offices de tourisme (Tourinsoft), data.sarthe.fr | en direct |
 
 - **data.sarthe.fr** (Opendatasoft du Département) répond avec `Access-Control-Allow-Origin: *`
   (vérifié le 12/11/2026) : `fetchDataSarthe(dataset, marge)` (`js/config.js`) récupère l'export
@@ -3799,3 +3800,20 @@ jeux nationaux les plus utilisés), en écartant ce qui existe déjà ou a déj�
 - Les deux scripts tournent aussi dans le workflow mensuel « Données des territoires » pour
   GéoSudSarthe et GéoBelinois. Pour GéoBercé (données saisies à la main) :
   `python3 outils/build_ppr.py` et `python3 outils/build_onf.py`.
+
+### Événements locaux (`evenements`)
+
+Groupe et thème « Sorties & événements ». Source : le jeu `227200029_fetes-et-manifestations-en-sarthe`
+de data.sarthe.fr, c'est-à-dire les agendas que les offices de tourisme saisissent dans Tourinsoft
+(environ 900 événements pour toute la Sarthe, mis à jour chaque jour). La carte le lit en direct
+(`fetchEvenements`, `js/config.js`) : rien à reconstruire, la couche est toujours à jour.
+
+- `datesfma` donne toutes les périodes d'un événement, séparées par `##` (un marché chaque mardi,
+  par exemple) : on ne garde que les périodes pas encore finies.
+- Doublons (deux offices qui saisissent le même événement) : même commune, mêmes dates, et un titre
+  contenu dans l'autre ou la moitié des mots en commun. On garde le titre le plus court.
+- Légende par période (dans les 7 jours, dans le mois, plus tard), calculée à l'ouverture de la carte.
+- Facebook n'est pas une source possible : l'API de Meta ne donne pas les événements des pages
+  tierces, et la lecture automatique des pages est interdite par ses conditions. Un événement qui
+  n'existe que sur Facebook apparaît ici dès que l'organisateur le déclare à l'office de tourisme.
+- Lien direct : `?couche=evenements` (ou `agenda`, `sorties`, `fetes`).
