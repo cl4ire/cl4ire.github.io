@@ -3750,3 +3750,44 @@ Le workflow **« Données des territoires »** (`.github/workflows/donnees-terri
 chaque mois) enchaîne tout pour les territoires demandés et commite sur `main`. Il tourne chez GitHub : les API publiques
 (Overpass, SIRENE) y sont accessibles, ce qui n'est pas toujours le cas depuis un environnement de développement.
 Les données de GéoBercé restent saisies et vérifiées à la main : ce workflow ne les touche pas.
+
+## Couches ajoutées depuis data.gouv.fr (novembre 2026)
+
+Tour complet du catalogue data.gouv.fr (jeux de la Sarthe, des Pays de la Loire et
+jeux nationaux les plus utilisés), en écartant ce qui existe déjà ou a déjà été
+écarté plus haut (ZNIEFF/Natura 2000 en WMS, SITADEL, ATMO...). Sept couches :
+
+| Couche (`id`) | Groupe | Source | Mode |
+|---|---|---|---|
+| Chantiers sur les routes départementales (`chantiers`) | Risques | Département de la Sarthe, data.sarthe.fr | en direct |
+| Plans de prévention des risques (`ppr`) | Risques | DDT de la Sarthe, WFS geo-ide | `outils/build_ppr.py` |
+| Aide au numérique (`numerique`) | Services | Département, data.sarthe.fr | en direct |
+| Consultations PMI (`pmi`) | Famille | Département, data.sarthe.fr | en direct |
+| Espaces naturels sensibles (`ens`) | Nature & rando | Département, data.sarthe.fr | en direct |
+| Parcelles forestières ONF (`parcellesForestieres`) | Nature & rando | ONF (copie Esri France ArcGIS Online) | `outils/build_onf.py` |
+| Points de rencontre des secours en forêt (`prsf`) | Sécurité & santé | IGN Géoplateforme (PRSF) | `outils/build_onf.py` |
+
+- **data.sarthe.fr** (Opendatasoft du Département) répond avec `Access-Control-Allow-Origin: *`
+  (vérifié le 12/11/2026) : `fetchDataSarthe(dataset, marge)` (`js/config.js`) récupère l'export
+  GeoJSON du jeu (toute la Sarthe) et ne garde que ce qui tombe dans le contour de
+  `couches/epci.geojson` (`featureDansTerritoire`). Les chantiers gardent une marge de 0,05°
+  autour du territoire : une route barrée juste à côté gêne aussi.
+- **PPR** : le serveur WFS de la DDT n'accepte pas de reprojection et ne sort que du GML en
+  Lambert 93. `outils/build_ppr.py` fait la conversion (formules IGN, sans dépendance),
+  simplifie les contours à 3 m et ne garde que les zones qui touchent une commune du
+  territoire. Les liens vers le règlement qui pointent vers l'intranet du ministère
+  (`*.rie.gouv.fr`) sont retirés. Sur GéoBercé : 23 zones (PPRI de la Vallée du Loir, PPR
+  mouvements de terrain de La Chartre, du Grand-Lucé, de Vouvray/Château-du-Loir et de
+  Loir en Vallée). Aucun plan sur GéoBelinois : pas de fichier, couche masquée.
+- **Parcelles forestières** : le flux WFS officiel de l'ONF (`ws.carmencarto.fr`) ne répond
+  pas en HTTPS ; la même donnée (millésime 2019) est lue sur la copie d'Esri France. Toutes
+  les parcelles des forêts qui touchent le territoire sont gardées (Bercé déborde sur les
+  comcoms voisines). Le numéro (`parcelle`) est celui des affiches de chasse : il s'affiche
+  au centre de chaque parcelle à partir du zoom 14 (`etiquette` dans la config de la
+  couche, nouveau, géré par `js/layers.js` + classe `etiquettes-masquees` posée par
+  `js/map.js`).
+- **PRSF** : le flux IGN renvoie de l'UTF-8 relu en Latin-1 (« THOIRÃ‰ »), réparé par
+  `reparer_texte`. La fiche reprend le code à donner au 18/112.
+- Les deux scripts tournent aussi dans le workflow mensuel « Données des territoires » pour
+  GéoSudSarthe et GéoBelinois. Pour GéoBercé (données saisies à la main) :
+  `python3 outils/build_ppr.py` et `python3 outils/build_onf.py`.

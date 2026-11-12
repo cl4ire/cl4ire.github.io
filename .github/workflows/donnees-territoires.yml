@@ -11,6 +11,8 @@ name: Données des territoires (OpenStreetMap, SIRENE, RNA)
 # - registre SIRENE (outils/build_artisans.py) : artisans
 # - répertoire des associations RNA (outils/build_associations.py)
 # - biodiversité par commune (outils/build_biodiversite.py, observations ouvertes GBIF)
+# - zones réglementées des plans de prévention des risques (outils/build_ppr.py, DDT de la Sarthe)
+# - parcelles forestières ONF et points de rencontre des secours en forêt (outils/build_onf.py)
 # puis met à jour `fichiersDisponibles` de chaque territoire (outils/maj_fichiers_disponibles.py)
 # et commite directement sur main (seuls les dossiers territoires/<id>/ changent : GéoBercé n'est pas touché).
 # Chaque étape qui échoue est signalée, les autres sont quand même gardées.
@@ -63,6 +65,8 @@ jobs:
             etape associations python3 outils/build_associations.py --territoire "$id"
             etape biodiversite python3 outils/build_biodiversite.py --territoire "$id"
             etape nomsespeces python3 outils/build_noms_especes.py --territoire "$id"
+            etape ppr python3 outils/build_ppr.py --territoire "$id"
+            etape onf python3 outils/build_onf.py --territoire "$id"
             etape fichiers python3 outils/maj_fichiers_disponibles.py --territoire "$id"
             echo "::endgroup::"
           done
