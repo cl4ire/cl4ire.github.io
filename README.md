@@ -3818,6 +3818,17 @@ de data.sarthe.fr, c'est-à-dire les agendas que les offices de tourisme saisiss
   n'existe que sur Facebook apparaît ici dès que l'organisateur le déclare à l'office de tourisme.
 - Lien direct : `?couche=evenements` (ou `agenda`, `sorties`, `fetes`).
 
+- Événements saisis à la main : `couches/evenements/evenements_manuels.geojson` (fichier facultatif,
+  un par territoire, dans `territoires/<id>/couches/evenements/` pour les autres). C'est pour ce qui n'est
+  annoncé que sur Facebook (le programme du week-end de la CC Loir-Lucé-Bercé, par exemple). Chaque
+  Feature est un point, avec `nomoffre`, `lieu`, `commune`, `categories`, `descriptif` (facultatif),
+  `dates` (liste de `{debut, fin, heureDebut, heureFin}`, dates en `AAAA-MM-JJ`, heures en `HH:MM`),
+  `source` (affichée sur la fiche) et `lieuApproximatif: true` quand le point est placé au centre du
+  bourg plutôt qu'au lieu exact. Une saisie passe avant son doublon de l'agenda, et un événement
+  passé disparaît tout seul de la carte.
+- Tarifs Tourinsoft (`libellé||min||max||précision`, séparés par `##`) : mis en forme par
+  `lignesTarifsEvenement` (`js/popup.js`), par exemple « Adulte : 9 à 24 € ».
+
 ## Fiches en panneau bas sur mobile
 
 Retour direct de l'utilisatrice : sur téléphone, les popups cachaient le
