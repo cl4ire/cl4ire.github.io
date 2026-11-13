@@ -3817,6 +3817,7 @@ de data.sarthe.fr, c'est-à-dire les agendas que les offices de tourisme saisiss
   tierces, et la lecture automatique des pages est interdite par ses conditions. Un événement qui
   n'existe que sur Facebook apparaît ici dès que l'organisateur le déclare à l'office de tourisme.
 - Lien direct : `?couche=evenements` (ou `agenda`, `sorties`, `fetes`).
+
 - Événements saisis à la main : `couches/evenements/evenements_manuels.geojson` (fichier facultatif,
   un par territoire, dans `territoires/<id>/couches/evenements/` pour les autres). C'est pour ce qui n'est
   annoncé que sur Facebook (le programme du week-end de la CC Loir-Lucé-Bercé, par exemple). Chaque
@@ -3827,3 +3828,17 @@ de data.sarthe.fr, c'est-à-dire les agendas que les offices de tourisme saisiss
   passé disparaît tout seul de la carte.
 - Tarifs Tourinsoft (`libellé||min||max||précision`, séparés par `##`) : mis en forme par
   `lignesTarifsEvenement` (`js/popup.js`), par exemple « Adulte : 9 à 24 € ».
+
+## Fiches en panneau bas sur mobile
+
+Retour direct de l'utilisatrice : sur téléphone, les popups cachaient le
+point cliqué et obligeaient à faire défiler une petite bulle. Sous 780px
+de large (même seuil que la barre du bas), `js/fiche-mobile.js` affiche
+le contenu de la popup dans un panneau qui monte du bas de la carte, à
+mi-hauteur : on tire la poignée vers le haut pour la fiche en grand, vers
+le bas (ou × / tap sur la carte) pour fermer. Les popups Leaflet restent
+la seule logique (bindPopup, autoClose, setContent différé des parcelles) :
+la popup est ouverte normalement mais masquée, et son nœud de contenu est
+déplacé dans le panneau le temps de l'ouverture. Sur ordinateur, rien ne
+change. Un code qui cherche un élément dans une popup ouverte doit passer
+par `popup._contentNode` plutôt que `popup.getElement()` (voir map.js).
